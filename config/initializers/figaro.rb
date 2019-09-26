@@ -36,5 +36,6 @@ Figaro.application = Figaro::Application.new(
 
 Figaro.load.each { |key, value| ENV[key] = value }
 
-Figaro.require_keys 'kickstart_base_path'
+Figaro.require_keys 'content_base_path',
+                    'kickstart_base_path'
 

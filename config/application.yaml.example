@@ -10,6 +10,12 @@
 # =============================================================================
 
 # =============================================================================
+# Content Base Path
+# Set the locations the internal configuration files will be stored at
+# =============================================================================
+content_base_path:
+
+# =============================================================================
 # Kickstart Base Path
 # Sets the location to store the Kickstart files. This is required for each
 # install of the server

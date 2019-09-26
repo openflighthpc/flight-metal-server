@@ -27,6 +27,9 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'flight_config'
+require 'app/model'
 require 'app/models/kickstart'
 
 Kickstart.base_path = Figaro.env.kickstart_base_path
+

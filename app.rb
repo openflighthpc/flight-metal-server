@@ -43,8 +43,8 @@ class App < Sinatra::Base
 
   resource :kickstarts, pkre: /\w+/ do
     helpers do
-      def find(name)
-        Kickstart.new(name)
+      def find(id)
+        Kickstart.exists?(id) ? Kickstart.read(id) : nil
       end
     end
 

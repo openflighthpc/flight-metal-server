@@ -27,20 +27,12 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Kickstart < Model
-  class << self
-    attr_writer :base_path
+class Model
+  include FlightConfig::Reader
+  include FlightConfig::Updater
 
-    def path(name)
-      File.join(Figaro.env.content_base_path, name + '.yaml')
-    end
-
-    def base_path
-      @base_path || raise('The kickstart base path has not been set')
-    end
-  end
-
-  def system_path
+  def self.exists?(*a)
+    File.exists? path(*a)
   end
 end
 
