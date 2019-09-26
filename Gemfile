@@ -34,6 +34,7 @@ git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 gem 'sinatra'
 gem 'sinja'
 gem 'figaro'
+gem 'flight_config'
 
 gem 'pry'
 gem 'pry-byebug'
