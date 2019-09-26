@@ -27,9 +27,19 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'jsonapi-serializers'
+class Serializer
+  include JSONAPI::Serializer
 
-require 'app/serializer'
-require 'app/serializers/kickstart_serializer'
+  class << self
+    attr_writer :base_url
 
-Serializer.base_url = Figaro.env.app_base_url
+    def base_url
+      @base_url || raise('The serializer base url has not been set')
+    end
+  end
+
+  def base_url
+    Serializer.base_url
+  end
+end
+

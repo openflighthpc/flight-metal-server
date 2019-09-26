@@ -27,7 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class KickstartSerializer
+class KickstartSerializer < Serializer
   include JSONAPI::Serializer
 
   attributes :size, :url

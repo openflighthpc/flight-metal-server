@@ -10,6 +10,13 @@
 # =============================================================================
 
 # =============================================================================
+# App Base URL
+# Specify the base URL to where the application is being hosted. This is used
+# by JSON serializers to give the correct URLs to resources
+# =============================================================================
+app_base_url:
+
+# =============================================================================
 # Content Base Path
 # Set the locations the internal configuration files will be stored at
 # =============================================================================
