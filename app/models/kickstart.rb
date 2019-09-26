@@ -55,7 +55,7 @@ class Kickstart < Model
     File.join(self.class.base_path, name + '.ks')
   end
 
-  def url
+  def system_url
     URI(self.class.base_url) + (name + '.ks')
   end
 
