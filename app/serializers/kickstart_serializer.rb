@@ -29,5 +29,9 @@
 
 class KickstartSerializer
   include JSONAPI::Serializer
+
+  attributes :size, :url
+  attribute(:path) { |s| s.object.system_path }
+  attribute(:uploaded) { |s| s.object.uploaded? }
 end
 

@@ -27,9 +27,11 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'uri'
+
 class Kickstart < Model
   class << self
-    attr_writer :base_path
+    attr_writer :base_path, :base_url
 
     def path(id)
       File.join(Figaro.env.content_base_path, id + '.yaml')
@@ -37,6 +39,10 @@ class Kickstart < Model
 
     def base_path
       @base_path || raise('The kickstart base path has not been set')
+    end
+
+    def base_url
+      @base_url || raise('The kickstart base url has not been set')
     end
   end
 
@@ -46,7 +52,20 @@ class Kickstart < Model
   alias_method :name, :id
 
   def system_path
-    File.join(base_path, name + '.ks')
+    File.join(self.class.base_path, name + '.ks')
+  end
+
+  def url
+    URI(self.class.base_url) + (name + '.ks')
+  end
+
+  def uploaded?
+    File.exists?(system_path)
+  end
+
+  def size
+    return 0 unless uploaded?
+    File.size system_path
   end
 end
 

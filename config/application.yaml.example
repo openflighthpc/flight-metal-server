@@ -16,8 +16,10 @@
 content_base_path:
 
 # =============================================================================
-# Kickstart Base Path
-# Sets the location to store the Kickstart files. This is required for each
-# install of the server
+# Kickstart Base Path and URL
+# Set the base path where the actual kickstart file is stored. This will likely
+# be on an apache or nginx server. The base part of the URL must be
+# independently set
 # =============================================================================
 kickstart_base_path:
+kickstart_base_url:

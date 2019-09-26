@@ -32,4 +32,5 @@ require 'app/model'
 require 'app/models/kickstart'
 
 Kickstart.base_path = Figaro.env.kickstart_base_path
+Kickstart.base_url = Figaro.env.kickstart_base_url
 
