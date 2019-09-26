@@ -47,7 +47,7 @@ class App < Sinatra::Base
     end
   end
 
-  resource :kickstarts do
+  resource :kickstarts, pkre: /\w+/ do
     helpers do
       def find(name)
         Kickstart.new(name)
