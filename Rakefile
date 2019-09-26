@@ -27,10 +27,25 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'rake'
-load File.expand_path(File.join(__dir__, 'Rakefile'))
-Rake::Task[:require].invoke
+task :require do
+  $: << __dir__
+  ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 
-use App::Middleware::SetContentHeaders
-run App.new
+  require 'rubygems'
+  require 'bundler/setup'
+
+  require 'pry'
+  require 'pry-byebug'
+
+  require 'config/initializers/figaro'
+  require 'config/initializers/models'
+  require 'config/initializers/serializers'
+
+  require 'app'
+  require 'app/middleware/set_content_headers'
+end
+
+task console: :require do
+  binding.pry
+end
 

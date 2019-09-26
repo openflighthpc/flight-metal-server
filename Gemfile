@@ -35,6 +35,7 @@ gem 'sinatra'
 gem 'sinja'
 gem 'figaro'
 gem 'flight_config'
+gem 'rake'
 
 gem 'pry'
 gem 'pry-byebug'

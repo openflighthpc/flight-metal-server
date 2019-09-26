@@ -31,8 +31,8 @@ class Kickstart < Model
   class << self
     attr_writer :base_path
 
-    def path(name)
-      File.join(Figaro.env.content_base_path, name + '.yaml')
+    def path(id)
+      File.join(Figaro.env.content_base_path, id + '.yaml')
     end
 
     def base_path
@@ -40,7 +40,13 @@ class Kickstart < Model
     end
   end
 
+  def id
+    __inputs__[0]
+  end
+  alias_method :name, :id
+
   def system_path
+    File.join(base_path, name + '.ks')
   end
 end
 
