@@ -27,13 +27,34 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-source "https://rubygems.org"
+require 'sinatra/base'
+require 'sinatra/jsonapi'
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+require 'app/models/kickstart'
 
-gem 'sinatra'
-gem 'sinja'
+require 'app/serializers/kickstart_serializer'
 
-gem 'pry'
-gem 'pry-byebug'
+class App < Sinatra::Base
+  register Sinatra::JSONAPI
+
+  get('/status', provides: :json) { 'OK' }
+
+  helpers do
+    def serialize_model(model, options = {})
+      options[:is_collection] = false
+      options[:skip_collection_check] = true
+      super(model, options)
+    end
+  end
+
+  resource :kickstarts do
+    helpers do
+      def find(name)
+        Kickstart.new(name)
+      end
+    end
+
+    show
+  end
+end
 

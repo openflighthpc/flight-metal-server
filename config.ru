@@ -27,13 +27,18 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-source "https://rubygems.org"
+$: << __dir__
+ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+require 'rubygems'
+require 'bundler/setup'
 
-gem 'sinatra'
-gem 'sinja'
+require 'app'
+require 'app/middleware/set_content_headers'
 
-gem 'pry'
-gem 'pry-byebug'
+require 'pry'
+require 'pry-byebug'
+
+use App::Middleware::SetContentHeaders
+run App.new
 

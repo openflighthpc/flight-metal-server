@@ -27,3 +27,5 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
+Kickstart = Struct.new(:id)
+

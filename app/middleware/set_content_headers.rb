@@ -27,13 +27,22 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-source "https://rubygems.org"
+# Sinja requires the following headers to always be set otherwise it raises an
+# error. However this is more of a pain then anything else, so this middleware
+# forces the headers to be set correctly
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+class App
+  module Middleware
+    class SetContentHeaders
+      def initialize(app)
+        @app = app
+      end
 
-gem 'sinatra'
-gem 'sinja'
-
-gem 'pry'
-gem 'pry-byebug'
-
+      def call(env)
+        env['HTTP_CONTENT_TYPE'] = 'application/vnd.api+json'
+        env['HTTP_ACCEPT']= 'application/vnd.api+json'
+        @app.call(env)
+      end
+    end
+  end
+end

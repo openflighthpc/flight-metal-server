@@ -27,13 +27,7 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-source "https://rubygems.org"
-
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
-
-gem 'sinatra'
-gem 'sinja'
-
-gem 'pry'
-gem 'pry-byebug'
+class KickstartSerializer
+  include JSONAPI::Serializer
+end
 
