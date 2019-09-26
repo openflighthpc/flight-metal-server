@@ -33,11 +33,15 @@ ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 require 'rubygems'
 require 'bundler/setup'
 
-require 'app'
-require 'app/middleware/set_content_headers'
-
 require 'pry'
 require 'pry-byebug'
+
+require 'config/initializers/figaro'
+require 'config/initializers/models'
+require 'config/initializers/serializers'
+
+require 'app'
+require 'app/middleware/set_content_headers'
 
 use App::Middleware::SetContentHeaders
 run App.new

@@ -27,13 +27,6 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-Kickstart = Struct.new(:id) do
-  class << self
-    attr_writer :base_path
+require 'app/models/kickstart'
 
-    def base_path
-      @base_path || raise('The kickstart base path has not been set')
-    end
-  end
-end
-
+Kickstart.base_path = Figaro.env.kickstart_base_path

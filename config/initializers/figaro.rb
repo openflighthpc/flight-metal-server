@@ -27,13 +27,14 @@
 # https://github.com/openflighthpc/flight-metal-server
 #===============================================================================
 
-Kickstart = Struct.new(:id) do
-  class << self
-    attr_writer :base_path
+require 'figaro'
 
-    def base_path
-      @base_path || raise('The kickstart base path has not been set')
-    end
-  end
-end
+Figaro.application = Figaro::Application.new(
+  environment: 'production',
+  path: File.expand_path('../application.yaml', __dir__)
+)
+
+Figaro.load.each { |key, value| ENV[key] = value }
+
+Figaro.require_keys 'kickstart_base_path'
 

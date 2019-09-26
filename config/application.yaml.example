@@ -1,0 +1,17 @@
+# =============================================================================
+# GETTING STARTED
+# COPY this file into place, please leave this example as a reference.
+# NOTE: Comments in the main config will be removed by the application
+#
+# cp config/application.yaml.example config/application.yaml
+#
+# The following parameters are configurable for the install. Commented out keys
+# give the default values used. Uncomment the line to manually set it
+# =============================================================================
+
+# =============================================================================
+# Kickstart Base Path
+# Sets the location to store the Kickstart files. This is required for each
+# install of the server
+# =============================================================================
+kickstart_base_path:

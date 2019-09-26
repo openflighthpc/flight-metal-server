@@ -30,10 +30,6 @@
 require 'sinatra/base'
 require 'sinatra/jsonapi'
 
-require 'app/models/kickstart'
-
-require 'app/serializers/kickstart_serializer'
-
 class App < Sinatra::Base
   register Sinatra::JSONAPI
 
