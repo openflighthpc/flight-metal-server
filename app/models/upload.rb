@@ -27,35 +27,11 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-# Sinja requires the following headers to always be set otherwise it raises an
-# error. However this is more of a pain then anything else, so this middleware
-# forces the headers to be set correctly
+class Upload
+  att_reader :parent
 
-require 'stringio'
-
-class App
-  module Middleware
-    class SetContentHeaders
-      def initialize(app)
-        @app = app
-      end
-
-      # Because the app needs to handle uploads for the time being, it must
-      # accept `application/octet-stream'. This is an antipattern as a separate
-      # server should be handling uploads as this will slow down the server
-      #
-      # However for the time being the original stream is being cached elsewhere
-      # in the environment. This allows the request body to be reset to an empty
-      # IO
-      def call(env)
-        if env['CONTENT_TYPE'] = 'application/octet-stream'
-          env['cached.octet_stream'] = env['rack.input']
-          env['rack.input'] = Rack::Lint::InputWrapper.new(StringIO.new)
-          env['CONTENT_TYPE'] = nil
-        end
-        env['HTTP_ACCEPT'] = 'application/vnd.api+json'
-        @app.call(env)
-      end
-    end
+  def initializers(parent)
+    @parent = parent
   end
 end
+

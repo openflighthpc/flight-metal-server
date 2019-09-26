@@ -30,6 +30,16 @@
 require 'sinatra/base'
 require 'sinatra/jsonapi'
 
+class UploadApp < Sinatra::Base
+  get '/' do
+    'Recieved a get'
+  end
+
+  post '/' do
+    'Recieved a post'
+  end
+end
+
 class App < Sinatra::Base
   register Sinatra::JSONAPI
 
@@ -49,6 +59,15 @@ class App < Sinatra::Base
     end
 
     show
+
+    get('/:id/upload') do
+      raise Sinja::BadRequestError,
+            'This is an upload only path. Please POST the file content to this URL'
+    end
+
+    post('/:id/upload') do
+      binding.pry
+    end
   end
 end
 
