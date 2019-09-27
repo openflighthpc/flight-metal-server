@@ -45,3 +45,11 @@ uefi_base_path:
 # =============================================================================
 pxelinux_base_path:
 
+# =============================================================================
+# Initrd Kernel Base and URL Path
+# The base location to store the kernerl and initrd. This should be located
+# on some form of file server that can be reached by the base url
+# =============================================================================
+initrd_kernel_base_path:
+initrd_kernel_base_url:
+

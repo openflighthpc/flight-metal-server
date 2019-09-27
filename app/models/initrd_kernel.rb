@@ -27,21 +27,54 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'figaro'
+class InitrdKernel < Model
+  class << self
+    attr_writer :base_path, :base_url
 
-Figaro.application = Figaro::Application.new(
-  environment: 'production',
-  path: File.expand_path('../application.yaml', __dir__)
-)
+    def path(id)
+      File.join(content_base_path, 'initrd-kernel', id + '.yaml')
+    end
 
-Figaro.load.each { |key, value| ENV[key] = value }
+    def base_path
+      @base_path || raise("The #{self} base path has not been set")
+    end
 
-Figaro.require_keys 'content_base_path',
-                    'app_base_url',
-                    'kickstart_base_path',
-                    'kickstart_base_url',
-                    'uefi_base_path',
-                    'pxelinux_base_path',
-                    'initrd_kernel_base_url',
-                    'initrd_kernel_base_path'
+    def base_url
+      @base_url || raise('The initrdkernerl base url has not been set')
+    end
+  end
 
+  def id
+    __inputs__[0]
+  end
+
+  def name
+    id
+  end
+
+  def kernel_system_path
+    File.join(self.base_path, id + '.kernel')
+  end
+
+  def initrd_system_path
+    File.join(self.base_path, id + '.initrd')
+  end
+
+  def kernel_uploaded?
+    File.exists? kernel_system_path
+  end
+
+  def initrd_uploaded?
+    File.exists? initrd_system_path
+  end
+
+  def kernel_size
+    return 0 unless kernel_uploaded?
+    File.size kernel_system_path
+  end
+
+  def initrd_size
+    return 0 unless initrd_uploaded?
+    File.size initrd_system_path
+  end
+end
