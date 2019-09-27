@@ -48,10 +48,13 @@ class App
       # in the environment. This allows the request body to be reset to an empty
       # IO
       def call(env)
+        empty_io = Rack::Lint::InputWrapper.new(StringIO.new)
         if env['CONTENT_TYPE'] = 'application/octet-stream'
           env['cached.octet_stream'] = env['rack.input']
-          env['rack.input'] = Rack::Lint::InputWrapper.new(StringIO.new)
+          env['rack.input'] = empty_io
           env['CONTENT_TYPE'] = nil
+        else
+          env['cached.octet_stream'] = empty_io
         end
         env['HTTP_ACCEPT'] = 'application/vnd.api+json'
         @app.call(env)
