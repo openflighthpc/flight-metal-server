@@ -77,8 +77,12 @@ class App < Sinatra::Base
     show
 
     create do |_attr, id|
-      kickstart = find(id) || Kickstart.create(id)
+      kickstart = find(id) || Kickstart.create(id) {}
       next kickstart.id, kickstart
+    end
+
+    index do
+      Kickstart.glob_read('*')
     end
 
     get('/:id/upload') do

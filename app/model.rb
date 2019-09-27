@@ -30,6 +30,7 @@
 class Model
   include FlightConfig::Reader
   include FlightConfig::Updater
+  include FlightConfig::Globber
 
   def self.exists?(*a)
     File.exists? path(*a)
