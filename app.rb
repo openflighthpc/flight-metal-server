@@ -76,6 +76,11 @@ class App < Sinatra::Base
 
     show
 
+    create do |_attr, id|
+      kickstart = find(id) || Kickstart.create(id)
+      next kickstart.id, kickstart
+    end
+
     get('/:id/upload') do
       raise Sinja::BadRequestError,
             'This is an upload only path. Please POST the file content to this URL'
