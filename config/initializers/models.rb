@@ -31,6 +31,7 @@ require 'flight_config'
 require 'app/model'
 require 'app/models/kickstart'
 
+Model.content_base_path = Figaro.env.content_base_path
 Kickstart.base_path = Figaro.env.kickstart_base_path
 Kickstart.base_url = Figaro.env.kickstart_base_url
 

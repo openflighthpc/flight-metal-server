@@ -32,8 +32,18 @@ class Model
   include FlightConfig::Updater
   include FlightConfig::Globber
 
-  def self.exists?(*a)
-    File.exists? path(*a)
+  class << self
+    attr_writer :content_base_path
+
+    def content_base_path
+      Model.instance_variable_get(:@content_base_path) || raise(<<~ERROR.chomp)
+        The base content path for the models has not been set!
+      ERROR
+    end
+
+    def exists?(*a)
+      File.exists? path(*a)
+    end
   end
 
   def id
@@ -42,6 +52,14 @@ class Model
 end
 
 class FileModel < Model
+  class << self
+    attr_writer :base_path
+
+    def base_path
+      @base_path || raise("The #{self} base path has not been set")
+    end
+  end
+
   def system_path
     raise NotImplementedError
   end

@@ -29,16 +29,12 @@
 
 require 'uri'
 
-class Kickstart < Model
+class Kickstart < FileModel
   class << self
-    attr_writer :base_path, :base_url
+    attr_writer :base_url
 
     def path(id)
-      File.join(Figaro.env.content_base_path, id + '.yaml')
-    end
-
-    def base_path
-      @base_path || raise('The kickstart base path has not been set')
+      File.join(content_base_path, id + '.yaml')
     end
 
     def base_url
@@ -57,15 +53,6 @@ class Kickstart < Model
 
   def system_url
     URI(self.class.base_url) + (name + '.ks')
-  end
-
-  def uploaded?
-    File.exists?(system_path)
-  end
-
-  def size
-    return 0 unless uploaded?
-    File.size system_path
   end
 end
 
