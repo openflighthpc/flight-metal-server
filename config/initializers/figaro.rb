@@ -40,5 +40,6 @@ Figaro.require_keys 'content_base_path',
                     'app_base_url',
                     'kickstart_base_path',
                     'kickstart_base_url',
-                    'uefi_base_path'
+                    'uefi_base_path',
+                    'pxelinux_base_path'
 

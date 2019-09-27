@@ -34,7 +34,14 @@ kickstart_base_url:
 # =============================================================================
 # UEFI Base Path
 # The base system location to save the uefi files. The filename will
-# automatically be prefixed with grub.cfg-
+# automatically be prefixed with grub.cfg- followed by the files id
 # =============================================================================
 uefi_base_path:
+
+# =============================================================================
+# Pxelinux Base Path
+# The base system location to save the pxelinux config files. The filename is
+# the same as the id
+# =============================================================================
+pxelinux_base_path:
 

@@ -27,32 +27,19 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Serializer
-  include JSONAPI::Serializer
-
+class Pxelinux < FileModel
   class << self
-    attr_writer :base_url
-
-    def base_url
-      @base_url || raise('The serializer base url has not been set')
+    def path(id)
+      File.join(content_base_path, 'pxelinux', id + '.yaml')
     end
   end
 
-  def base_url
-    Serializer.base_url
+  def id
+    __inputs__[0]
+  end
+
+  def system_path
+    File.join(self.class.base_path, id)
   end
 end
-
-class FileSerializer < Serializer
-  attributes :size
-  attribute(:path) { |s| s.object.system_path }
-  attribute(:uploaded) { |s| s.object.uploaded? }
-end
-
-class KickstartSerializer < FileSerializer
-  attribute(:download) { |s| s.object.system_url }
-end
-
-class UefiSerializer < FileSerializer; end
-class PxelinuxSerializer < FileSerializer; end
 

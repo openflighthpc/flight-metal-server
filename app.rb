@@ -121,5 +121,26 @@ class App < Sinatra::Base
       next uefi.id, uefi
     end
   end
+
+  resource :pxelinux, pkre: /\w+/ do
+    include UploadRoutes
+
+    helpers do
+      def find(id)
+        Pxelinux.exists?(id) ? Pxelinux.read(id) : nil
+      end
+    end
+
+    show
+
+    index do
+      Pxelinux.glob_read('*')
+    end
+
+    create do |_attr, id|
+      pxelinux = find(id) || Pxelinux.create(id)
+      next pxelinux.id, pxelinux
+    end
+  end
 end
 
