@@ -30,6 +30,5 @@
 require 'jsonapi-serializers'
 
 require 'app/serializer'
-require 'app/serializers/kickstart_serializer'
 
 Serializer.base_url = Figaro.env.app_base_url

@@ -34,5 +34,31 @@ class Model
   def self.exists?(*a)
     File.exists? path(*a)
   end
+
+  def id
+    raise NotImplementedError
+  end
+end
+
+class FileModel < Model
+  def system_path
+    raise NotImplementedError
+  end
+
+  # alias and alias_method are not being used as they do not play
+  # well with inheritance. Also I can never remember the difference
+  # between the two
+  def name
+    id
+  end
+
+  def uploaded?
+    File.exists?(system_path)
+  end
+
+  def size
+    return 0 unless uploaded?
+    File.size system_path
+  end
 end
 
