@@ -50,7 +50,7 @@ class FileSerializer < Serializer
 end
 
 class InitrdKernelSerializer < Serializer
-  attributes :kernel_size, :initrd_size
+  attributes :kernel_size, :initrd_size, :initrd_url, :kernel_url
   attribute(:kernel_path) { |s| s.object.kernel_system_path }
   attribute(:kernel_uploaded) { |s| s.object.kernel_uploaded? }
   attribute(:initrd_uploaded) { |s| s.object.initrd_uploaded? }

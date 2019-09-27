@@ -27,6 +27,8 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'uri'
+
 class InitrdKernel < Model
   class << self
     attr_writer :base_path, :base_url
@@ -40,7 +42,7 @@ class InitrdKernel < Model
     end
 
     def base_url
-      @base_url || raise('The initrdkernerl base url has not been set')
+      @base_url || raise('The Initrdkernerl base url has not been set')
     end
   end
 
@@ -52,12 +54,20 @@ class InitrdKernel < Model
     id
   end
 
+  def kernel_url
+    URI(self.class.base_url) + (id + '.kernel')
+  end
+
+  def initrd_url
+    URI(self.class.base_url) + (id + '.initrd')
+  end
+
   def kernel_system_path
-    File.join(self.base_path, id + '.kernel')
+    File.join(self.class.base_path, id + '.kernel')
   end
 
   def initrd_system_path
-    File.join(self.base_path, id + '.initrd')
+    File.join(self.class.base_path, id + '.initrd')
   end
 
   def kernel_uploaded?

@@ -142,5 +142,38 @@ class App < Sinatra::Base
       next pxelinux.id, pxelinux
     end
   end
+
+  resource :initrd_kernel, pkre: /\w+/ do
+    helpers do
+      def find(id)
+        InitrdKernel.exists?(id) ? InitrdKernel.read(id) : nil
+      end
+    end
+
+    show
+
+    index do
+      InitrdKernel.glob_read('*')
+    end
+
+    create do |_attr, id|
+      kernel = find(id) || InitrdKernel.create(id)
+      next kernel.id, kernel
+    end
+
+    ['initrd', 'kernel'].each do |type|
+      route = "/:id/#{type}-upload"
+      get(route) { raise UploadOnlyError }
+      post(route) do
+        path = if type == 'initrd'
+                 resource.initrd_system_path
+               else
+                 resource.kernel_system_path
+               end
+        write_octet_stream(path)
+        serialize_model(resource)
+      end
+    end
+  end
 end
 

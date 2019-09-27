@@ -39,6 +39,6 @@ Kickstart.base_path     = Figaro.env.kickstart_base_path
 Kickstart.base_url      = Figaro.env.kickstart_base_url
 Uefi.base_path          = Figaro.env.uefi_base_path
 Pxelinux.base_path      = Figaro.env.pxelinux_base_path
-InitrdKernel.base_path  = Figaro.env.initrd_kernerl_base_path
-InitrdKernel.base_url   = Figaro.env.initrd_kernerl_base_url
+InitrdKernel.base_path  = Figaro.env.initrd_kernel_base_path
+InitrdKernel.base_url   = Figaro.env.initrd_kernel_base_url
 
