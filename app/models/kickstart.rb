@@ -34,7 +34,7 @@ class Kickstart < FileModel
     attr_writer :base_url
 
     def path(id)
-      File.join(content_base_path, id + '.yaml')
+      File.join(content_base_path, 'kickstarts', id + '.yaml')
     end
 
     def base_url
@@ -45,7 +45,6 @@ class Kickstart < FileModel
   def id
     __inputs__[0]
   end
-  alias_method :name, :id
 
   def system_path
     File.join(self.class.base_path, name + '.ks')

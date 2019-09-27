@@ -30,3 +30,11 @@ content_base_path:
 # =============================================================================
 kickstart_base_path:
 kickstart_base_url:
+
+# =============================================================================
+# UEFI Base Path
+# The base system location to save the uefi files. The filename will
+# automatically be prefixed with grub.cfg-
+# =============================================================================
+uefi_base_path:
+

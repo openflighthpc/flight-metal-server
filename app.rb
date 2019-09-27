@@ -30,17 +30,30 @@
 require 'sinatra/base'
 require 'sinatra/jsonapi'
 
-class UploadApp < Sinatra::Base
-  get '/' do
-    'Recieved a get'
-  end
-
-  post '/' do
-    'Recieved a post'
-  end
-end
-
 class App < Sinatra::Base
+  class UploadOnlyError < Sinja::BadRequestError
+    DEFAULT_MESSAGE = <<~MSG.chomp
+      This is an upload only path. Please POST the file content to this URL
+    MSG
+
+    def initialize(msg = DEFAULT_MESSAGE)
+      super
+    end
+  end
+
+  module UploadRoutes
+    def self.included(base)
+      base.class_exec do
+        get('/:id/upload') { raise UploadOnlyError }
+
+        post('/:id/upload') do
+          write_octet_stream(resource.system_path)
+          serialize_model(resource)
+        end
+      end
+    end
+  end
+
   register Sinatra::JSONAPI
 
   helpers do
@@ -68,6 +81,8 @@ class App < Sinatra::Base
   end
 
   resource :kickstarts, pkre: /\w+/ do
+    include UploadRoutes
+
     helpers do
       def find(id)
         Kickstart.exists?(id) ? Kickstart.read(id) : nil
@@ -76,23 +91,34 @@ class App < Sinatra::Base
 
     show
 
-    create do |_attr, id|
-      kickstart = find(id) || Kickstart.create(id) {}
-      next kickstart.id, kickstart
-    end
-
     index do
       Kickstart.glob_read('*')
     end
 
-    get('/:id/upload') do
-      raise Sinja::BadRequestError,
-            'This is an upload only path. Please POST the file content to this URL'
+    create do |_attr, id|
+      kickstart = find(id) || Kickstart.create(id)
+      next kickstart.id, kickstart
+    end
+  end
+
+  resource :uefi, pkre: /\w+/ do
+    include UploadRoutes
+
+    helpers do
+      def find(id)
+        Uefi.exists?(id) ? Uefi.read(id) : nil
+      end
     end
 
-    post('/:id/upload') do
-      write_octet_stream(resource.system_path)
-      serialize_model(resource)
+    show
+
+    index do
+      Uefi.glob_read('*')
+    end
+
+    create do |_attr, id|
+      uefi = find(id) || Uefi.create(id)
+      next uefi.id, uefi
     end
   end
 end
