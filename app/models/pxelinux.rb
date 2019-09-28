@@ -27,19 +27,27 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Pxelinux < FileModel
-  class << self
-    def path(id)
-      File.join(content_base_path, 'pxelinux', id + '.yaml')
-    end
+class Pxelinux < DownloadableFileModel
+  include SystemFile
+
+  def self.path(id)
+    File.join(content_base_path, 'pxelinux', id + '.yaml')
   end
 
   def id
     __inputs__[0]
   end
 
+  def type
+    'pxelinuxes'
+  end
+
+  def filename
+    id
+  end
+
   def system_path
-    File.join(self.class.base_path, id)
+    File.join(self.class.base_system_path, filename)
   end
 end
 

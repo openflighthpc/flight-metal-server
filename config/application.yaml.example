@@ -45,11 +45,11 @@ content_base_path:
 uefi_base_path:
 
 # =============================================================================
-# Pxelinux Base Path
+# Pxelinux Base System Path
 # The base system location to save the pxelinux config files. The filename is
 # the same as the id
 # =============================================================================
-pxelinux_base_path:
+pxelinux_base_system_path:
 
 # =============================================================================
 # Initrd Kernel Base and URL Path
