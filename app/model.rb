@@ -135,3 +135,23 @@ class DownloadableFileModel < Model
   end
 end
 
+module SystemFile
+  def self.included(base)
+    base.extend(ClassMethods)
+  end
+
+  module ClassMethods
+    attr_writer :base_system_path
+
+    def base_system_path
+      @base_system_path || raise(<<~ERROR.chomp)
+        The base system path for #{self.class} has not been set
+      ERROR
+    end
+  end
+
+  def system_path
+    raise NotImplementedError
+  end
+end
+
