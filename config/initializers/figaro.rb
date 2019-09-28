@@ -36,6 +36,9 @@ Figaro.application = Figaro::Application.new(
 
 Figaro.load.each { |key, value| ENV[key] = value }
 
+# TODO: Prune these
+# These are the old required keys. They need to be pruned as not all of them
+# will be required moving forward
 Figaro.require_keys 'content_base_path',
                     'app_base_url',
                     'kickstart_base_path',
@@ -44,4 +47,7 @@ Figaro.require_keys 'content_base_path',
                     'pxelinux_base_path',
                     'initrd_kernel_base_url',
                     'initrd_kernel_base_path'
+
+Figaro.require_keys 'base_storage_path',
+                    'base_download_url'
 

@@ -17,6 +17,20 @@
 app_base_url:
 
 # =============================================================================
+# Base Storage Path
+# Specify the path on the server where the uploaded files will be stored. Note
+# this is different to the system location of some of the file types. The
+# system location will be handled via a symlink
+# =============================================================================
+base_storage_path:
+
+# =============================================================================
+# Base Download URL
+# This URL should point to a mount that services the storage path of the files
+# All files must be downloadable as it is required by the editing feature.
+# =============================================================================
+base_download_url:
+
 # Content Base Path
 # Set the locations the internal configuration files will be stored at
 # =============================================================================
