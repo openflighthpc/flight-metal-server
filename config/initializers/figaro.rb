@@ -41,13 +41,12 @@ Figaro.load.each { |key, value| ENV[key] = value }
 # will be required moving forward
 Figaro.require_keys 'content_base_path',
                     'app_base_url',
-                    'kickstart_base_path',
-                    'kickstart_base_url',
                     'uefi_base_path',
                     'pxelinux_base_path',
                     'initrd_kernel_base_url',
                     'initrd_kernel_base_path'
 
 Figaro.require_keys 'base_storage_path',
-                    'base_download_url'
+                    'base_download_url',
+                    'kickstart_base_system_path'
 

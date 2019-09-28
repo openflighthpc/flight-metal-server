@@ -49,16 +49,19 @@ class FileSerializer < Serializer
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
+class DownloadableFileModelSerializer < Serializer
+  attributes :size, :storage_path, :download_url
+  attribute(:uploaded) { |s| s.object.uploaded? }
+end
+
+class KickstartSerializer < DownloadableFileModelSerializer; end
+
 class InitrdKernelSerializer < Serializer
   attributes :kernel_size, :initrd_size, :initrd_url, :kernel_url
   attribute(:kernel_path) { |s| s.object.kernel_system_path }
   attribute(:kernel_uploaded) { |s| s.object.kernel_uploaded? }
   attribute(:initrd_uploaded) { |s| s.object.initrd_uploaded? }
   attribute(:initrd_path) { |s| s.object.initrd_system_path }
-end
-
-class KickstartSerializer < FileSerializer
-  attribute(:download) { |s| s.object.system_url }
 end
 
 class UefiSerializer < FileSerializer; end

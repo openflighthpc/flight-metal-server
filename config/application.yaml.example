@@ -38,15 +38,6 @@ base_download_url:
 content_base_path:
 
 # =============================================================================
-# Kickstart Base Path and URL
-# Set the base path where the actual kickstart file is stored. This will likely
-# be on an apache or nginx server. The base part of the URL must be
-# independently set
-# =============================================================================
-kickstart_base_path:
-kickstart_base_url:
-
-# =============================================================================
 # UEFI Base Path
 # The base system location to save the uefi files. The filename will
 # automatically be prefixed with grub.cfg- followed by the files id

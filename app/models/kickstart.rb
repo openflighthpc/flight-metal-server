@@ -29,29 +29,21 @@
 
 require 'uri'
 
-class Kickstart < FileModel
-  class << self
-    attr_writer :base_url
-
-    def path(id)
-      File.join(content_base_path, 'kickstarts', id + '.yaml')
-    end
-
-    def base_url
-      @base_url || raise('The kickstart base url has not been set')
-    end
+class Kickstart < DownloadableFileModel
+  def self.path(id)
+    File.join(content_base_path, 'kickstarts', id + '.yaml')
   end
 
   def id
     __inputs__[0]
   end
 
-  def system_path
-    File.join(self.class.base_path, name + '.ks')
+  def type
+    'kickstarts'
   end
 
-  def system_url
-    URI(self.class.base_url) + (name + '.ks')
+  def filename
+    "#{id}.ks"
   end
 end
 
