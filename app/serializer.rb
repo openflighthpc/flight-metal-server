@@ -60,6 +60,7 @@ end
 
 class KickstartSerializer < DownloadableFileModelSerializer; end
 class PxelinuxSerializer < SystemFileModelSerializer; end
+class UefiSerializer < SystemFileModelSerializer; end
 
 class InitrdKernelSerializer < Serializer
   attributes :kernel_size, :initrd_size, :initrd_url, :kernel_url
@@ -69,5 +70,4 @@ class InitrdKernelSerializer < Serializer
   attribute(:initrd_path) { |s| s.object.initrd_system_path }
 end
 
-class UefiSerializer < FileSerializer; end
 

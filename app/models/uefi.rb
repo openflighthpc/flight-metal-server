@@ -27,19 +27,27 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Uefi < FileModel
-  class << self
-    def path(id)
-      File.join(content_base_path, 'uefis', id + '.yaml')
-    end
+class Uefi < DownloadableFileModel
+  include SystemFile
+
+  def self.path(id)
+    File.join(content_base_path, 'uefis', id + '.yaml')
   end
 
   def id
     __inputs__[0]
   end
 
+  def type
+    'uefis'
+  end
+
+  def filename
+    "grub.cfg-#{id}"
+  end
+
   def system_path
-    File.join(self.class.base_path, 'grub.cfg-' + id)
+    File.join(self.class.base_system_path, filename)
   end
 end
 

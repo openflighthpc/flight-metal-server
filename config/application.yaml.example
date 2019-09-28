@@ -38,11 +38,11 @@ base_download_url:
 content_base_path:
 
 # =============================================================================
-# UEFI Base Path
+# UEFI Base System Path
 # The base system location to save the uefi files. The filename will
 # automatically be prefixed with grub.cfg- followed by the files id
 # =============================================================================
-uefi_base_path:
+uefi_base_system_path:
 
 # =============================================================================
 # Pxelinux Base System Path

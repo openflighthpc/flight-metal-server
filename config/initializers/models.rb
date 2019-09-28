@@ -39,8 +39,8 @@ DownloadableFileModel.base_storage_path = Figaro.env.base_storage_path
 DownloadableFileModel.base_download_url = Figaro.env.base_download_url
 
 Pxelinux.base_system_path      = Figaro.env.pxelinux_base_system_path
+Uefi.base_system_path          = Figaro.env.uefi_base_system_path
 
-Uefi.base_path          = Figaro.env.uefi_base_path
 InitrdKernel.base_path  = Figaro.env.initrd_kernel_base_path
 InitrdKernel.base_url   = Figaro.env.initrd_kernel_base_url
 
