@@ -80,66 +80,24 @@ class App < Sinatra::Base
     end
   end
 
-  resource :kickstarts, pkre: /\w+/ do
-    include UploadRoutes
+  [Kickstart, Pxelinux, Uefi].each do |klass|
+    resource klass.type, pkre: /\w+/ do
+      include UploadRoutes
 
-    helpers do
-      def find(id)
-        Kickstart.exists?(id) ? Kickstart.read(id) : nil
+      def find
+        klass.exists?(id) ? klass.read(id) : nil
       end
-    end
 
-    show
+      show
 
-    index do
-      Kickstart.glob_read('*')
-    end
-
-    create do |_attr, id|
-      kickstart = find(id) || Kickstart.create(id)
-      next kickstart.id, kickstart
-    end
-  end
-
-  resource :uefi, pkre: /\w+/ do
-    include UploadRoutes
-
-    helpers do
-      def find(id)
-        Uefi.exists?(id) ? Uefi.read(id) : nil
+      index do
+        klass.glob_read('*')
       end
-    end
 
-    show
-
-    index do
-      Uefi.glob_read('*')
-    end
-
-    create do |_attr, id|
-      uefi = find(id) || Uefi.create(id)
-      next uefi.id, uefi
-    end
-  end
-
-  resource :pxelinux, pkre: /\w+/ do
-    include UploadRoutes
-
-    helpers do
-      def find(id)
-        Pxelinux.exists?(id) ? Pxelinux.read(id) : nil
+      create do |_attr, id|
+        model = find(id) || klass.create(id)
+        next model.id, model
       end
-    end
-
-    show
-
-    index do
-      Pxelinux.glob_read('*')
-    end
-
-    create do |_attr, id|
-      pxelinux = find(id) || Pxelinux.create(id)
-      next pxelinux.id, pxelinux
     end
   end
 

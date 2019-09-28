@@ -34,12 +34,12 @@ class Kickstart < DownloadableFileModel
     File.join(content_base_path, 'kickstarts', id + '.yaml')
   end
 
-  def id
-    __inputs__[0]
+  def self.type
+    'kickstarts'
   end
 
-  def type
-    'kickstarts'
+  def id
+    __inputs__[0]
   end
 
   def filename

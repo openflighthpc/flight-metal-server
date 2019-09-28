@@ -34,12 +34,12 @@ class Pxelinux < DownloadableFileModel
     File.join(content_base_path, 'pxelinux', id + '.yaml')
   end
 
-  def id
-    __inputs__[0]
+  def self.type
+    'pxelinuxes'
   end
 
-  def type
-    'pxelinuxes'
+  def id
+    __inputs__[0]
   end
 
   def filename

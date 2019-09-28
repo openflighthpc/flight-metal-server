@@ -34,12 +34,12 @@ class Uefi < DownloadableFileModel
     File.join(content_base_path, 'uefis', id + '.yaml')
   end
 
-  def id
-    __inputs__[0]
+  def self.type
+    'uefis'
   end
 
-  def type
-    'uefis'
+  def id
+    __inputs__[0]
   end
 
   def filename
