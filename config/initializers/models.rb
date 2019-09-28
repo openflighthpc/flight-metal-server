@@ -32,6 +32,7 @@ require 'app/model'
 require 'app/models/kickstart'
 require 'app/models/uefi'
 require 'app/models/pxelinux'
+require 'app/models/kernel'
 require 'app/models/initrd_kernel'
 
 Model.content_base_path = Figaro.env.content_base_path

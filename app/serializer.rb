@@ -41,6 +41,10 @@ class Serializer
   def base_url
     Serializer.base_url
   end
+
+  def type
+    object.class.type
+  end
 end
 
 class FileSerializer < Serializer
@@ -59,6 +63,8 @@ class SystemFileModelSerializer < DownloadableFileModelSerializer
 end
 
 class KickstartSerializer < DownloadableFileModelSerializer; end
+class KernelFileSerializer < DownloadableFileModelSerializer; end
+
 class PxelinuxSerializer < SystemFileModelSerializer; end
 class UefiSerializer < SystemFileModelSerializer; end
 

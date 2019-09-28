@@ -27,15 +27,13 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Uefi < DownloadableFileModel
-  include SystemFile
-
+class KernelFile < DownloadableFileModel
   def self.path(id)
     File.join(content_base_path, type, id + '.yaml')
   end
 
   def self.type
-    'uefis'
+    'kernels'
   end
 
   def id
@@ -43,11 +41,7 @@ class Uefi < DownloadableFileModel
   end
 
   def filename
-    "grub.cfg-#{id}"
-  end
-
-  def system_path
-    File.join(self.class.base_system_path, filename)
+    "#{id}.kernel"
   end
 end
 
