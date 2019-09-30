@@ -87,7 +87,24 @@ end
 # phased-in in stages
 class DownloadableFileModel < Model
   class << self
-    attr_writer :base_path, :base_url
+    attr_writer :base_url
+
+    def inherited(subclass)
+      DownloadableFileModel.inherited_classes << subclass
+    end
+
+    def inherited_classes
+      @inherited_classes ||= []
+    end
+
+    def modified_base_path_classes
+      @modified_base_path ||= []
+    end
+
+    def base_path=(value)
+      DownloadableFileModel.modified_base_path_classes << self unless self == DownloadableFileModel
+      @base_path = value
+    end
 
     def base_path
       if self == DownloadableFileModel && !@base_path

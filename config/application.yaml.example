@@ -29,11 +29,12 @@ content_base_path:
 nginx_server_name:
 
 # =============================================================================
-# Default Base Download Path
+# Default System Dir
 # The default directory to server over the nginx server. File a stored within
-# sub directories according to their type
+# sub directories according to their type. Each file type's system can be
+# explicitly overridden using the <class>_system_dir config value (see below)
 # =============================================================================
-default_base_download_path:
+default_system_dir:
 
 # =============================================================================
 # Default Base Download URL
@@ -42,4 +43,18 @@ default_base_download_path:
 # <base_download_url>/<type>/<filename>
 # =============================================================================
 base_base_download_url:
+
+# =============================================================================
+# <class> System Dir
+# Override the system directory for a particular file model. The needs to be the
+# string version of the ruby model being overridden. The nginx routing to this
+# file type will automatically be updated next time the configs are rendered.
+#
+# Unlike the `default_system_dir`, the file type is not appended
+# automatically
+# =============================================================================
+# Examples:
+# Pxelinux_system_dir:
+# Uefi_system_dir:
+#
 
