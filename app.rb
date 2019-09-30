@@ -57,7 +57,7 @@ class App < Sinatra::Base
     end
   end
 
-  DownloadableFileModel.inherited_classes.each do |klass|
+  FileModel.inherited_classes.each do |klass|
     resource klass.type, pkre: /\w+/ do
       helpers do
         # The find method needs to be dynamically defined as the block preforms

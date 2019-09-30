@@ -54,12 +54,12 @@ end
 # TODO: Eventually make this a complete replacement to FileModel
 # All files need to follow this same pattern. However it will be
 # phased-in in stages
-class DownloadableFileModel < Model
+class FileModel < Model
   class << self
     attr_writer :base_url, :base_path
 
     def inherited(subclass)
-      DownloadableFileModel.inherited_classes << subclass
+      FileModel.inherited_classes << subclass
     end
 
     def inherited_classes
@@ -67,22 +67,22 @@ class DownloadableFileModel < Model
     end
 
     def base_path
-      if self == DownloadableFileModel && !@base_path
+      if self == FileModel && !@base_path
         raise "The base path has not been set"
       elsif @base_path
         @base_path
       else
-        File.join(DownloadableFileModel.base_path, type)
+        File.join(FileModel.base_path, type)
       end
     end
 
     def base_url
-      if self == DownloadableFileModel && !@base_url
+      if self == FileModel && !@base_url
         raise "The base url has not been set"
       elsif @base_url
         @base_url
       else
-        File.join(DownloadableFileModel.base_url, type)
+        File.join(FileModel.base_url, type)
       end
     end
 

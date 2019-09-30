@@ -27,7 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Initrd < DownloadableFileModel
+class Initrd < FileModel
   def self.path(id)
     File.join(content_base_path, type, id + '.yaml')
   end

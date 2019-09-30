@@ -36,10 +36,10 @@ require 'app/models/kernel_file'
 require 'app/models/initrd'
 
 Model.content_base_path = Figaro.env.content_base_path
-DownloadableFileModel.base_path = Figaro.env.default_system_dir
-DownloadableFileModel.base_url = Figaro.env.default_base_download_url
+FileModel.base_path = Figaro.env.default_system_dir
+FileModel.base_url = Figaro.env.default_base_download_url
 
-DownloadableFileModel.inherited_classes.each do |klass|
+FileModel.inherited_classes.each do |klass|
   value = ENV["#{klass.to_s}_system_dir"]
   klass.base_path = value if value
 end

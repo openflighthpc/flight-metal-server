@@ -27,7 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class KernelFile < DownloadableFileModel
+class KernelFile < FileModel
   def self.path(id)
     File.join(content_base_path, type, id + '.yaml')
   end

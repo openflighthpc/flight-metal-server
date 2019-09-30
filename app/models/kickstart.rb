@@ -29,7 +29,7 @@
 
 require 'uri'
 
-class Kickstart < DownloadableFileModel
+class Kickstart < FileModel
   def self.path(id)
     File.join(content_base_path, 'kickstarts', id + '.yaml')
   end
