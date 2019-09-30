@@ -110,7 +110,7 @@ class App < Sinatra::Base
 
   # Catch all reject all other authorize requests
   get('/authorize/*') do
-    binding.pry
+    raise Sinja::ForbiddenError
   end
 end
 
