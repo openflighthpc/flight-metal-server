@@ -80,7 +80,7 @@ class App < Sinatra::Base
     end
   end
 
-  [Kickstart, Pxelinux, Uefi, KernelFile].each do |klass|
+  DownloadableFileModel.inherited_classes.each do |klass|
     resource klass.type, pkre: /\w+/ do
       include UploadRoutes
 
