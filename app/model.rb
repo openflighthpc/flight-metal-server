@@ -87,7 +87,7 @@ end
 # phased-in in stages
 class DownloadableFileModel < Model
   class << self
-    attr_writer :base_url
+    attr_writer :base_url, :base_path
 
     def inherited(subclass)
       DownloadableFileModel.inherited_classes << subclass
@@ -95,10 +95,6 @@ class DownloadableFileModel < Model
 
     def inherited_classes
       @inherited_classes ||= []
-    end
-
-    def base_path=(value)
-      @base_path = value
     end
 
     def base_path
