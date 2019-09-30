@@ -16,6 +16,22 @@
 # =============================================================================
 app_base_url:
 
+
+# =============================================================================
+# API Port
+# Optional
+# Switch the API to run over a port on localhost instead of a unix socket.
+# The nginx config will need to be renendered. This is typically used when
+# unicorn is running on port 8080
+#
+# To start the unicorn server with a unix socket:
+# bundle exec unicorn -c /path/to/app/unicorn.rb
+#
+# To start the unicorn server on port 8080:
+# bundle exec unicorn
+# =============================================================================
+# api_port: 8080
+
 # =============================================================================
 # Content Base Path
 # Set the locations the internal configuration files will be stored at
