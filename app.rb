@@ -85,7 +85,10 @@ class App < Sinatra::Base
       include UploadRoutes
 
       helpers do
-        def find
+        # The find method needs to be dynamically defined as the block preforms
+        # a closure around the parent context. This way the `klass` variable is
+        # available inside the block
+        define_method(:find) do |id|
           klass.exists?(id) ? klass.read(id) : nil
         end
       end
