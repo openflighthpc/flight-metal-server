@@ -35,6 +35,7 @@ Figaro.application = Figaro::Application.new(
 )
 
 Figaro.load.each { |key, value| ENV[key] = value }
+ENV['app_root_dir'] ||= File.expand_path('../..', __dir__)
 
 # TODO: Prune these
 # These are the old required keys. They need to be pruned as not all of them
@@ -44,8 +45,10 @@ Figaro.require_keys 'content_base_path',
                     'initrd_kernel_base_url',
                     'initrd_kernel_base_path'
 
-Figaro.require_keys 'base_storage_path',
+Figaro.require_keys 'app_root_dir',
+                    'base_storage_path',
                     'base_download_url',
                     'pxelinux_base_system_path',
-                    'uefi_base_system_path'
+                    'uefi_base_system_path',
+                    'nginx_server_name'
 

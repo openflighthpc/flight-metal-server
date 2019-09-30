@@ -16,6 +16,13 @@
 # =============================================================================
 app_base_url:
 
+
+# =============================================================================
+# NGINX Server Name
+# The name given to nginx as its server name
+# =============================================================================
+nginx_server_name:
+
 # =============================================================================
 # Base Storage Path
 # Specify the path on the server where the uploaded files will be stored. Note

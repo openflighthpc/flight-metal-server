@@ -45,6 +45,13 @@ task :require do
   require 'app/middleware/set_content_headers'
 end
 
+task 'render:nginx' => :require do
+  require 'erb'
+
+  template = File.read(File.expand_path('nginx.conf.template', __dir__))
+  puts ERB.new(template, nil, '-').result(binding)
+end
+
 task console: :require do
   binding.pry
 end
