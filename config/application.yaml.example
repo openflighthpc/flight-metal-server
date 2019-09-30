@@ -56,5 +56,7 @@ base_base_download_url:
 # Examples:
 # Pxelinux_system_dir:
 # Uefi_system_dir:
+# KernelFile_system_dir:
+# Initrd_system_dir:
 #
 
