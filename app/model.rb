@@ -97,12 +97,7 @@ class DownloadableFileModel < Model
       @inherited_classes ||= []
     end
 
-    def modified_base_path_classes
-      @modified_base_path ||= []
-    end
-
     def base_path=(value)
-      DownloadableFileModel.modified_base_path_classes << self unless self == DownloadableFileModel
       @base_path = value
     end
 
