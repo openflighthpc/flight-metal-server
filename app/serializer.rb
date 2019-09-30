@@ -47,12 +47,6 @@ class Serializer
   end
 end
 
-class FileSerializer < Serializer
-  attributes :size
-  attribute(:path) { |s| s.object.system_path }
-  attribute(:uploaded) { |s| s.object.uploaded? }
-end
-
 class DownloadableFileModelSerializer < Serializer
   attributes :size, :system_path, :download_url
   attribute(:uploaded) { |s| s.object.uploaded? }

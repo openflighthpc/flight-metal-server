@@ -51,37 +51,6 @@ class Model
   end
 end
 
-class FileModel < Model
-  class << self
-    attr_writer :base_path
-
-    # NOTE: Deprecated, the file path are being standardized
-    def base_path
-      @base_path || raise("The #{self} base path has not been set")
-    end
-  end
-
-  def system_path
-    raise NotImplementedError
-  end
-
-  # alias and alias_method are not being used as they do not play
-  # well with inheritance. Also I can never remember the difference
-  # between the two
-  def name
-    id
-  end
-
-  def uploaded?
-    File.exists?(system_path)
-  end
-
-  def size
-    return 0 unless uploaded?
-    File.size system_path
-  end
-end
-
 # TODO: Eventually make this a complete replacement to FileModel
 # All files need to follow this same pattern. However it will be
 # phased-in in stages
