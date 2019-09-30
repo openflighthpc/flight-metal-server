@@ -27,18 +27,25 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-source "https://rubygems.org"
+#
+# Based of Sinatra + Nginx + Unicorn recipe:
+# http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn
+#
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+@dir = __dir__
 
-gem 'sinatra'
-gem 'sinja'
-gem 'figaro'
-gem 'flight_config'
-gem 'rake'
+worker_processes 2
+working_directory @dir
 
-gem 'unicorn'
+timeout 30
 
-gem 'pry'
-gem 'pry-byebug'
+# Specify path to socket unicorn listens to,
+# we will use this in our nginx.conf later
+listen "#{@dir}tmp/sockets/unicorn.sock", :backlog => 64
 
+# Set process id path
+pid "#{@dir}tmp/pids/unicorn.pid"
+
+# Set log file paths
+stderr_path "#{@dir}log/unicorn.stderr.log"
+stdout_path "#{@dir}log/unicorn.stdout.log"
