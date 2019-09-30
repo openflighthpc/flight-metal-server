@@ -44,7 +44,6 @@ Figaro.require_keys 'content_base_path',
                     'app_base_url'
 
 Figaro.require_keys 'app_root_dir',
-                    'nginx_server_name',
                     'default_system_dir',
                     'default_base_download_url'
 
