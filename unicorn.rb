@@ -32,7 +32,7 @@
 # http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn
 #
 
-@dir = __dir__
+@dir = File.expand_path('.', __dir__)
 
 worker_processes 2
 working_directory @dir
@@ -41,11 +41,11 @@ timeout 30
 
 # Specify path to socket unicorn listens to,
 # we will use this in our nginx.conf later
-listen "#{@dir}tmp/sockets/unicorn.sock", :backlog => 64
+listen File.join(@dir, 'tmp/sockets/unicorn.sock'), :backlog => 64
 
 # Set process id path
-pid "#{@dir}tmp/pids/unicorn.pid"
+pid File.join(@dir, '/tmp/pids/unicorn.pid')
 
 # Set log file paths
-stderr_path "#{@dir}log/unicorn.stderr.log"
-stdout_path "#{@dir}log/unicorn.stdout.log"
+stderr_path File.join(@dir, 'log/unicorn.stderr.log')
+stdout_path File.join(@dir, '/log/unicorn.stdout.log')
