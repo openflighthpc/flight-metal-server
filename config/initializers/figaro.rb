@@ -41,14 +41,10 @@ ENV['app_root_dir'] ||= File.expand_path('../..', __dir__)
 # These are the old required keys. They need to be pruned as not all of them
 # will be required moving forward
 Figaro.require_keys 'content_base_path',
-                    'app_base_url',
-                    'initrd_kernel_base_url',
-                    'initrd_kernel_base_path'
+                    'app_base_url'
 
 Figaro.require_keys 'app_root_dir',
-                    'base_storage_path',
-                    'base_download_url',
-                    'pxelinux_base_system_path',
-                    'uefi_base_system_path',
-                    'nginx_server_name'
+                    'nginx_server_name',
+                    'default_base_download_path',
+                    'default_base_download_url'
 

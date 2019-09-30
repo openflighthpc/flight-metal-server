@@ -87,18 +87,26 @@ end
 # phased-in in stages
 class DownloadableFileModel < Model
   class << self
-    attr_writer :base_storage_path, :base_download_url
+    attr_writer :base_path, :base_url
 
-    def base_storage_path
-      DownloadableFileModel.instance_variable_get(:@base_storage_path) || raise(<<~ERROR.chomp)
-        The base storage path for the models has not been set
-      ERROR
+    def base_path
+      if self == DownloadableFileModel && !@base_path
+        raise "The base path has not been set"
+      elsif @base_path
+        @base_path
+      else
+        File.join(DownloadableFileModel.base_path, type)
+      end
     end
 
-    def base_download_url
-      DownloadableFileModel.instance_variable_get(:@base_download_url) || raise(<<~ERROR.chomp)
-        The base download url has not been set
-      ERROR
+    def base_url
+      if self == DownloadableFileModel && !@base_url
+        raise "The base url has not been set"
+      elsif @base_url
+        @base_url
+      else
+        File.join(DownloadableFileModel.base_url, type)
+      end
     end
 
     # This is used by the serializer to define the type
@@ -116,41 +124,21 @@ class DownloadableFileModel < Model
     raise NotImplementedError
   end
 
-  def storage_path
-    File.join(self.class.base_storage_path, self.class.type, filename)
+  def system_path
+    File.join(self.class.base_path, filename)
   end
 
   def download_url
-    File.join(self.class.base_download_url, self.class.type, filename)
+    File.join(self.class.base_url, filename)
   end
 
   def uploaded?
-    File.exists? storage_path
+    File.exists? system_path
   end
 
   def size
     return 0 unless uploaded?
-    File.size storage_path
-  end
-end
-
-module SystemFile
-  def self.included(base)
-    base.extend(ClassMethods)
-  end
-
-  module ClassMethods
-    attr_writer :base_system_path
-
-    def base_system_path
-      @base_system_path || raise(<<~ERROR.chomp)
-        The base system path for #{self.class} has not been set
-      ERROR
-    end
-  end
-
-  def system_path
-    raise NotImplementedError
+    File.size system_path
   end
 end
 

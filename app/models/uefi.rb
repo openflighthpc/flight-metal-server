@@ -28,8 +28,6 @@
 #===============================================================================
 
 class Uefi < DownloadableFileModel
-  include SystemFile
-
   def self.path(id)
     File.join(content_base_path, type, id + '.yaml')
   end
@@ -44,10 +42,6 @@ class Uefi < DownloadableFileModel
 
   def filename
     "grub.cfg-#{id}"
-  end
-
-  def system_path
-    File.join(self.class.base_system_path, filename)
   end
 end
 

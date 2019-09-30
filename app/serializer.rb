@@ -54,19 +54,14 @@ class FileSerializer < Serializer
 end
 
 class DownloadableFileModelSerializer < Serializer
-  attributes :size, :storage_path, :download_url
+  attributes :size, :system_path, :download_url
   attribute(:uploaded) { |s| s.object.uploaded? }
-end
-
-class SystemFileModelSerializer < DownloadableFileModelSerializer
-  attributes :system_path
 end
 
 class KickstartSerializer < DownloadableFileModelSerializer; end
 class KernelFileSerializer < DownloadableFileModelSerializer; end
-
-class PxelinuxSerializer < SystemFileModelSerializer; end
-class UefiSerializer < SystemFileModelSerializer; end
+class PxelinuxSerializer < DownloadableFileModelSerializer; end
+class UefiSerializer < DownloadableFileModelSerializer; end
 
 class InitrdKernelSerializer < Serializer
   attributes :kernel_size, :initrd_size, :initrd_url, :kernel_url

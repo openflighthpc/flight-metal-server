@@ -16,6 +16,11 @@
 # =============================================================================
 app_base_url:
 
+# =============================================================================
+# Content Base Path
+# Set the locations the internal configuration files will be stored at
+# =============================================================================
+content_base_path:
 
 # =============================================================================
 # NGINX Server Name
@@ -24,45 +29,17 @@ app_base_url:
 nginx_server_name:
 
 # =============================================================================
-# Base Storage Path
-# Specify the path on the server where the uploaded files will be stored. Note
-# this is different to the system location of some of the file types. The
-# system location will be handled via a symlink
+# Default Base Download Path
+# The default directory to server over the nginx server. File a stored within
+# sub directories according to their type
 # =============================================================================
-base_storage_path:
+default_base_download_path:
 
 # =============================================================================
-# Base Download URL
-# This URL should point to a mount that services the storage path of the files
-# All files must be downloadable as it is required by the editing feature.
+# Default Base Download URL
+# The default download url pointing to the download server. The files are stored
+# according to type with the following URI pattern:
+# <base_download_url>/<type>/<filename>
 # =============================================================================
-base_download_url:
-
-# =============================================================================
-# Content Base Path
-# Set the locations the internal configuration files will be stored at
-# =============================================================================
-content_base_path:
-
-# =============================================================================
-# UEFI Base System Path
-# The base system location to save the uefi files. The filename will
-# automatically be prefixed with grub.cfg- followed by the files id
-# =============================================================================
-uefi_base_system_path:
-
-# =============================================================================
-# Pxelinux Base System Path
-# The base system location to save the pxelinux config files. The filename is
-# the same as the id
-# =============================================================================
-pxelinux_base_system_path:
-
-# =============================================================================
-# Initrd Kernel Base and URL Path
-# The base location to store the kernerl and initrd. This should be located
-# on some form of file server that can be reached by the base url
-# =============================================================================
-initrd_kernel_base_path:
-initrd_kernel_base_url:
+base_base_download_url:
 

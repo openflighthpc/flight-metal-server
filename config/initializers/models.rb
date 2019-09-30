@@ -36,12 +36,6 @@ require 'app/models/kernel'
 require 'app/models/initrd_kernel'
 
 Model.content_base_path = Figaro.env.content_base_path
-DownloadableFileModel.base_storage_path = Figaro.env.base_storage_path
-DownloadableFileModel.base_download_url = Figaro.env.base_download_url
-
-Pxelinux.base_system_path      = Figaro.env.pxelinux_base_system_path
-Uefi.base_system_path          = Figaro.env.uefi_base_system_path
-
-InitrdKernel.base_path  = Figaro.env.initrd_kernel_base_path
-InitrdKernel.base_url   = Figaro.env.initrd_kernel_base_url
+DownloadableFileModel.base_path = Figaro.env.default_base_download_path
+DownloadableFileModel.base_url = Figaro.env.default_base_download_url
 
