@@ -31,29 +31,6 @@ require 'sinatra/base'
 require 'sinatra/jsonapi'
 
 class App < Sinatra::Base
-  class UploadOnlyError < Sinja::BadRequestError
-    DEFAULT_MESSAGE = <<~MSG.chomp
-      This is an upload only path. Please POST the file content to this URL
-    MSG
-
-    def initialize(msg = DEFAULT_MESSAGE)
-      super
-    end
-  end
-
-  module UploadRoutes
-    def self.included(base)
-      base.class_exec do
-        get('/:id/upload') { raise UploadOnlyError }
-
-        post('/:id/upload') do
-          write_octet_stream(resource.system_path)
-          serialize_model(resource)
-        end
-      end
-    end
-  end
-
   register Sinatra::JSONAPI
 
   helpers do
@@ -82,8 +59,6 @@ class App < Sinatra::Base
 
   DownloadableFileModel.inherited_classes.each do |klass|
     resource klass.type, pkre: /\w+/ do
-      include UploadRoutes
-
       helpers do
         # The find method needs to be dynamically defined as the block preforms
         # a closure around the parent context. This way the `klass` variable is
@@ -102,6 +77,17 @@ class App < Sinatra::Base
       create do |_attr, id|
         model = find(id) || klass.create(id)
         next model.id, model
+      end
+
+      get('/:id/upload') do
+        raise Sinja::BadRequestError, <<~ERROR.chomp
+          This is an upload only route. Please POST the file content to this URL
+        ERROR
+      end
+
+      post('/:id/upload') do
+        write_octet_stream(resource.system_path)
+        serialize_model(resource)
       end
     end
   end
