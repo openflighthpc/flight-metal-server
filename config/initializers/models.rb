@@ -33,7 +33,7 @@ require 'app/models/kickstart'
 require 'app/models/uefi'
 require 'app/models/pxelinux'
 require 'app/models/kernel_file'
-require 'app/models/initrd_kernel'
+require 'app/models/initrd'
 
 Model.content_base_path = Figaro.env.content_base_path
 DownloadableFileModel.base_path = Figaro.env.default_system_dir

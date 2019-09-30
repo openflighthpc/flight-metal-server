@@ -27,64 +27,21 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'uri'
+class Initrd < DownloadableFileModel
+  def self.path(id)
+    File.join(content_base_path, type, id + '.yaml')
+  end
 
-class InitrdKernel < Model
-  class << self
-    attr_writer :base_path, :base_url
-
-    def path(id)
-      File.join(content_base_path, 'initrd-kernel', id + '.yaml')
-    end
-
-    def base_path
-      @base_path || raise("The #{self} base path has not been set")
-    end
-
-    def base_url
-      @base_url || raise('The Initrdkernerl base url has not been set')
-    end
+  def self.type
+    'initrds'
   end
 
   def id
     __inputs__[0]
   end
 
-  def name
-    id
-  end
-
-  def kernel_url
-    URI(self.class.base_url) + (id + '.kernel')
-  end
-
-  def initrd_url
-    URI(self.class.base_url) + (id + '.initrd')
-  end
-
-  def kernel_system_path
-    File.join(self.class.base_path, id + '.kernel')
-  end
-
-  def initrd_system_path
-    File.join(self.class.base_path, id + '.initrd')
-  end
-
-  def kernel_uploaded?
-    File.exists? kernel_system_path
-  end
-
-  def initrd_uploaded?
-    File.exists? initrd_system_path
-  end
-
-  def kernel_size
-    return 0 unless kernel_uploaded?
-    File.size kernel_system_path
-  end
-
-  def initrd_size
-    return 0 unless initrd_uploaded?
-    File.size initrd_system_path
+  def filename
+    "#{id}.initrd"
   end
 end
+
