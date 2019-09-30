@@ -54,7 +54,7 @@ task 'render:nginx' => :require do
   File.write('/etc/nginx/default.d/metal-server.conf', rendered)
 
   # Render the Upstream file
-  template = File.read(File.expand_path('templates/nginx-app-upstream.conf', __dir__))
+  template = File.read(File.expand_path('templates/nginx-http-include.conf', __dir__))
   rendered = ERB.new(template, nil, '-').result(binding)
   File.write('/etc/nginx/conf.d/metal-server.conf', rendered)
 end

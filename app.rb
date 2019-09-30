@@ -58,6 +58,22 @@ class App < Sinatra::Base
   end
 
   FileModel.inherited_classes.each do |klass|
+    filename_regex = /\A#{klass.new('(?<id>.*)').filename}\Z/
+
+    find_from_filename = proc do |filename|
+      next nil unless filename_regex.match?(filename)
+      id = filename_regex.match(filename)['id']
+      klass.exists?(id) ? klass.read(id) : nil
+    end
+
+    get("/authorize/download/#{klass.type}/:filename") do
+      if find_from_filename.call(params[:filename])
+        return 201
+      else
+        raise Sinja::ForbiddenError
+      end
+    end
+
     resource klass.type, pkre: /\w+/ do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
@@ -90,6 +106,11 @@ class App < Sinatra::Base
         serialize_model(resource)
       end
     end
+  end
+
+  # Catch all reject all other authorize requests
+  get('/authorize/*') do
+    binding.pry
   end
 end
 
