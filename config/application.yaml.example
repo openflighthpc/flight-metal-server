@@ -38,6 +38,19 @@ app_base_url:
 content_base_path:
 
 # =============================================================================
+# Temporary File Directory
+# Set the location where temporary files are stored. This is used by the
+# unicorn unix socket, upload store and default logging. [Eventually, Hopefully]
+# =============================================================================
+temporary_directory:
+
+# =============================================================================
+# Temporary File Directory
+# Set the location where temporary files are stored. This is used by the
+# unicorn unix socket, upload store and default logging. [Eventually, Hopefully)
+# =============================================================================
+
+# =============================================================================
 # Default System Dir
 # The default directory to server over the nginx server. File a stored within
 # sub directories according to their type. Each file type's system can be
@@ -51,7 +64,7 @@ default_system_dir:
 # according to type with the following URI pattern:
 # <base_download_url>/<type>/<filename>
 # =============================================================================
-base_base_download_url:
+default_base_download_url:
 
 # =============================================================================
 # <class> System Dir

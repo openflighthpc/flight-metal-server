@@ -45,5 +45,6 @@ Figaro.require_keys 'content_base_path',
 
 Figaro.require_keys 'app_root_dir',
                     'default_system_dir',
-                    'default_base_download_url'
+                    'default_base_download_url',
+                    'temporary_directory'
 
