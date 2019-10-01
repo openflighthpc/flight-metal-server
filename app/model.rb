@@ -125,6 +125,10 @@ class FileModel < Model
       exists?(*inputs) ? read(*inputs) : nil
     end
 
+    def perl_match_all_filename
+      @perl_match_all_filename ||= new(*(0...input_arity).map { '.*' }).filename
+    end
+
     private
 
     def filename_regex
