@@ -116,7 +116,8 @@ class App < Sinatra::Base
 
   FileModel.inherited_classes.each do |klass|
     get("/authorize/download/#{klass.type}/:filename") do
-      if klass.find_from_filename(params[:filename])
+      valid_role = [:user, :admin].include?(role)
+      if klass.find_from_filename(params[:filename]) && valid_role
         return 201
       else
         raise Sinja::ForbiddenError
@@ -145,9 +146,7 @@ class App < Sinatra::Base
       end
 
       get('/:id/upload') do
-        raise Sinja::BadRequestError, <<~ERROR.chomp
-          This is an upload only route. Please POST the file content to this URL
-        ERROR
+        raise Sinja::MethodNotAllowedError
       end
 
       post('/:id/upload') do
