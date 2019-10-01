@@ -129,7 +129,7 @@ class FileModel < Model
       @perl_match_all_filename ||= begin
         glob_all = '<_GLOB_ALL_>'
         raw = new(*(0...input_arity).map { glob_all }).filename
-        Regexp.escape(raw).gsub(glob_all, '.*')
+        Regexp.escape(raw).gsub(glob_all, '[^/]*')
       end
     end
 
@@ -137,7 +137,7 @@ class FileModel < Model
 
     def filename_regex
       @filename_regex ||= begin
-        parts = input_keys.map { |k| "(?<#{k}>.*)" }
+        parts = input_keys.map { |k| "(?<#{k}>[^/]*)" }
         /\A#{new(*parts).filename}\Z/
       end
     end
