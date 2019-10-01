@@ -31,6 +31,8 @@ require 'hashie'
 require 'jwt'
 
 class User < Hashie::Dash
+	include Hashie::Extensions::Dash::PropertyTranslation
+
   class << self
     attr_writer :jwt_shared_secret
 
@@ -45,7 +47,7 @@ class User < Hashie::Dash
                            jwt_shared_secret,
                            true,
                            { algorithm: 'HS256' })
-      new(**body['data'])
+      new(**body.symbolize_keys)
     rescue JWT::ExpiredSignature
       raise Sinja::UnauthorizedError, 'Your authorization token has expired'
     rescue JWT::InvalidIatError
@@ -62,6 +64,13 @@ class User < Hashie::Dash
 
   property :user, default: false
   property :admin, default: false
+  property :exp, default: nil, transform_with: ->(value) do
+    if value.nil?
+      30.days.from_now.to_i
+    else
+      value.to_i
+    end
+  end
 
   def generate_jwt
     JWT.encode(self.to_h, self.class.jwt_shared_secret, 'HS256')
