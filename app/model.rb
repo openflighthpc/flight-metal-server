@@ -56,28 +56,6 @@ end
 # phased-in in stages
 
 class FileModel < Model
-  module SingleIDInput
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
-
-    module ClassMethods
-      def path(id)
-        File.join(content_base_path, type, id + '.yaml')
-      end
-
-      private
-
-      def input_arity
-        1
-      end
-    end
-
-    def id
-      __inputs__[0]
-    end
-  end
-
   class << self
     attr_writer :base_url, :base_path
 
@@ -181,6 +159,20 @@ end
 class SingleIDFileModel < FileModel
   abstract_class
 
-  include SingleIDInput
+  class << self
+    def path(id)
+      File.join(content_base_path, type, id + '.yaml')
+    end
+
+    private
+
+    def input_arity
+      1
+    end
+  end
+
+  def id
+    __inputs__[0]
+  end
 end
 
