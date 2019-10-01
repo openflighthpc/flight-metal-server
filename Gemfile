@@ -36,6 +36,8 @@ gem 'sinja'
 gem 'figaro'
 gem 'flight_config'
 gem 'rake'
+gem 'hashie'
+gem 'jwt'
 
 gem 'unicorn'
 

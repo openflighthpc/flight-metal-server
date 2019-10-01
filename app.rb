@@ -28,10 +28,22 @@
 #===============================================================================
 
 require 'sinatra/base'
+require "sinatra/cookies"
 require 'sinatra/jsonapi'
 
+module Sinja
+  class UnauthorizedError < HttpError
+    HTTP_STATUS = 401
+
+    def initialize(*args) super(HTTP_STATUS, *args) end
+  end
+end
+
 class App < Sinatra::Base
+  BEARER_REGEX = /\ABearer\s(?<token>.*)\Z/
+
   register Sinatra::JSONAPI
+  helpers  Sinatra::Cookies
 
   configure_jsonapi do |c|
     # Resource roles
@@ -84,7 +96,21 @@ class App < Sinatra::Base
     end
 
     def role
-      :user
+      User.from_jwt(token).role
+    end
+
+    private
+
+    def token
+      if bearer_match = BEARER_REGEX.match(env['HTTP_AUTHORIZATION'] || '')
+        bearer_match[:token]
+      elsif cookie = cookies[:bearer]
+        cookie
+      else
+        raise Sinja::UnauthorizedError, <<~ERROR.squish
+          The HTTP Authorization Bearer Header has not been set with this request
+        ERROR
+      end
     end
   end
 

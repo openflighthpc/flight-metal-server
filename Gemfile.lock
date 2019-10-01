@@ -14,11 +14,13 @@ GEM
       thor (~> 0.14)
     flight_config (0.3.3)
       tty-config
+    hashie (3.6.0)
     i18n (1.6.0)
       concurrent-ruby (~> 1.0)
     json (2.2.0)
     jsonapi-serializers (1.0.1)
       activesupport
+    jwt (2.2.1)
     kgio (2.11.2)
     method_source (0.9.2)
     minitest (5.12.0)
@@ -69,6 +71,8 @@ PLATFORMS
 DEPENDENCIES
   figaro
   flight_config
+  hashie
+  jwt
   pry
   pry-byebug
   rake

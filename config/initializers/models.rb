@@ -34,6 +34,7 @@ require 'app/models/uefi'
 require 'app/models/pxelinux'
 require 'app/models/kernel_file'
 require 'app/models/initrd'
+require 'app/models/user'
 
 Model.content_base_path = Figaro.env.content_base_path
 FileModel.base_path = Figaro.env.default_system_dir
@@ -43,4 +44,6 @@ FileModel.inherited_classes.each do |klass|
   value = ENV["#{klass.to_s}_system_dir"]
   klass.base_path = value if value
 end
+
+User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 

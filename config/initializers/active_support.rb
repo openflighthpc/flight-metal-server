@@ -27,40 +27,6 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-task :require do
-  $: << __dir__
-  ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
-
-  require 'rubygems'
-  require 'bundler/setup'
-
-  require 'pry'
-  require 'pry-byebug'
-
-  require 'config/initializers/active_support'
-  require 'config/initializers/figaro'
-  require 'config/initializers/models'
-  require 'config/initializers/serializers'
-
-  require 'app'
-  require 'app/middleware/set_content_headers'
-end
-
-task 'render:nginx' => :require do
-  require 'erb'
-
-  # Renders the default locations
-  template = File.read(File.expand_path('templates/nginx-default-locations.conf', __dir__))
-  rendered = ERB.new(template, nil, '-').result(binding)
-  File.write('/etc/nginx/default.d/metal-server.conf', rendered)
-
-  # Render the Upstream file
-  template = File.read(File.expand_path('templates/nginx-http-include.conf', __dir__))
-  rendered = ERB.new(template, nil, '-').result(binding)
-  File.write('/etc/nginx/conf.d/metal-server.conf', rendered)
-end
-
-task console: :require do
-  binding.pry
-end
+require 'active_support/core_ext/numeric/time'
+require 'active_support/core_ext/string'
 
