@@ -34,7 +34,7 @@
 
 @dir = File.expand_path('.', __dir__)
 
-worker_processes 2
+worker_processes Etc.nprocessors + 1
 working_directory @dir
 
 timeout 30
