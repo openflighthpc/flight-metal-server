@@ -33,6 +33,33 @@ require 'sinatra/jsonapi'
 class App < Sinatra::Base
   register Sinatra::JSONAPI
 
+  configure_jsonapi do |c|
+    # Resource roles
+    c.default_roles = {
+      index: [:user, :admin],
+      show: [:user, :admin],
+      create: :admin,
+      update: :admin,
+      destroy: :admin
+    }
+
+    # To-one relationship roles
+    c.default_has_one_roles = {
+      pluck: [:user, :admin],
+      prune: :admin,
+      graft: :admin
+    }
+
+    # To-many relationship roles
+    c.default_has_many_roles = {
+      fetch: [:user, :admin],
+      clear: :admin,
+      replace: :admin,
+      merge: :admin,
+      subtract: :admin
+    }
+  end
+
   helpers do
     def serialize_model(model, options = {})
       options[:is_collection] = false
@@ -54,6 +81,10 @@ class App < Sinatra::Base
           Recieved #{payload.length} B but expected #{env['CONTENT_LENGTH']}
         ERROR
       end
+    end
+
+    def role
+      :user
     end
   end
 

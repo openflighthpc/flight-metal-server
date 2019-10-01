@@ -45,6 +45,13 @@ content_base_path:
 temporary_directory:
 
 # =============================================================================
+# JSON Web Token Shared Secret
+# Specify the shared secret used in generating and verifing jwt_token
+# signatures. This can be used to allow single sign on with other services
+# =============================================================================
+jwt_shared_secret:
+
+# =============================================================================
 # Temporary File Directory
 # Set the location where temporary files are stored. This is used by the
 # unicorn unix socket, upload store and default logging. [Eventually, Hopefully)
