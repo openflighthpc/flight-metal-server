@@ -46,5 +46,7 @@ FileModel.inherited_classes.each do |klass|
   klass.base_path = value if value
 end
 
+DhcpSubnet.dhcp_subnet_include_path = Figaro.env.dhcp_subnet_include_config_path
+
 User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 

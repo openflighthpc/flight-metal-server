@@ -52,12 +52,6 @@ temporary_directory:
 jwt_shared_secret:
 
 # =============================================================================
-# Temporary File Directory
-# Set the location where temporary files are stored. This is used by the
-# unicorn unix socket, upload store and default logging. [Eventually, Hopefully)
-# =============================================================================
-
-# =============================================================================
 # Default System Dir
 # The default directory to server over the nginx server. File a stored within
 # sub directories according to their type. Each file type's system can be
@@ -72,6 +66,14 @@ default_system_dir:
 # <base_download_url>/<type>/<filename>
 # =============================================================================
 default_base_download_url:
+
+# =============================================================================
+# DHCP Subnet Include Config Path
+# Specify the path for where to store the DHCP include config. This config
+# must be included by the main DHCP configuration. This will subsequently
+# include all the metal configured subnets
+# =============================================================================
+dhcp_subnet_include_config_path:
 
 # =============================================================================
 # <class> System Dir

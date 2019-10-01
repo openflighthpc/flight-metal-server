@@ -162,7 +162,8 @@ class App < Sinatra::Base
 
       if klass == DhcpSubnet
         post('/:id/upload') do
-          instance_exec(&standard_upload_block).tap do |subnet|
+          instance_exec(&standard_upload_block).tap do
+            DhcpSubnet.render_subnets
           end
         end
       else
