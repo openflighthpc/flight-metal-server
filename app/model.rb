@@ -54,12 +54,39 @@ end
 # TODO: Eventually make this a complete replacement to FileModel
 # All files need to follow this same pattern. However it will be
 # phased-in in stages
+
 class FileModel < Model
+  module SingleIDInput
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+
+    module ClassMethods
+      def path(id)
+        File.join(content_base_path, type, id + '.yaml')
+      end
+
+      private
+
+      def input_arity
+        1
+      end
+    end
+
+    def id
+      __inputs__[0]
+    end
+  end
+
   class << self
     attr_writer :base_url, :base_path
 
     def inherited(subclass)
       FileModel.inherited_classes << subclass
+    end
+
+    def abstract_class
+      FileModel.inherited_classes.delete(self)
     end
 
     def inherited_classes
@@ -90,6 +117,30 @@ class FileModel < Model
     def type
       raise NotImplementedError
     end
+
+    def find_from_filename(filename)
+      return nil unless filename_regex.match?(filename)
+      matches = filename_regex.match(filename)
+      inputs = input_keys.map { |k| matches[k] }
+      exists?(*inputs) ? read(*inputs) : nil
+    end
+
+    private
+
+    def filename_regex
+      @filename_regex ||= begin
+        parts = input_keys.map { |k| "(?<#{k}>.*)" }
+        /\A#{new(*parts).filename}\Z/
+      end
+    end
+
+    def input_keys
+      @input_keys ||= (0...input_arity).map { |i| "arg#{i}" }
+    end
+
+    def input_arity
+      raise NotImplementedError
+    end
   end
 
   # The name of the object is equivalent to its ID
@@ -117,5 +168,11 @@ class FileModel < Model
     return 0 unless uploaded?
     File.size system_path
   end
+end
+
+class SingleIDFileModel < FileModel
+  abstract_class
+
+  include SingleIDInput
 end
 

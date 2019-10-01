@@ -27,17 +27,9 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Initrd < FileModel
-  def self.path(id)
-    File.join(content_base_path, type, id + '.yaml')
-  end
-
+class Initrd < SingleIDFileModel
   def self.type
     'initrds'
-  end
-
-  def id
-    __inputs__[0]
   end
 
   def filename

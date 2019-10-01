@@ -29,17 +29,9 @@
 
 require 'uri'
 
-class Kickstart < FileModel
-  def self.path(id)
-    File.join(content_base_path, 'kickstarts', id + '.yaml')
-  end
-
+class Kickstart < SingleIDFileModel
   def self.type
     'kickstarts'
-  end
-
-  def id
-    __inputs__[0]
   end
 
   def filename
