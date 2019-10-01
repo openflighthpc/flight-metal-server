@@ -27,24 +27,13 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'flight_config'
-require 'app/model'
-require 'app/models/kickstart'
-require 'app/models/uefi'
-require 'app/models/pxelinux'
-require 'app/models/kernel_file'
-require 'app/models/initrd'
-require 'app/models/dhcp_subnet'
-require 'app/models/user'
+class DhcpSubnet < SingleIDFileModel
+  def self.type
+    'dhcp-subnets'
+  end
 
-Model.content_base_path = Figaro.env.content_base_path
-FileModel.base_path = Figaro.env.default_system_dir
-FileModel.base_url = Figaro.env.default_base_download_url
-
-FileModel.inherited_classes.each do |klass|
-  value = ENV["#{klass.to_s}_system_dir"]
-  klass.base_path = value if value
+  def filename
+    "subnet.#{id}.host"
+  end
 end
-
-User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 
