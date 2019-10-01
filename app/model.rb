@@ -126,7 +126,11 @@ class FileModel < Model
     end
 
     def perl_match_all_filename
-      @perl_match_all_filename ||= new(*(0...input_arity).map { '.*' }).filename
+      @perl_match_all_filename ||= begin
+        glob_all = '<_GLOB_ALL_>'
+        raw = new(*(0...input_arity).map { glob_all }).filename
+        Regexp.escape(raw).gsub(glob_all, '.*')
+      end
     end
 
     private
