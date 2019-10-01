@@ -150,6 +150,12 @@ class App < Sinatra::Base
       end
 
       post('/:id/upload') do
+        unless role == :admin
+          raise Sinja::ForbiddenError, <<~ERROR.squish
+            You do not have permission to upload files. Please contact your
+            system administrator for further assistance.
+          ERROR
+        end
         write_octet_stream(resource.system_path)
         serialize_model(resource)
       end
