@@ -149,7 +149,7 @@ class App < Sinatra::Base
         raise Sinja::MethodNotAllowedError
       end
 
-      post('/:id/upload') do
+      standard_upload_block = proc do
         unless role == :admin
           raise Sinja::ForbiddenError, <<~ERROR.squish
             You do not have permission to upload files. Please contact your
@@ -158,6 +158,15 @@ class App < Sinatra::Base
         end
         write_octet_stream(resource.system_path)
         serialize_model(resource)
+      end
+
+      if klass == DhcpSubnet
+        post('/:id/upload') do
+          instance_exec(&standard_upload_block).tap do |subnet|
+          end
+        end
+      else
+        post('/:id/upload', &standard_upload_block)
       end
     end
   end
