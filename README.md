@@ -20,8 +20,6 @@ The application is comprised of three main components:
 2. Process load balancing provided by `unicorn` (kinda like `puma`), and
 3. Reverse proxying and static file hosting provided by `nginx`.
 
-See the `Operation` section for further details
-
 ## Installation
 
 ### Preconditions
@@ -74,9 +72,67 @@ changed. The `nginx` needs to be restarted.
 # Re render the nginx configs with the current setup
 rake render:nginx
 
+# The configs are rendered to the default epel nginx locations
+# nginx can be started using:
+nginx
+
 # Restart nginx if it is already running
 ngnix -s reload
 ```
+
+Finally the `unicorn` application needs to be started. This depends on how
+the application has been configured. In production, the "api port" should
+not be set. This cause `nginx` to server the `api`/`unicorn` using a `unix`
+socket.
+
+```
+# Start a deamonized unicorn server on the unix socket:
+unicorn -c unicorn.rb -D -E production
+
+# Alternatively it can be started on port 8080 for development purposes
+# This will only spawn a single worker and is not intended for production
+unicorn
+```
+
+### Stopping Unicorn
+Extract from: http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn#label-Stopping+the+server
+
+So now that you're using nginx and unicorn, at some point you might end up asking yourself: How do I stop this thing?
+
+Remember that pids folder we created earlier? Well in there is the pid for the master unicorn process, so let's try to use that first:
+
+```
+cat /path/to/app/tmp/pids/unicorn.pid | xargs kill -QUIT
+```
+
+What we're doing is getting the PID from the pidfile created with Unicorn started and then asking the OS to stop the process. We use the QUIT signal which lets Unicorn shutdown gracefully, but waiting for its workers to finish.
+
+If that doesn't work though, you might want to try:
+
+```
+ps -ax | grep unicorn
+```
+
+This will output the processes running unicorn, in the first column should be the process id (pid). In order to stop unicorn in it's tracks:
+
+### Less Aggressive Way to Stop Unicorn
+Extract from: http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn#label-The+Less+Aggressive+Approach+to+Unicorn+Slaying
+
+Unicorn is based upon unix-y forking, the master process can manage the workers, i.e. kill them. Once you have identified the master process, you can send it the WINCH signal. To do this:
+
+```
+kill -WINCH <PID>
+```
+
+This will have the master process “instruct” its workers to die off when they are finished. This should allow for a safer completion state.
+
+Once all the workers are finished and dead, the unicorn master will be the   only unicorn process left. You can now instruct it to die off.
+
+```
+kill -QUIT <PID>
+```
+
+Checking again as above, you should no longer see any unicorn processes.  
 
 ## Operation
 
