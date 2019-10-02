@@ -1,12 +1,10 @@
 # =============================================================================
-# GETTING STARTED
-# COPY this file into place, please leave this example as a reference.
-# NOTE: Comments in the main config will be removed by the application
+# Leave this file in place as a reference.
+# NOTE: Copying this file into place will result in all keys being set to
+# empty string.
 #
-# cp config/application.yaml.example config/application.yaml
-#
-# The following parameters are configurable for the install. Commented out keys
-# give the default values used. Uncomment the line to manually set it
+# The actual configuration file should be stored as:
+# config/application.yaml
 # =============================================================================
 
 # =============================================================================

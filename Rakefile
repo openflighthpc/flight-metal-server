@@ -27,13 +27,15 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-task :require do
+task :require_bundler do
   $: << __dir__
   ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 
   require 'rubygems'
   require 'bundler/setup'
+end
 
+task require: :require_bundler do
   require 'pry'
   require 'pry-byebug'
 
@@ -62,5 +64,79 @@ end
 
 task console: :require do
   binding.pry
+end
+
+task configure: :require_bundler do
+  require 'config/initializers/active_support'
+  require 'tty-prompt'
+  require 'uri'
+  require 'figaro'
+  require 'securerandom'
+
+  cli = TTY::Prompt.new
+  config_path = File.expand_path('config/application.yaml', __dir__)
+  configs = if File.exists?(config_path)
+    YAML.load(File.read(config_path)).symbolize_keys
+  else
+    {}
+  end
+
+  base_url_regex = /\A(.*)(?=(\/api)\Z)/
+  default = if base_url_regex.match? configs[:app_base_url]
+    base_url_regex.match(configs[:app_base_url]).captures.first
+  else
+    'https://www.example.com'
+  end
+  url = cli.ask("What is the url to the server?", default: default)
+  configs[:app_base_url] = URI.join(url, 'api').to_s
+  configs[:default_base_download_url] = URI.join(url, 'download').to_s
+
+  default = configs[:content_base_path] || File.expand_path('var/meta', __dir__)
+  configs[:content_base_path] = cli.ask(<<~QUESTION.chomp, default: default)
+    Which directory should metadata files be stored in?
+  QUESTION
+
+  default = configs[:default_system_dir] || File.expand_path('var/www', __dir__)
+  configs[:default_system_dir] = cli.ask(<<~QUESTION.chomp, default: default)
+    Where should the public directory be located?
+  QUESTION
+
+  default = configs[:temporary_directory] || File.expand_path('tmp', __dir__)
+  configs[:temporary_directory] = cli.ask(<<~QUESTION.chomp, default: default)
+    Which directory should temporary files be stored in?
+  QUESTION
+
+  cli.say(<<~DHCP.squish)
+    Specify the file path where dhcp entries can be stored.
+    This must be included by the system dhcp config.
+  DHCP
+  default = configs[:dhcp_subnet_include_config_path] || \
+              File.expand_path('var/dhcp.conf', __dir__)
+  configs[:dhcp_subnet_include_config_path] = cli.ask(<<~QUESTION.chomp, default: default)
+    Metal server DHCP config path?
+  QUESTION
+
+
+  first_run = false
+  unless configs[:jwt_shared_secret]
+    first_run = true
+    cli.say('Generating random json web token secret')
+    configs[:jwt_shared_secret] = SecureRandom.base64(50)
+  end
+
+  if cli.yes?('Use the default system paths for build files?', default: first_run)
+    configs[:Legacy_system_dir]      = '/var/lib/tftpboot/pxelinux.cfg'
+    configs[:Uefi_system_dir]        = '/var/lib/tftpboot/efi'
+    configs[:KernelFile_system_dir]  = '/var/lib/tftpboot/boot'
+    configs[:Initrd_system_dir]      = '/var/lib/tftpboot/boot'
+  else
+    cli.say('The system paths have not been altered unless the public directory has changed')
+  end
+
+  File.write(config_path, YAML.dump(configs.stringify_keys))
+
+  cli.say('Rendering the nginx configs...')
+  Rake::Task['render:nginx'].invoke
+  cli.say('Done! nginx will need to be restarted')
 end
 

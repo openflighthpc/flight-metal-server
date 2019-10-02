@@ -24,39 +24,59 @@ See the `Operation` section for further details
 
 ## Installation
 
+### Preconditions
+
+This application has been designed on:
+
+OS:    Centos7
+Ruby:  2.6+
+Nginx: 1.12+
+Required Nginx Modules: `--with-http_auth_request_module`,
+                        etc...
+
 ### Manual installation
 
-Clone the repository -- you're done!
+Start by cloning the repo, adding the binaries to your path, and install the gems
 
 ```
-git clone https://github.com/openflighthpc/openflight-tools
+git clone https://github.com/openflighthpc/metal-server
+cd metal-server
+
+# Add the binaries to your path, which will be used by the remainder of this guide
+export -a PATH=$PATH:$(pwd)/bin
+bundle install
+
+# Alternatively append `bin/` to the beginning of the following commands
+# Excluding nginx and ruby which are already installed
+bin/bundle  ...
+bin/rake    ...
+bin/unicorn ...
 ```
 
-### From the OpenFlight `yum` repository
+Next the application needs to be configured. Refer to the example config file
+for a complete list of configuration parameters: `config/application.yaml.example`
 
-1. Set up the `yum` repository on your system.  For production
-   releases use `openflight.repo` and for development releases use
-   `openflight-dev.repo`:
+Alternatively for a default production ready setup, the `rake configure` command
+can be used. This will prompt for the required configuration and generate
+the `config/application.yaml` file.
 
-   ```
-   cd /etc/yum.repos.d
-   # For production releases
-   wget https://openflighthpc.s3-eu-west-1.amazonaws.com/repos/openflight/openflight.repo
-   # For development releases
-   wget https://openflighthpc.s3-eu-west-1.amazonaws.com/repos/openflight-dev/openflight-dev.repo
-   ```
+```
+rake configure
+> What is the url to the server? (https://www.example.com)
+....
+```
 
-2. Rebuild your `yum` cache:
+The `rake configure` task will automatically re render the `nginx` configuration
+files. These files will need to be re-rendered if `config/application.yaml` is
+changed. The `nginx` needs to be restarted.
 
-   ```
-   yum makecache
-   ```
+```
+# Re render the nginx configs with the current setup
+rake render:nginx
 
-3. Install the `openflight-tools` RPM with `yum`:
-
-   ```
-   yum install openflight-tools
-   ```
+# Restart nginx if it is already running
+ngnix -s reload
+```
 
 ## Operation
 
