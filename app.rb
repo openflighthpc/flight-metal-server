@@ -30,7 +30,6 @@
 require 'sinatra/base'
 require "sinatra/cookies"
 require 'sinatra/jsonapi'
-require 'app/version'
 
 module Sinja
   class UnauthorizedError < HttpError
@@ -178,4 +177,6 @@ class App < Sinatra::Base
     raise Sinja::ForbiddenError
   end
 end
+
+require 'app/version'
 
