@@ -1,4 +1,4 @@
-# vim: set syntax=nginx:
+# frozen_string_literal: true
 
 #==============================================================================
 # Copyright (C) 2019-present Alces Flight Ltd.
@@ -27,21 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-#
-# This file has been rendered by OpenFlightHPC - Metal Server
-# Any changes to this file maybe lost
-#
-
-map $api_authorize_ext $api_authorize_ext {
-  default: '';
-}
-
-upstream api_server {
-<% if Figaro.env.api_port  -%>
-  server 127.0.0.1:<%= Figaro.env.api_port %>;
-<% else -%>
-  server unix:<%= File.join(Figaro.env.temporary_directory, 'unicorn/api.sock') %>
-    fail_timeout=0;
-<% end -%>
-}
+class App
+  VERSION = '0.0.1'
+end
 
