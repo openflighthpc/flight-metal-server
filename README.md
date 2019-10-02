@@ -150,6 +150,28 @@ rake token:user
 
 When testing through a browser, the token can also be set in a `cookie` called `bearer`.
 
+### API Information
+
+The API is typically mounted onto `nginx` something along the lines of `https://www.example.com/api/...`,
+however this will depend on how the application has been configured. It conforms to the JSONAPI
+standard where the `id` can be alaphanumeric.
+
+NOTE: `nginx` assumes that unicorn is listed under the `api` path.
+
+The valid types for the API are listed above and must be pluralized. The supported requests are:
+
+* GET   <leader>/api/<type>       # Index a type of file
+* GET   <leader>/api/<type>/<id>  # Show a file metadata
+* POST  <leader>/api/<type>/<id>  # Create the matadata entry but does not upload the file
+
+### Other Application Paths
+
+The following routes exist in the application but do not follow the JSONAPI standard:
+
+* GET   <leader>/download/<type>/<filename> # Download a file from `nginx`
+* POST  <leader>/api/<type>/<id>/upload     # Upload a file to an existing metadata entry
+* GET   <leader>/api/authorize/download/<type>/<filepath> # Used internally by `nginx`
+
 # Contributing
 
 Fork the project. Make your feature addition or bug fix. Send a pull
