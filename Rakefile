@@ -66,6 +66,14 @@ task console: :require do
   binding.pry
 end
 
+task 'token:admin' => :require do
+  puts User.new(admin: true).generate_jwt
+end
+
+task 'token:user' => :require do
+  puts User.new(user: true).generate_jwt
+end
+
 task configure: :require_bundler do
   require 'config/initializers/active_support'
   require 'tty-prompt'

@@ -135,10 +135,20 @@ Checking again as above, you should no longer see any unicorn processes.
 
 ## Operation
 
-The content in this repository can be installed using the Flight
-Runway `flintegrate` tool.  Refer to the [Flight Runway
-project](https://github.com/openflighthpc/flight-runway) for more
-details.
+### Generating Tokens
+
+The server requires the `Authorization Bearer` header to be set with either a `user` or `admin` token. Broadly,
+users can read from the server and admins can write. All tokens are valid for 30 days.
+
+```
+# Generate a admin token:
+rake token:admin
+
+# Generate a user token
+rake token:user
+```
+
+When testing through a browser, the token can also be set in a `cookie` called `bearer`.
 
 # Contributing
 
@@ -158,7 +168,7 @@ If not, see <http://creativecommons.org/licenses/by-sa/4.0/>.
 
 ![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)
 
-OpenFlight Tools is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
+Metal Server is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
 
 Based on a work at [https://github.com/openflighthpc/openflight-tools](https://github.com/openflighthpc/openflight-tools).
 
@@ -169,7 +179,7 @@ or alternative license terms made available by Alces Flight Ltd -
 please direct inquiries about licensing to
 [licensing@alces-flight.com](mailto:licensing@alces-flight.com).
 
-OpenFlight Tools is distributed in the hope that it will be useful, but
+Metal Server is distributed in the hope that it will be useful, but
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR
 IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF
 TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR
