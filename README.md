@@ -10,7 +10,7 @@ the following file types:
 * \<API TYPE\>      : \<Model\>    : \<Description\>
 * `kickstarts`    : Kickstart  : Kickstart Files
 * `uefis`         : Uefi       : UEFI PXE Boot Configs
-* `legacy`        : Legacy     : BIOS PXE Boot Configs
+* `legacies`      : Legacy     : BIOS PXE Boot Configs
 * `kernels`       : Kernel     : Kenerl Images
 * `initrds`       : Initrd     : Initial Ram Disks
 * `dhcp-subnets`  : DhcpSubnet : DHCP Subnet Configs
@@ -26,10 +26,10 @@ The application is comprised of three main components:
 
 This application has been designed on:
 
-OS:    Centos7
-Ruby:  2.6+
-Nginx: 1.12+
-Required Nginx Modules: `--with-http_auth_request_module`,
+* OS:    Centos7
+* Ruby:  2.6+
+* Nginx: 1.12+
+* Required Nginx Modules: `--with-http_auth_request_module`,
                         etc...
 
 ### Manual installation
