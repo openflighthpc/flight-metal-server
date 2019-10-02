@@ -99,13 +99,12 @@ Extract from: http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn
 
 So now that you're using nginx and unicorn, at some point you might end up asking yourself: How do I stop this thing?
 
-Remember that pids folder we created earlier? Well in there is the pid for the master unicorn process, so let's try to use that first:
+There is an internal unicorn `workers.pid` file that contains the process ID of the unicorn master. It can be used
+to gracefully stop the server using `SIGQUIT`
 
 ```
-cat /path/to/app/tmp/pids/unicorn.pid | xargs kill -QUIT
+cat <configured-temporary-directory>/unicorn/master.pid | xargs kill -QUIT
 ```
-
-What we're doing is getting the PID from the pidfile created with Unicorn started and then asking the OS to stop the process. We use the QUIT signal which lets Unicorn shutdown gracefully, but waiting for its workers to finish.
 
 If that doesn't work though, you might want to try:
 
@@ -126,7 +125,7 @@ kill -WINCH <PID>
 
 This will have the master process “instruct” its workers to die off when they are finished. This should allow for a safer completion state.
 
-Once all the workers are finished and dead, the unicorn master will be the   only unicorn process left. You can now instruct it to die off.
+Once all the workers are finished and dead, the unicorn master will be the only unicorn process left. You can now instruct it to die off.
 
 ```
 kill -QUIT <PID>
