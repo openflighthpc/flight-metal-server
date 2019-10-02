@@ -116,7 +116,6 @@ task configure: :require_bundler do
     Metal server DHCP config path?
   QUESTION
 
-
   first_run = false
   unless configs[:jwt_shared_secret]
     first_run = true
@@ -131,6 +130,14 @@ task configure: :require_bundler do
     configs[:Initrd_system_dir]      = '/var/lib/tftpboot/boot'
   else
     cli.say('The system paths have not been altered unless the public directory has changed')
+  end
+
+  port = configs[:api_port]
+  bool = port ? true : false
+  if cli.yes?('Run the API over TCP/IP instead of unix socket (not recommended)?', default: bool)
+    configs[:api_port] = cli.ask("What is the API port number", convert: :int, default: port).to_s
+  else
+    configs.delete(:api_port)
   end
 
   File.write(config_path, YAML.dump(configs.stringify_keys))
