@@ -54,7 +54,7 @@ end
 
 class KickstartSerializer < FileModelSerializer; end
 class KernelFileSerializer < FileModelSerializer; end
-class PxelinuxSerializer < FileModelSerializer; end
+class LegacySerializer < FileModelSerializer; end
 class UefiSerializer < FileModelSerializer; end
 class InitrdSerializer < FileModelSerializer; end
 class DhcpSubnetSerializer < FileModelSerializer; end

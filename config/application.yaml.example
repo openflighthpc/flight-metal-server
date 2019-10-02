@@ -85,7 +85,7 @@ dhcp_subnet_include_config_path:
 # automatically
 # =============================================================================
 # Examples:
-# Pxelinux_system_dir:
+# Legacy_system_dir:
 # Uefi_system_dir:
 # KernelFile_system_dir:
 # Initrd_system_dir:

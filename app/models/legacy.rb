@@ -27,9 +27,9 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Pxelinux < SingleIDFileModel
+class Legacy < SingleIDFileModel
   def self.type
-    'pxelinuxes'
+    'legacies'
   end
 
   def filename
