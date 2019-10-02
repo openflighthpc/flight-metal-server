@@ -30,6 +30,7 @@
 require 'sinatra/base'
 require "sinatra/cookies"
 require 'sinatra/jsonapi'
+require 'app/version'
 
 module Sinja
   class UnauthorizedError < HttpError
