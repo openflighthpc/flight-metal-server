@@ -114,7 +114,31 @@ class App < Sinatra::Base
     end
   end
 
-  FileModel.inherited_classes.each do |klass|
+  [Kickstart, Legacy, Uefi, DhcpSubnet].each do |klass|
+    resource klass.type, pkre: /\w+/ do
+      helpers do
+        # The find method needs to be dynamically defined as the block preforms
+        # a closure around the parent context. This way the `klass` variable is
+        # available inside the block
+        define_method(:find) do |id|
+          klass.exists?(id) ? klass.read(id) : nil
+        end
+      end
+
+      show
+
+      index do
+        klass.glob_read('*')
+      end
+
+      create do |_attr, id|
+        model = find(id) || klass.create(id)
+        next model.id, model
+      end
+    end
+  end
+
+  [KernelFile, Initrd].each do |klass|
     resource klass.type, pkre: /\w+/ do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
@@ -143,7 +167,7 @@ class App < Sinatra::Base
         ''
       end
 
-      standard_upload_block = proc do
+      post('/:id/blob') do
         unless role == :admin
           raise Sinja::ForbiddenError, <<~ERROR.squish
             You do not have permission to upload files. Please contact your
@@ -153,22 +177,7 @@ class App < Sinatra::Base
         write_octet_stream(resource.system_path)
         serialize_model(resource)
       end
-
-      if klass == DhcpSubnet
-        post('/:id/blob') do
-          instance_exec(&standard_upload_block).tap do
-            DhcpSubnet.render_subnets
-          end
-        end
-      else
-        post('/:id/blob', &standard_upload_block)
-      end
     end
-  end
-
-  # Catch all reject all other authorize requests
-  get('/authorize/*') do
-    raise Sinja::ForbiddenError
   end
 end
 

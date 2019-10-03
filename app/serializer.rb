@@ -55,15 +55,26 @@ module SerializePayload
   end
 end
 
-class FileModelSerializer < Serializer
-  has_one :blob
+module SerializeBlob
+  extend ActiveSupport::Concern
 
+  included do
+    has_one :blob
+  end
+end
+
+class FileModelSerializer < Serializer
   attributes :size, :system_path
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
-class KernelFileSerializer < FileModelSerializer; end
-class InitrdSerializer < FileModelSerializer; end
+class KernelFileSerializer < FileModelSerializer
+  include SerializeBlob
+end
+
+class InitrdSerializer < FileModelSerializer
+  include SerializeBlob
+end
 
 class KickstartSerializer < FileModelSerializer
   include SerializePayload
