@@ -48,7 +48,9 @@ class Serializer
 end
 
 class FileModelSerializer < Serializer
-  attributes :size, :system_path, :download_url
+  has_one :blob
+
+  attributes :size, :system_path
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
