@@ -145,8 +145,11 @@ class App < Sinatra::Base
         next model.id, model
       end
 
-      get('/:id/upload') do
-        raise Sinja::MethodNotAllowedError
+      get('/:id/blob') do
+        # The response is cached in the environment as Middleware is needed to
+        # Sinja enforcing JSON responses
+        env['cached.octet_response'] = File.read(resource.system_path)
+        ''
       end
 
       standard_upload_block = proc do
@@ -161,13 +164,13 @@ class App < Sinatra::Base
       end
 
       if klass == DhcpSubnet
-        post('/:id/upload') do
+        post('/:id/blob') do
           instance_exec(&standard_upload_block).tap do
             DhcpSubnet.render_subnets
           end
         end
       else
-        post('/:id/upload', &standard_upload_block)
+        post('/:id/blob', &standard_upload_block)
       end
     end
   end
