@@ -47,6 +47,14 @@ class Serializer
   end
 end
 
+module SerializePayload
+  extend ActiveSupport::Concern
+
+  included do
+    attribute :payload
+  end
+end
+
 class FileModelSerializer < Serializer
   has_one :blob
 
@@ -54,10 +62,22 @@ class FileModelSerializer < Serializer
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
-class KickstartSerializer < FileModelSerializer; end
 class KernelFileSerializer < FileModelSerializer; end
-class LegacySerializer < FileModelSerializer; end
-class UefiSerializer < FileModelSerializer; end
 class InitrdSerializer < FileModelSerializer; end
-class DhcpSubnetSerializer < FileModelSerializer; end
+
+class KickstartSerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class LegacySerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class UefiSerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class DhcpSubnetSerializer < FileModelSerializer
+  include SerializePayload
+end
 

@@ -27,6 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'active_support/concern'
 require 'active_support/core_ext/numeric/time'
 require 'active_support/core_ext/string'
 

@@ -142,10 +142,6 @@ class FileModel < Model
     File.join(self.class.base_path, filename)
   end
 
-  def download_url
-    File.join(self.class.base_url, filename)
-  end
-
   def uploaded?
     File.exists? system_path
   end
@@ -153,6 +149,10 @@ class FileModel < Model
   def size
     return 0 unless uploaded?
     File.size system_path
+  end
+
+  def payload
+    uploaded? ? File.read(system_path) : ''
   end
 end
 
