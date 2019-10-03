@@ -121,19 +121,26 @@ class App < Sinatra::Base
         # a closure around the parent context. This way the `klass` variable is
         # available inside the block
         define_method(:find) do |id|
-          klass.exists?(id) ? klass.read(id) : nil
+          klass.read(id)
         end
       end
 
-      show
+      show do
+        File.exists?(resource.path) ? resource : nil
+      end
 
       index do
         klass.glob_read('*')
       end
 
-      create do |_attr, id|
-        model = find(id) || klass.create(id)
-        next model.id, model
+      update do |attr|
+        if payload = attr[:payload]
+          klass.create_or_update(*resource.__inputs__) do |model|
+            File.write model.system_path, payload.to_s
+          end
+        else
+          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+        end
       end
     end
   end
