@@ -115,15 +115,6 @@ class App < Sinatra::Base
   end
 
   FileModel.inherited_classes.each do |klass|
-    get("/authorize/download/#{klass.type}/:filename") do
-      valid_role = [:user, :admin].include?(role)
-      if klass.find_from_filename(params[:filename]) && valid_role
-        return 201
-      else
-        raise Sinja::ForbiddenError
-      end
-    end
-
     resource klass.type, pkre: /\w+/ do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
