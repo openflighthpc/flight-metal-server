@@ -153,6 +153,13 @@ class App < Sinatra::Base
 
       update { |a| payload_update(a) }
 
+      destroy do
+        klass.delete(*resource.__inputs__) do |model|
+          FileUtils.rm_f model.system_path
+          true
+        end
+      end
+
       # Additional model based routes
       if klass == DhcpSubnet
         has_many DhcpHost.type do

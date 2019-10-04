@@ -79,3 +79,39 @@ RSpec.configure do |c|
     Hashie::Mash.new(JSON.parse(last_response.body))
   end
 end
+
+RSpec.shared_context 'single_input_test_subject' do
+  described_class::TEST_SUBJECT_ID = "test_subject_#{described_class.type.gsub('-', '_')}"
+
+  subject { described_class.read(described_class::TEST_SUBJECT_ID) }
+
+  def subject_api_path(*a)
+    File.join('/', described_class.type, described_class::TEST_SUBJECT_ID, *a)
+  end
+
+  def read_subject
+    described_class.read(described_class::TEST_SUBJECT_ID)
+  end
+
+  def create_subject_and_system_path
+    described_class.create(described_class::TEST_SUBJECT_ID) do |meta|
+      FileUtils.mkdir_p File.dirname(meta.system_path)
+      FileUtils.touch meta.system_path
+    end
+  end
+
+  def expect_forbidden
+    expect(last_response.status).to be(403)
+  end
+end
+
+RSpec.shared_examples 'error_without_credenitals' do
+  context 'without credentials' do
+    it 'errors' do
+      unknown_headers
+      make_request
+      expect([401, 403]).to include(last_response.status)
+    end
+  end
+end
+
