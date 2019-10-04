@@ -27,7 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'spec_helper.rb'
+require 'spec_helper'
 
 RSpec.describe BootMethod do
   TEST_SUBJECT_ID = 'foo_test_boot_method'

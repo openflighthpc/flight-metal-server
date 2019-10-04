@@ -27,55 +27,54 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'rack/test'
-require 'rspec'
-require 'rspec/collection_matchers'
+require 'spec_helper'
 
-ENV['RACK_ENV'] = 'test'
+RSpec.describe Kickstart do
+  Kickstart::TEST_SUBJECT_ID = 'foo_kickstart'
 
-require 'rake'
-load File.expand_path('../Rakefile', __dir__)
-Rake::Task[:require].invoke
+  subject { described_class.read(Kickstart::TEST_SUBJECT_ID) }
 
-require 'fakefs/spec_helpers'
+  def subject_api_path(*a)
+    File.join('/', described_class.type, Kickstart::TEST_SUBJECT_ID, *a)
+  end
 
-require 'json'
-require 'hashie'
+  def create_subject_and_file
+    described_class.create(Kickstart::TEST_SUBJECT_ID) do |meta|
+      FileUtils.mkdir_p File.dirname(meta.system_path)
+      FileUtils.touch meta.system_path
+    end
+  end
 
-module RSpecSinatraMixin
-  include Rack::Test::Methods
-  def app()
-    app = App.new
-    App::Middleware::SetContentHeaders.new(app)
+  describe 'get show' do
+  end
+
+  describe 'GET /kickstart/:id/blob' do
+    context 'without credentials' do
+      it 'errors 403' do
+        unknown_headers
+        get subject_api_path('blob')
+        expect([401, 403]).to include(last_response.status)
+      end
+    end
+
+    context 'with a file' do
+      context 'with a user token' do
+        before(:all) do
+          FakeFS.clear!
+          create_subject_and_file
+          user_headers
+          get subject_api_path('blob')
+        end
+
+        it 'returns ok' do
+          expect(last_response).to be_ok
+        end
+
+        it 'returns the file' do
+          expect(last_response.body).to eq(File.read(subject.system_path))
+        end
+      end
+    end
   end
 end
 
-# If you use RSpec 1.x you should use this instead:
-RSpec.configure do |c|
-	# Include the Sinatra helps into the application
-	c.include RSpecSinatraMixin
-
-	# Fake the File System each test
-	c.include FakeFS::SpecHelpers::All
-  FakeFS::File.define_method(:flock) { |*_| }
-
-  def admin_headers
-    header 'Authorization', "Bearer #{User.new(admin: true).generate_jwt}"
-  end
-
-  def user_headers
-    header 'Authorization', "Bearer #{User.new(user: true).generate_jwt}"
-  end
-
-  def unknown_headers
-    header 'Authorization', "Bearer #{User.new.generate_jwt}"
-  end
-
-  def parse_last_request_body
-    Hashie::Mash.new(JSON.pase(last_request.body))
-  end
-
-  def parse_last_response_body
-    Hashie::Mash.new(JSON.parse(last_response.body))
-  end
-end

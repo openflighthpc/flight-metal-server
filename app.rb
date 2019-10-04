@@ -73,6 +73,13 @@ class App < Sinatra::Base
   end
 
   helpers do
+    def authorize_user!
+      return if [:user, :admin].include? role
+      raise Sinja::ForbiddenError, <<~ERROR.squish
+        You do not have permission to view this content!
+      ERROR
+    end
+
     def serialize_model(model, options = {})
       options[:is_collection] = false
       options[:skip_collection_check] = true
@@ -152,6 +159,14 @@ class App < Sinatra::Base
           fetch do
             resource.read_dhcp_hosts
           end
+        end
+      end
+
+      if klass == Kickstart
+        get("/:id/blob") do
+          authorize_user!
+          env['cached.octet_response'] = File.read resource.system_path
+          ''
         end
       end
     end
