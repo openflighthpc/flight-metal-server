@@ -35,9 +35,6 @@ RSpec.describe Kickstart do
 
   it_behaves_like 'system path deleter'
 
-  describe 'get show' do
-  end
-
   describe 'GET /kickstart/:id/blob' do
     context 'without credentials' do
       it 'errors 403' do

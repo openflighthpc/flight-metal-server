@@ -37,7 +37,7 @@ RSpec.shared_examples 'system path deleter' do
       context 'without credentials' do
         before { create_subject_and_system_path }
 
-        include_examples 'error_without_credenitals'
+        include_examples 'error_without_credentials'
       end
 
       context 'with admin credentials' do

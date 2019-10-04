@@ -76,7 +76,14 @@ class App < Sinatra::Base
     def authorize_user!
       return if [:user, :admin].include? role
       raise Sinja::ForbiddenError, <<~ERROR.squish
-        You do not have permission to view this content!
+        You do not have permission to access this content!
+      ERROR
+    end
+
+    def authorize_admin!
+      return if role == :admin
+      raise Sinja::ForbiddenError, <<~ERROR.squish
+        You do not have permission to access this content!
       ERROR
     end
 
@@ -261,6 +268,7 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
+        authorize_user!
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
         env['octet-stream.out'] = File.read path_lambda.call(resource)
@@ -268,12 +276,7 @@ class App < Sinatra::Base
       end
 
       post("/:id/#{blob_type}") do
-        unless role == :admin
-          raise Sinja::ForbiddenError, <<~ERROR.squish
-            You do not have permission to upload files. Please contact your
-            system administrator for further assistance.
-          ERROR
-        end
+        authorize_admin!
         write_octet_stream(path_lambda.call(resource))
         serialize_model(resource)
       end

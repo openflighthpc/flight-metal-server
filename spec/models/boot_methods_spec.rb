@@ -30,16 +30,20 @@
 require 'spec_helper'
 
 RSpec.describe BootMethod do
-  TEST_SUBJECT_ID = 'foo_test_boot_method'
-  subject { described_class.read(TEST_SUBJECT_ID) }
+  TEST_SUBJECT_ID = "test-subject_#{described_class.type}"
+  subject { read_subject }
+
+  def read_subject
+    described_class.read(TEST_SUBJECT_ID)
+  end
 
   def join_path(*a)
     a ||= []
     File.join('/', described_class.type, *a)
   end
 
-  def subject_api_path
-    join_path(TEST_SUBJECT_ID)
+  def subject_api_path(*a)
+    join_path(TEST_SUBJECT_ID, *a)
   end
 
   let(:id) do
@@ -158,6 +162,110 @@ RSpec.describe BootMethod do
         it 'removes the initrd file' do
           expect(File.exists? subject.initrd_system_path).to be false
         end
+      end
+    end
+  end
+
+  ['kernel', 'initrd'].each do |type|
+    describe "GET /#{BootMethod.type}/:id/#{type}-blob" do
+      define_method(:read_subject_test_blob) do
+        path = if type == 'kernel'
+          read_subject.kernel_system_path
+        elsif type == 'initrd'
+          read_subject.initrd_system_path
+        else
+          raise 'Unexpected Error'
+        end
+        File.read path
+      end
+
+      define_method(:make_request) do
+        get subject_api_path("#{type}-blob")
+      end
+
+      context 'with meta and system files' do
+        context 'with user credentials' do
+          before(:all) do
+            FakeFS.clear!
+            create_subject_kernel_and_initrd
+            user_headers
+            make_request
+          end
+
+          it 'passes' do
+            expect(last_response).to be_ok
+          end
+
+          it 'returns the file' do
+            expect(last_response.body).to eq(read_subject_test_blob)
+          end
+        end
+      end
+
+      context 'without authorization credentials' do
+        include_examples 'error_without_credentials'
+      end
+    end
+
+    describe "POST /#{BootMethod.type}/:id/#{type}-blob" do
+      define_method(:read_subject_test_blob) do
+        path = if type == 'kernel'
+          read_subject.kernel_system_path
+        elsif type == 'initrd'
+          read_subject.initrd_system_path
+        else
+          raise 'Unexpected Error'
+        end
+        File.read path
+      end
+
+      def new_post_content
+        'I am the new post content string'
+      end
+
+      define_method(:make_request) do
+        post( subject_api_path("#{type}-blob"),
+              new_post_content,
+              {
+                'Content-Length' => new_post_content.length.to_s,
+                'CONTENT_TYPE'   => 'application/octet-stream'
+              })
+      end
+
+      context 'with meta and system files' do
+        context 'with user credentials' do
+          before(:all) do
+            FakeFS.clear!
+            create_subject_kernel_and_initrd
+            user_headers
+            make_request
+          end
+
+          it 'is forbidden' do
+            expect(last_response.status).to be(403)
+          end
+        end
+
+        context 'with admin credentials' do
+          before(:all) do
+            FakeFS.clear!
+            create_subject_kernel_and_initrd
+            admin_headers
+            make_request
+          end
+
+          it 'passes' do
+            expect(last_response).to be_ok
+          end
+
+          it 'updates the files content' do
+            expect(read_subject_test_blob).to eq(new_post_content)
+          end
+        end
+      end
+
+      context 'without authorization credentials' do
+        include_examples 'error_without_credentials'
       end
     end
   end
