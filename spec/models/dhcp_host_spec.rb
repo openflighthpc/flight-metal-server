@@ -49,5 +49,23 @@ RSpec.describe DhcpHost do
   end
 
   it_behaves_like 'system path deleter'
+
+  describe 'GET show' do
+    context 'with an existing file but without a subnet' do
+      context 'with user credentials' do
+        before(:all) do
+          FakeFS.clear!
+          create_subject_and_system_path
+          FileUtils.rm_f read_subject.read_dhcp_subnet.path
+          user_headers
+          get subject_api_path
+        end
+
+        it 'returns a conflict' do
+          expect(last_response.status).to be(409)
+        end
+      end
+    end
+  end
 end
 

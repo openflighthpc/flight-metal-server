@@ -202,30 +202,21 @@ class App < Sinatra::Base
         if DhcpSubnet.exists?(subnet)
           DhcpHost.read(subnet, name)
         else
-          raise Sinja::ForbiddenError, <<~ERROR.squish
+          raise Sinja::ConflictError, <<~ERROR.squish
             Can not proceed with this request as the DHCP subnet does
-            not exist
+            not exist. Missing subnet: #{subnet}
           ERROR
         end
       end
     end
 
     show
-
-    index do
-      DhcpHost.glob_read('*', '*')
-    end
-
-    update { |a| payload_update(a) }
-
-    destroy do
-      instance_exec(&system_path_destroy_lambda)
-    end
+    index   { DhcpHost.glob_read('*', '*') }
+    update  { |a| payload_update(a) }
+    destroy { instance_exec(&system_path_destroy_lambda) }
 
     has_one DhcpSubnet.type do
-      pluck do
-        resource.read_dhcp_subnet
-      end
+      pluck { esource.read_dhcp_subnet }
     end
   end
 

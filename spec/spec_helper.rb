@@ -108,12 +108,10 @@ RSpec.shared_context 'with_system_path_subject' do
 end
 
 RSpec.shared_examples 'error_without_credenitals' do
-  context 'without credentials' do
-    it 'errors' do
-      unknown_headers
-      make_request
-      expect([401, 403]).to include(last_response.status)
-    end
+  it 'errors' do
+    unknown_headers
+    make_request
+    expect([401, 403]).to include(last_response.status)
   end
 end
 
