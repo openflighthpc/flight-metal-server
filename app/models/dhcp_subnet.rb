@@ -58,5 +58,9 @@ class DhcpSubnet < SingleIDFileModel
   def filename
     "subnet.#{id}.conf"
   end
+
+  def read_dhcp_hosts
+    DhcpHost.glob_read(id, '*', registry: __registry__)
+  end
 end
 

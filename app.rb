@@ -145,6 +145,15 @@ class App < Sinatra::Base
       end
 
       update { |a| payload_update(a) }
+
+      # Additional model based routes
+      if klass == DhcpSubnet
+        has_many DhcpHost.type do
+          fetch do
+            resource.read_dhcp_hosts
+          end
+        end
+      end
     end
   end
 
