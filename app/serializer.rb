@@ -55,25 +55,20 @@ module SerializePayload
   end
 end
 
-module SerializeBlob
-  extend ActiveSupport::Concern
+class BootMethodSerializer < Serializer
+  has_one :kernel_blob
+  has_one :initrd_blob
 
-  included do
-    has_one :blob
+  [
+    'system_path', 'size', 'uploaded'
+  ].each do |attr|
+    attributes :"kernel_#{attr}", :"initrd_#{attr}"
   end
 end
 
 class FileModelSerializer < Serializer
   attributes :size, :system_path
   attribute(:uploaded) { |s| s.object.uploaded? }
-end
-
-class KernelFileSerializer < FileModelSerializer
-  include SerializeBlob
-end
-
-class InitrdSerializer < FileModelSerializer
-  include SerializeBlob
 end
 
 class KickstartSerializer < FileModelSerializer

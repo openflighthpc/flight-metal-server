@@ -145,43 +145,46 @@ class App < Sinatra::Base
     end
   end
 
-  [KernelFile, Initrd].each do |klass|
-    resource klass.type, pkre: /\w+/ do
-      helpers do
-        # The find method needs to be dynamically defined as the block preforms
-        # a closure around the parent context. This way the `klass` variable is
-        # available inside the block
-        define_method(:find) do |id|
-          klass.exists?(id) ? klass.read(id) : nil
-        end
+  resource BootMethod.type, pkre: /\w+/ do
+    helpers do
+      # The find method needs to be dynamically defined as the block preforms
+      # a closure around the parent context. This way the `klass` variable is
+      # available inside the block
+      define_method(:find) do |id|
+        BootMethod.exists?(id) ? BootMethod.read(id) : nil
       end
+    end
 
-      show
+    show
 
-      index do
-        klass.glob_read('*')
-      end
+    index do
+      BootMethod.glob_read('*')
+    end
 
-      create do |_attr, id|
-        model = find(id) || klass.create(id)
-        next model.id, model
-      end
+    create do |_attr, id|
+      model = find(id) || BootMethod.create(id)
+      next model.id, model
+    end
 
-      get('/:id/blob') do
+    {
+      'kernel_blob' => -> (model) { model.kernel_system_path },
+      'initrd_blob' => -> (model) { model.initrd_system_path }
+    }.each do |blob_type, path_lambda|
+      get("/:id/#{blob_type}") do
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
-        env['cached.octet_response'] = File.read(resource.system_path)
+        env['cached.octet_response'] = File.read path_lambda.call(resource)
         ''
       end
 
-      post('/:id/blob') do
+      post("/:id/#{blob_type}") do
         unless role == :admin
           raise Sinja::ForbiddenError, <<~ERROR.squish
             You do not have permission to upload files. Please contact your
             system administrator for further assistance.
           ERROR
         end
-        write_octet_stream(resource.system_path)
+        write_octet_stream(path_lambda.call(resource))
         serialize_model(resource)
       end
     end

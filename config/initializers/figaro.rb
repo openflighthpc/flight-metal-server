@@ -43,5 +43,7 @@ Figaro.require_keys 'app_base_url',
                     'default_system_dir',
                     'default_base_download_url',
                     'temporary_directory',
-                    'dhcp_subnet_include_config_path'
+                    'dhcp_subnet_include_config_path',
+                    'Kernel_system_dir',
+                    'Initrd_system_dir'
 
