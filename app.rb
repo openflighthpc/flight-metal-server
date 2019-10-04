@@ -154,6 +154,7 @@ class App < Sinatra::Base
       update { |a| payload_update(a) }
 
       destroy do
+        raise Sinja::NotFoundError unless File.exists?(resource.path)
         klass.delete(*resource.__inputs__) do |model|
           FileUtils.rm_f model.system_path
           true

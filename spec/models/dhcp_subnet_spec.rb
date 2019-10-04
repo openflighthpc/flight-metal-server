@@ -78,6 +78,24 @@ RSpec.describe DhcpSubnet do
           expect(File.exists? subject.system_path).to be true
         end
       end
+
+      context 'with admin credentials and a system file but without a meta file' do
+        before(:all) do
+          FakeFS.clear!
+          FileUtils.mkdir_p File.dirname(read_subject.system_path)
+          FileUtils.touch read_subject.system_path
+          admin_headers
+          make_request
+        end
+
+        it 'returns 404' do
+          expect(last_response.status).to be(404)
+        end
+
+        it 'does not delete the system file' do
+          expect(File.exists? subject.system_path).to be(true)
+        end
+      end
     end
   end
 end
