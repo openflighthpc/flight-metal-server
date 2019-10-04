@@ -132,6 +132,14 @@ class App < Sinatra::Base
     end
   end
 
+  system_path_destroy_lambda = -> do
+    raise Sinja::NotFoundError unless File.exists?(resource.path)
+    resource.class.delete(*resource.__inputs__) do |model|
+      FileUtils.rm_f model.system_path
+      true
+    end
+  end
+
   [Kickstart, Legacy, Uefi, DhcpSubnet].each do |klass|
     resource klass.type, pkre: /\w+/ do
       helpers do
@@ -153,25 +161,17 @@ class App < Sinatra::Base
 
       update { |a| payload_update(a) }
 
-      destroy_lambda = -> do
-        raise Sinja::NotFoundError unless File.exists?(resource.path)
-        klass.delete(*resource.__inputs__) do |model|
-          FileUtils.rm_f model.system_path
-          true
-        end
-      end
-
       if klass == DhcpSubnet
         destroy do
           raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
             Can not delete the subnet whilst it still has hosts. Please delete
             the hosts and try again.
           ERROR
-          instance_exec(&destroy_lambda)
+          instance_exec(&system_path_destroy_lambda)
         end
       else
         destroy do
-          instance_exec(&destroy_lambda)
+          instance_exec(&system_path_destroy_lambda)
         end
       end
 
@@ -217,6 +217,10 @@ class App < Sinatra::Base
     end
 
     update { |a| payload_update(a) }
+
+    destroy do
+      instance_exec(&system_path_destroy_lambda)
+    end
 
     has_one DhcpSubnet.type do
       pluck do

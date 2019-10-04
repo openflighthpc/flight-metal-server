@@ -30,41 +30,24 @@
 require 'spec_helper'
 require 'shared_examples/system_path_deleter'
 
-RSpec.describe Kickstart do
+RSpec.describe DhcpHost do
   include_context 'with_system_path_subject'
 
+  def subject_inputs
+    [
+      "subnet_for_subject_#{described_class.type.gsub('-', '_')}",
+      "subject_#{described_class.type.gsub('-', '_')}"
+    ]
+  end
+
+  def create_subject_and_system_path
+    DhcpSubnet.create(subject_inputs.first)
+    DhcpHost.create(*subject_inputs) do |model|
+      FileUtils.mkdir_p File.dirname(model.system_path)
+      FileUtils.touch   model.system_path
+    end
+  end
+
   it_behaves_like 'system path deleter'
-
-  describe 'get show' do
-  end
-
-  describe 'GET /kickstart/:id/blob' do
-    context 'without credentials' do
-      it 'errors 403' do
-        unknown_headers
-        get subject_api_path('blob')
-        expect([401, 403]).to include(last_response.status)
-      end
-    end
-
-    context 'with a file' do
-      context 'with a user token' do
-        before(:all) do
-          FakeFS.clear!
-          create_subject_and_system_path
-          user_headers
-          get subject_api_path('blob')
-        end
-
-        it 'returns ok' do
-          expect(last_response).to be_ok
-        end
-
-        it 'returns the file' do
-          expect(last_response.body).to eq(File.read(subject.system_path))
-        end
-      end
-    end
-  end
 end
 

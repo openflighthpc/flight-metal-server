@@ -31,7 +31,7 @@ require 'spec_helper'
 require 'shared_examples/system_path_deleter'
 
 RSpec.describe DhcpSubnet do
-  include_context 'single_input_test_subject'
+  include_context 'with_system_path_subject'
 
   it_behaves_like 'system path deleter'
 
@@ -40,7 +40,7 @@ RSpec.describe DhcpSubnet do
       before(:all) do
         FakeFS.clear!
         create_subject_and_system_path
-        DhcpHost.create(subject_id, 'foo-host')
+        DhcpHost.create(*subject_inputs, 'foo-host')
         admin_headers
         delete subject_api_path
       end

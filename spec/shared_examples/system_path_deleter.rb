@@ -78,8 +78,9 @@ RSpec.shared_examples 'system path deleter' do
       context 'with admin credentials and a system file but without a meta file' do
         before(:all) do
           FakeFS.clear!
-          FileUtils.mkdir_p File.dirname(read_subject.system_path)
-          FileUtils.touch read_subject.system_path
+          # Create and delete the file as other background tasks maybe done on create
+          create_subject_and_system_path
+          FileUtils.rm_f read_subject.path
           admin_headers
           make_request
         end

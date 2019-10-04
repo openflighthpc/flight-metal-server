@@ -80,25 +80,23 @@ RSpec.configure do |c|
   end
 end
 
-RSpec.shared_context 'single_input_test_subject' do
-  described_class::TEST_SUBJECT_ID = "test_subject_#{described_class.type.gsub('-', '_')}"
+RSpec.shared_context 'with_system_path_subject' do
+  subject { read_subject }
 
-  subject { described_class.read(described_class::TEST_SUBJECT_ID) }
+  def subject_inputs
+    ["subjet_#{described_class.type.gsub('-', '_')}"]
+  end
 
   def subject_api_path(*a)
-    File.join('/', described_class.type, described_class::TEST_SUBJECT_ID, *a)
+    File.join('/', described_class.type, subject_inputs.join('/'), *a)
   end
 
   def read_subject
-    described_class.read(described_class::TEST_SUBJECT_ID)
-  end
-
-  def subject_id
-    described_class::TEST_SUBJECT_ID
+    described_class.read(*subject_inputs)
   end
 
   def create_subject_and_system_path
-    described_class.create(described_class::TEST_SUBJECT_ID) do |meta|
+    described_class.create(*subject_inputs) do |meta|
       FileUtils.mkdir_p File.dirname(meta.system_path)
       FileUtils.touch meta.system_path
     end
