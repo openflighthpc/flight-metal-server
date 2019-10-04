@@ -225,7 +225,7 @@ class App < Sinatra::Base
     destroy { instance_exec(&system_path_destroy_lambda) }
 
     has_one DhcpSubnet.type do
-      pluck { esource.read_dhcp_subnet }
+      pluck { resource.read_dhcp_subnet }
     end
   end
 
