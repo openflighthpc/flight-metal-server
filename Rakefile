@@ -32,13 +32,19 @@ task :require_bundler do
   ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 
   require 'rubygems'
-  require 'bundler/setup'
+  require 'bundler'
+
+  if ['development', 'test'].include?(ENV['RACK_ENV'])
+    Bundler.setup(:default, :development)
+    require 'pry'
+    require 'pry-byebug'
+    $: << File.expand_path('spec', __dir__)
+  else
+    Bundler.setup(:default)
+  end
 end
 
 task require: :require_bundler do
-  require 'pry'
-  require 'pry-byebug'
-
   require 'config/initializers/active_support'
   require 'config/initializers/figaro'
   require 'config/initializers/models'
@@ -62,7 +68,9 @@ task 'render:nginx' => :require do
   File.write('/etc/nginx/conf.d/metal-server.conf', rendered)
 end
 
-task console: :require do
+task :console do
+  ENV['RACK_ENV'] = 'development'
+  Rake::Task['require'].invoke
   binding.pry
 end
 

@@ -59,6 +59,8 @@ class BootMethodSerializer < Serializer
   has_one :kernel_blob
   has_one :initrd_blob
 
+  attributes :complete
+
   [
     'system_path', 'size', 'uploaded'
   ].each do |attr|

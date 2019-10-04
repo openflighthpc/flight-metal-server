@@ -32,6 +32,10 @@ class BootMethod < SingleIDFileModel
     'boot-methods'
   end
 
+  def id
+    __inputs__[0]
+  end
+
   def kernel_filename
     "#{id}.kernel"
   end
@@ -46,6 +50,14 @@ class BootMethod < SingleIDFileModel
 
   def initrd_system_path
     File.join(Figaro.env.Initrd_system_dir, initrd_filename)
+  end
+
+  def complete?
+    initrd_uploaded? && kernel_uploaded?
+  end
+
+  def complete
+    complete?
   end
 
   {

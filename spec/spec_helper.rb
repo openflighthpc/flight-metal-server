@@ -27,28 +27,47 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-source "https://rubygems.org"
+require 'rack/test'
+require 'rspec'
+require 'rspec/collection_matchers'
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+ENV['RACK_ENV'] = 'test'
 
-gem 'sinatra'
-gem 'sinja'
-gem 'figaro'
-gem 'flight_config'
-gem 'rake'
-gem 'hashie'
-gem 'jwt'
-gem 'tty-prompt'
+require 'rake'
+load File.expand_path('../Rakefile', __dir__)
+Rake::Task[:require].invoke
 
-gem 'unicorn'
+require 'fakefs/spec_helpers'
 
-group :development do
-	gem 'fakefs'
-  gem 'hashie'
-  gem 'pry'
-  gem 'pry-byebug'
-	gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-collection_matchers'
+require 'json'
+require 'hashie'
+
+module RSpecSinatraMixin
+  include Rack::Test::Methods
+  def app()
+    app = App.new
+    App::Middleware::SetContentHeaders.new(app)
+  end
 end
 
+# If you use RSpec 1.x you should use this instead:
+RSpec.configure do |c|
+	# Include the Sinatra helps into the application
+	c.include RSpecSinatraMixin
+
+	# Fake the File System each test
+	c.include FakeFS::SpecHelpers::All
+  FakeFS::File.define_method(:flock) { |*_| }
+
+  def admin_headers
+    header 'Authorization', "Bearer #{User.new(admin: true).generate_jwt}"
+  end
+
+  def parse_last_request_body
+    Hashie::Mash.new(JSON.pase(last_request.body))
+  end
+
+  def parse_last_response_body
+    Hashie::Mash.new(JSON.parse(last_response.body))
+  end
+end
