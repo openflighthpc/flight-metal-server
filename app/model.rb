@@ -31,6 +31,7 @@ class Model
   include FlightConfig::Reader
   include FlightConfig::Updater
   include FlightConfig::Globber
+  include FlightConfig::Deleter
 
   class << self
     attr_writer :content_base_path

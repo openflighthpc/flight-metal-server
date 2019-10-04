@@ -215,6 +215,14 @@ class App < Sinatra::Base
       next model.id, model
     end
 
+    destroy do
+      BootMethod.delete(*resource.__inputs__) do |boot|
+        FileUtils.rm_f boot.kernel_system_path
+        FileUtils.rm_f boot.initrd_system_path
+        true
+      end
+    end
+
     {
       'kernel_blob' => -> (model) { model.kernel_system_path },
       'initrd_blob' => -> (model) { model.initrd_system_path }

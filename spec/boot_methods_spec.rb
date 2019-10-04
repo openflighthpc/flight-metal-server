@@ -30,19 +30,32 @@
 require 'spec_helper.rb'
 
 RSpec.describe BootMethod do
-  TEST_SUBJECT_ID = 'foo-test-boot-method'
+  TEST_SUBJECT_ID = 'foo_test_boot_method'
   subject { described_class.read(TEST_SUBJECT_ID) }
 
   def join_path(*a)
     a ||= []
-    File.join("/#{described_class.type}", *a)
+    File.join('/', described_class.type, *a)
+  end
+
+  def subject_api_path
+    join_path(TEST_SUBJECT_ID)
   end
 
   let(:id) do
     'foo'
   end
 
-  describe '#list' do
+  def create_subject_kernel_and_initrd
+    described_class.create(TEST_SUBJECT_ID) do |boot|
+      [boot.kernel_system_path, boot.initrd_system_path].each do |path|
+        FileUtils.mkdir_p File.dirname(path)
+        FileUtils.touch path
+      end
+    end
+  end
+
+  describe 'GET index' do
     context 'with admin credentials' do
       def make_request(*a)
         admin_headers
@@ -65,12 +78,7 @@ RSpec.describe BootMethod do
         # Only creates the subject and request once
         before(:all) do
           FakeFS.clear!
-          described_class.create(TEST_SUBJECT_ID) do |boot|
-            [boot.kernel_system_path, boot.initrd_system_path].each do |path|
-              FileUtils.mkdir_p File.dirname(path)
-              FileUtils.touch path
-            end
-          end
+          create_subject_kernel_and_initrd
           make_request
         end
 
@@ -122,4 +130,35 @@ RSpec.describe BootMethod do
       end
     end
 	end
+
+  describe 'DELETE destroy' do
+    context 'with admin credentials' do
+      def make_request
+        admin_headers
+        get    subject_api_path
+        raise 'Failed to get subject' unless last_response.ok?
+        delete subject_api_path, parse_last_response_body.data.to_s
+      end
+
+      context 'with the meta, kenerl, and initrd files' do
+        before(:all) do
+          FakeFS.clear!
+          create_subject_kernel_and_initrd
+          make_request
+        end
+
+        it 'removes the meta file' do
+          expect(File.exists? subject.path).to be false
+        end
+
+        it 'removes the kenerl file' do
+          expect(File.exists? subject.kernel_system_path).to be false
+        end
+
+        it 'removes the initrd file' do
+          expect(File.exists? subject.initrd_system_path).to be false
+        end
+      end
+    end
+  end
 end
