@@ -90,7 +90,7 @@ class App < Sinatra::Base
     # Sinja is opinionated and does not allow this by default.
     # See App::Middleware::SetContentHeaders for details
     def write_octet_stream(path)
-      payload = env['cached.octet_stream'].read
+      payload = env['octet-stream.in'].read
       if payload.length.to_s == env['CONTENT_LENGTH']
         FileUtils.mkdir_p File.dirname(path)
         File.write(path, payload)
@@ -188,7 +188,7 @@ class App < Sinatra::Base
       if klass == Kickstart
         get("/:id/blob") do
           authorize_user!
-          env['cached.octet_response'] = File.read resource.system_path
+          env['octet-stream.out'] = File.read resource.system_path
           ''
         end
       end
@@ -257,13 +257,13 @@ class App < Sinatra::Base
     end
 
     {
-      'kernel_blob' => -> (model) { model.kernel_system_path },
-      'initrd_blob' => -> (model) { model.initrd_system_path }
+      'kernel-blob' => -> (model) { model.kernel_system_path },
+      'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
-        env['cached.octet_response'] = File.read path_lambda.call(resource)
+        env['octet-stream.out'] = File.read path_lambda.call(resource)
         ''
       end
 

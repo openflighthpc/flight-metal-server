@@ -49,21 +49,20 @@ class App
       # IO
       def call(env)
         empty_io = Rack::Lint::InputWrapper.new(StringIO.new)
-        env['cached.octet_response'] = nil
+        env['octet-stream.out'] = nil
         if env['CONTENT_TYPE'] == 'application/octet-stream'
-          env['cached.octet_stream'] = env['rack.input']
+          env['octet-stream.in'] = env['rack.input']
           env['rack.input'] = empty_io
           env['CONTENT_TYPE'] = nil
         else
-          env['cached.octet_stream'] = empty_io
+          env['octet-stream.in'] = empty_io
         end
         env['CONTENT_TYPE'] = 'application/vnd.api+json'
         env['HTTP_ACCEPT'] = 'application/vnd.api+json'
 
         status, headers, body = @app.call(env)
 
-        if env['cached.octet_response']
-          payload = env['cached.octet_response']
+        if payload = env['octet-stream.out']
           headers['Content-Type'] = 'application/octet-stream'
           headers['Content-Length']= payload.length.to_s
           [status, headers, [payload]]
