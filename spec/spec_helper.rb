@@ -84,7 +84,7 @@ RSpec.shared_context 'with_system_path_subject' do
   subject { read_subject }
 
   def subject_inputs
-    ["subjet_#{described_class.type.gsub('-', '_')}"]
+    ["test-subject_#{described_class.type}"]
   end
 
   def subject_api_path(*a)

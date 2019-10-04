@@ -140,8 +140,10 @@ class App < Sinatra::Base
     end
   end
 
+  ID_REGEX = /[\w-]+/
+
   [Kickstart, Legacy, Uefi, DhcpSubnet].each do |klass|
-    resource klass.type, pkre: /\w+/ do
+    resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
         # a closure around the parent context. This way the `klass` variable is
@@ -193,8 +195,8 @@ class App < Sinatra::Base
     end
   end
 
-  SimpleHostRegex = /\w+\/\w+/
-  MatchHostRegex  = /(\w+)\/(\w+)/
+  SimpleHostRegex = /#{ID_REGEX}\/#{ID_REGEX}/
+  MatchHostRegex  = /(#{ID_REGEX})\/(#{ID_REGEX})/
   resource DhcpHost.type, pkre: SimpleHostRegex do
     helpers do
       def find(id)
@@ -220,7 +222,7 @@ class App < Sinatra::Base
     end
   end
 
-  resource BootMethod.type, pkre: /\w+/ do
+  resource BootMethod.type, pkre: ID_REGEX do
     helpers do
       def find(id)
         BootMethod.exists?(id) ? BootMethod.read(id) : nil

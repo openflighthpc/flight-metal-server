@@ -35,8 +35,8 @@ RSpec.describe DhcpHost do
 
   def subject_inputs
     [
-      "subnet_for_subject_#{described_class.type.gsub('-', '_')}",
-      "subject_#{described_class.type.gsub('-', '_')}"
+      "subnet-for-subject_#{described_class.type}",
+      "test-subject_#{described_class.type}"
     ]
   end
 
