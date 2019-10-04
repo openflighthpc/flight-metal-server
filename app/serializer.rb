@@ -75,6 +75,8 @@ end
 
 class KickstartSerializer < FileModelSerializer
   include SerializePayload
+
+  has_one :blob
 end
 
 class LegacySerializer < FileModelSerializer
