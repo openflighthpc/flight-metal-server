@@ -30,10 +30,11 @@
 require 'flight_config'
 require 'app/model'
 require 'app/models/boot_method'
+require 'app/models/dhcp_host'
+require 'app/models/dhcp_subnet'
 require 'app/models/kickstart'
 require 'app/models/uefi'
 require 'app/models/legacy'
-require 'app/models/dhcp_subnet'
 require 'app/models/user'
 
 Model.content_base_path = Figaro.env.content_base_path

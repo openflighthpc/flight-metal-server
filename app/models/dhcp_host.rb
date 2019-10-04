@@ -27,67 +27,31 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Serializer
-  include JSONAPI::Serializer
-
+class DhcpHost < FileModel
   class << self
-    attr_writer :base_url
+    def path(subnet, name)
+      File.join(content_base_path, "dhcp-hosts/#{subnet}.subnet/etc/#{name}.yaml")
+    end
 
-    def base_url
-      @base_url || raise('The serializer base url has not been set')
+    def type
+      'dhcp-hosts'
     end
   end
 
-  def base_url
-    Serializer.base_url
+  def subnet
+    __inputs__[0]
   end
 
-  def type
-    object.class.type
+  def name
+    __inputs__[1]
   end
-end
 
-module SerializePayload
-  extend ActiveSupport::Concern
-
-  included do
-    attribute :payload
+  def id
+    "#{subnet}/#{name}"
   end
-end
 
-class BootMethodSerializer < Serializer
-  has_one :kernel_blob
-  has_one :initrd_blob
-
-  [
-    'system_path', 'size', 'uploaded'
-  ].each do |attr|
-    attributes :"kernel_#{attr}", :"initrd_#{attr}"
+  def filename
+    "dhcp-hosts/#{subnet}.subnet/#{name}.host"
   end
-end
-
-class FileModelSerializer < Serializer
-  attributes :size, :system_path
-  attribute(:uploaded) { |s| s.object.uploaded? }
-end
-
-class KickstartSerializer < FileModelSerializer
-  include SerializePayload
-end
-
-class LegacySerializer < FileModelSerializer
-  include SerializePayload
-end
-
-class UefiSerializer < FileModelSerializer
-  include SerializePayload
-end
-
-class DhcpSubnetSerializer < FileModelSerializer
-  include SerializePayload
-end
-
-class DhcpHostSerializer < FileModelSerializer
-  include SerializePayload
 end
 

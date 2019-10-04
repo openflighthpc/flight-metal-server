@@ -97,11 +97,6 @@ class FileModel < Model
     end
   end
 
-  # The name of the object is equivalent to its ID
-  def name
-    id
-  end
-
   def filename
     raise NotImplementedError
   end

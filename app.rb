@@ -99,6 +99,17 @@ class App < Sinatra::Base
       User.from_jwt(token).role
     end
 
+    def payload_update(attr)
+      if payload = attr[:payload]
+        resource.class.create_or_update(*resource.__inputs__) do |model|
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
+        end
+      else
+        raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+      end
+    end
+
     private
 
     def token
@@ -133,24 +144,39 @@ class App < Sinatra::Base
         klass.glob_read('*')
       end
 
-      update do |attr|
-        if payload = attr[:payload]
-          klass.create_or_update(*resource.__inputs__) do |model|
-            File.write model.system_path, payload.to_s
-          end
+      update { |a| payload_update(a) }
+    end
+  end
+
+  SimpleHostRegex = /\w+\/\w+/
+  MatchHostRegex  = /(\w+)\/(\w+)/
+  resource DhcpHost.type, pkre: SimpleHostRegex do
+    helpers do
+      def find(id)
+        subnet, name = MatchHostRegex.match(id).captures
+        if DhcpSubnet.exists?(subnet)
+          DhcpHost.read(subnet, name)
         else
-          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+          raise Sinja::ForbiddenError, <<~ERROR.squish
+            Can not proceed with this request as the DHCP subnet does
+            not exist
+          ERROR
         end
       end
     end
+
+    show
+
+    index do
+      DhcpHost.glob_read('*', '*')
+    end
+
+    update { |a| payload_update(a) }
   end
 
   resource BootMethod.type, pkre: /\w+/ do
     helpers do
-      # The find method needs to be dynamically defined as the block preforms
-      # a closure around the parent context. This way the `klass` variable is
-      # available inside the block
-      define_method(:find) do |id|
+      def find(id)
         BootMethod.exists?(id) ? BootMethod.read(id) : nil
       end
     end
