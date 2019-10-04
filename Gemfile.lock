@@ -18,7 +18,7 @@ GEM
     flight_config (0.3.3)
       tty-config
     hashie (3.6.0)
-    i18n (1.6.0)
+    i18n (1.7.0)
       concurrent-ruby (~> 1.0)
     json (2.2.0)
     jsonapi-serializers (1.0.1)
@@ -26,7 +26,7 @@ GEM
     jwt (2.2.1)
     kgio (2.11.2)
     method_source (0.9.2)
-    minitest (5.12.0)
+    minitest (5.12.2)
     multi_json (1.13.1)
     mustermann (1.0.3)
     necromancer (0.5.0)

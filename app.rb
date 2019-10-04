@@ -194,11 +194,19 @@ class App < Sinatra::Base
       def find(id)
         BootMethod.exists?(id) ? BootMethod.read(id) : nil
       end
+
+      def filter(collection, fields = {})
+        if fields[:complete]
+          collection.select(&:complete?)
+        else
+          collection
+        end
+      end
     end
 
     show
 
-    index do
+    index(filter_by: [:complete])  do
       BootMethod.glob_read('*')
     end
 

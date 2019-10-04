@@ -44,9 +44,9 @@ RSpec.describe BootMethod do
 
   describe '#list' do
     context 'with admin credentials' do
-      def make_request
+      def make_request(*a)
         admin_headers
-        get join_path
+        get join_path, *a
       end
 
       context 'without any models' do
@@ -61,9 +61,10 @@ RSpec.describe BootMethod do
         end
       end
 
-      context 'with a meta, kernel, and initrd' do
+      context 'with a meta, kernel, and initrd files' do
         # Only creates the subject and request once
         before(:all) do
+          FakeFS.clear!
           described_class.create(TEST_SUBJECT_ID) do |boot|
             [boot.kernel_system_path, boot.initrd_system_path].each do |path|
               FileUtils.mkdir_p File.dirname(path)
@@ -81,8 +82,42 @@ RSpec.describe BootMethod do
           expect(parse_last_response_body.data.first.type).to eq(described_class.type)
         end
 
+        it 'has the correct id' do
+          expect(parse_last_response_body.data.first.id).to eq(subject.id)
+        end
+
         it 'is complete' do
           expect(parse_last_response_body.data.first.attributes.complete).to eq(true)
+        end
+      end
+
+      ['kernel', 'initrd'].each do |type|
+        context "with only the meta and #{type} files" do
+          # Only creates the subject and request once
+          before(:all) do
+            FakeFS.clear!
+            described_class.create(TEST_SUBJECT_ID) do |boot|
+              path = boot.send("#{type}_system_path")
+              FileUtils.mkdir_p File.dirname(path)
+              FileUtils.touch path
+            end
+          end
+
+          context 'without any query parameters' do
+            before(:all) { make_request }
+
+            it 'is included with the request' do
+              expect(parse_last_response_body.data.first.id).to eq(subject.id)
+            end
+          end
+
+          context 'with complete query parameter' do
+            before(:all) { make_request('', { 'QUERY_STRING' => 'filter[complete]=true' }) }
+
+            it 'does not get indexed' do
+              expect(parse_last_response_body.data).to be_empty
+            end
+          end
         end
       end
     end
