@@ -93,6 +93,10 @@ RSpec.shared_context 'single_input_test_subject' do
     described_class.read(described_class::TEST_SUBJECT_ID)
   end
 
+  def subject_id
+    described_class::TEST_SUBJECT_ID
+  end
+
   def create_subject_and_system_path
     described_class.create(described_class::TEST_SUBJECT_ID) do |meta|
       FileUtils.mkdir_p File.dirname(meta.system_path)

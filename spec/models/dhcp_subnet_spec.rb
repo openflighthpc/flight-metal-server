@@ -34,5 +34,21 @@ RSpec.describe DhcpSubnet do
   include_context 'single_input_test_subject'
 
   it_behaves_like 'system path deleter'
+
+  describe 'DELETE destroy' do
+    context 'with admin credentials, meta, and a host files' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
+        DhcpHost.create(subject_id, 'foo-host')
+        admin_headers
+        delete subject_api_path
+      end
+
+      it 'returns a conflict' do
+        expect(last_response.status).to be(409)
+      end
+    end
+  end
 end
 

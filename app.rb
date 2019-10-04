@@ -153,7 +153,7 @@ class App < Sinatra::Base
 
       update { |a| payload_update(a) }
 
-      destroy do
+      destroy_lambda = -> do
         raise Sinja::NotFoundError unless File.exists?(resource.path)
         klass.delete(*resource.__inputs__) do |model|
           FileUtils.rm_f model.system_path
@@ -161,7 +161,20 @@ class App < Sinatra::Base
         end
       end
 
-      # Additional model based routes
+      if klass == DhcpSubnet
+        destroy do
+          raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
+            Can not delete the subnet whilst it still has hosts. Please delete
+            the hosts and try again.
+          ERROR
+          instance_exec(&destroy_lambda)
+        end
+      else
+        destroy do
+          instance_exec(&destroy_lambda)
+        end
+      end
+
       if klass == DhcpSubnet
         has_many DhcpHost.type do
           fetch do
@@ -272,4 +285,6 @@ class App < Sinatra::Base
 end
 
 require 'app/version'
+
+
 
