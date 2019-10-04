@@ -28,75 +28,11 @@
 #===============================================================================
 
 require 'spec_helper'
+require 'shared_examples/system_path_deleter'
 
 RSpec.describe DhcpSubnet do
   include_context 'single_input_test_subject'
 
-  describe 'DELETE destroy' do
-    def make_request(*a)
-      delete subject_api_path(*a)
-    end
-
-    context 'with an existing config' do
-      include_examples 'error_without_credenitals'
-
-      context 'with admin credentials' do
-        before(:all) do
-          FakeFS.clear!
-          create_subject_and_system_path
-          admin_headers
-          make_request
-        end
-
-        it 'returns no content' do
-          expect(last_response).to be_no_content
-        end
-
-        it 'removes the meta file' do
-          expect(File.exists? subject.path).to be false
-        end
-
-        it 'removes the system file' do
-          expect(File.exists? subject.system_path).to be false
-        end
-      end
-
-      context 'with user credentials' do
-        before(:all) do
-          FakeFS.clear!
-          create_subject_and_system_path
-          user_headers
-          make_request
-        end
-
-        it 'is forbidden' do
-          expect_forbidden
-        end
-
-        it 'it does not delete the record' do
-          expect(File.exists? subject.path).to be true
-          expect(File.exists? subject.system_path).to be true
-        end
-      end
-
-      context 'with admin credentials and a system file but without a meta file' do
-        before(:all) do
-          FakeFS.clear!
-          FileUtils.mkdir_p File.dirname(read_subject.system_path)
-          FileUtils.touch read_subject.system_path
-          admin_headers
-          make_request
-        end
-
-        it 'returns 404' do
-          expect(last_response.status).to be(404)
-        end
-
-        it 'does not delete the system file' do
-          expect(File.exists? subject.system_path).to be(true)
-        end
-      end
-    end
-  end
+  it_behaves_like 'system path deleter'
 end
 

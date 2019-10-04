@@ -28,22 +28,12 @@
 #===============================================================================
 
 require 'spec_helper'
+require 'shared_examples/system_path_deleter'
 
 RSpec.describe Kickstart do
-  Kickstart::TEST_SUBJECT_ID = 'foo_kickstart'
+  include_context 'single_input_test_subject'
 
-  subject { described_class.read(Kickstart::TEST_SUBJECT_ID) }
-
-  def subject_api_path(*a)
-    File.join('/', described_class.type, Kickstart::TEST_SUBJECT_ID, *a)
-  end
-
-  def create_subject_and_file
-    described_class.create(Kickstart::TEST_SUBJECT_ID) do |meta|
-      FileUtils.mkdir_p File.dirname(meta.system_path)
-      FileUtils.touch meta.system_path
-    end
-  end
+  it_behaves_like 'system path deleter'
 
   describe 'get show' do
   end
@@ -61,7 +51,7 @@ RSpec.describe Kickstart do
       context 'with a user token' do
         before(:all) do
           FakeFS.clear!
-          create_subject_and_file
+          create_subject_and_system_path
           user_headers
           get subject_api_path('blob')
         end
