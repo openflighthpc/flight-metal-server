@@ -181,6 +181,12 @@ class App < Sinatra::Base
     end
 
     update { |a| payload_update(a) }
+
+    has_one DhcpSubnet.type do
+      pluck do
+        resource.read_dhcp_subnet
+      end
+    end
   end
 
   resource BootMethod.type, pkre: /\w+/ do

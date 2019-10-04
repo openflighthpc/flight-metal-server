@@ -91,5 +91,7 @@ end
 
 class DhcpHostSerializer < FileModelSerializer
   include SerializePayload
+
+  has_one :dhcp_subnet
 end
 

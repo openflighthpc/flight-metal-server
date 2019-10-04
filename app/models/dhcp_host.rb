@@ -53,5 +53,9 @@ class DhcpHost < FileModel
   def filename
     "dhcp-hosts/#{subnet}.subnet/#{name}.host"
   end
+
+  def read_dhcp_subnet
+    DhcpSubnet.read(subnet, registry: __registry__)
+  end
 end
 
