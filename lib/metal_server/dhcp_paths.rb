@@ -95,9 +95,13 @@ module MetalServer
     include FlightConfig::Deleter
 
     def self.write_current_master_config(base)
-      paths = DhcpPaths.current(base)
+      cur_index = DhcpCurrent.new(base).index
+      paths = DhcpPaths.new(base, cur_index)
       FileUtils.mkdir_p File.dirname(paths.master_include)
-      File.write paths.master_include, <<~CONF
+      if cur_index == 0
+        FileUtils.touch paths.master_include
+      else
+        File.write paths.master_include, <<~CONF
 #==============================================================================
 # Copyright (C) 2019-present Alces Flight Ltd.
 #
@@ -132,6 +136,7 @@ module MetalServer
 
 include #{paths.include_subnets};
 CONF
+      end
     end
 
     def self.backup_and_restore_on_error(base)

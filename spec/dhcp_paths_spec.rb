@@ -145,7 +145,20 @@ RSpec.describe MetalServer::DhcpRestorer do
       expect(File.exists? described_class.path(base)).to be(false)
     end
 
-    context 'without and dhcp files but with a current index' do
+    context 'without any dhcp files or a current index' do
+      it 'writes an empty master config on failure' do
+        FakeFS.clear!
+        base = '/some/random/base'
+        expect do
+          described_class.backup_and_restore_on_error(base) do
+            raise_test_error
+          end
+        end.to raise_error(test_error)
+        expect(File.read MetalServer::DhcpPaths.master_include(base)).to be_empty
+      end
+    end
+
+    context 'without any dhcp files but with a current index' do
       let(:old_index)   { 5 }
       let(:new_index)  { old_index + 1 }
 
