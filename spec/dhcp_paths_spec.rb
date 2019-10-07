@@ -71,6 +71,46 @@ RSpec.describe MetalServer::DhcpPaths do
   end
 end
 
+RSpec.describe MetalServer::DhcpCurrent do
+  let(:base)        { '/path/to/base/dhcp/configs' }
+  let(:random_max)  { 100 }
+  let(:random_ids)  { (0..10).map { rand(random_max) }.uniq }
+
+  let(:max_id)      { random_max + 10 }
+  let(:test_ids)    { [*random_ids, max_id, 'strings-should-be-ignored'].shuffle }
+
+  subject { described_class.new(base) }
+
+  context 'with all the test ids' do
+    before do
+      FakeFS.clear!
+      test_ids.each do |id|
+        path = MetalServer::DhcpPaths.new(base, id).include_subnets
+        FileUtils.mkdir_p File.dirname(path)
+        FileUtils.touch   path
+      end
+    end
+
+    describe '#id' do
+      it 'returns the maximum id' do
+        expect(subject.id).to be(max_id)
+      end
+    end
+  end
+
+  context 'without any ids' do
+    before do
+      FakeFS.clear!
+    end
+
+    describe '#id' do
+      it 'returns 0' do
+        expect(subject.id).to be(0)
+      end
+    end
+  end
+end
+
 RSpec.describe MetalServer::DhcpUpdater do
   let(:base) { '/some/random/base/path' }
 

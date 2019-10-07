@@ -29,9 +29,8 @@
 
 module MetalServer
   DhcpPaths = Struct.new(:base, :version) do
-    # TODO: Make this preform a lookup for the current version of the paths
     def self.current(base)
-      new(base, 'current')
+      new(base, DhcpCurrent.new(base).id)
     end
 
     def self.master_include(base)
@@ -61,6 +60,25 @@ module MetalServer
 
     def host_conf(subnet, name)
       join('subnets', "#{subnet}.hosts", "#{name}.conf")
+    end
+  end
+
+  DhcpCurrent = Struct.new(:base) do
+    def id
+      Dir.glob(glob_regex)
+         .select { |p| match_regex.match?(p) }
+         .map { |p| match_regex.match(p)[:id].to_i }
+         .max || 0
+    end
+
+    private
+
+    def glob_regex
+      DhcpPaths.new(base, '*').include_subnets
+    end
+
+    def match_regex
+      /\A#{DhcpPaths.new(base, '(?<id>[\d]+)').include_subnets}\Z/
     end
   end
 
