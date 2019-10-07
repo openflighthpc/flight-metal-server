@@ -117,8 +117,8 @@ module MetalServer
           yield if block_given?
 
           # Remove the old and tmp directories
+          Dir.rmdir base_old_dir
           FileUtils.rm_rf base_tmp_dir
-          FileUtils.rm_rf base_old_dir
         ensure
           # Ensure the updater object clears it self
           FileUtils.rm_f updater.path
@@ -131,8 +131,8 @@ module MetalServer
               FileUtils.mv File.expand_path(tmp, base_tmp_dir), base_old_dir
             end
 
+            Dir.rmdir base_tmp_dir
             FileUtils.rm_rf base_new_dir
-            FileUtils.rm_rf base_tmp_dir
           end
         end
       end

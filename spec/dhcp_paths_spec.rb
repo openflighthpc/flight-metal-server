@@ -193,12 +193,12 @@ RSpec.describe MetalServer::DhcpUpdater do
         end
       end
 
-      it 'leaves the new files in place if exists normally' do
+      it 'leaves the new files in place if success' do
         described_class.modify_and_restart_dhcp!(base)
         new_paths.each { |p| expect(File.exists? p).to be(true) }
       end
 
-      it 'deletes the old paths if exists noramlly' do
+      it 'deletes the old paths if success' do
         described_class.modify_and_restart_dhcp!(base)
         expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id).join).to be(false)
       end
@@ -223,6 +223,8 @@ RSpec.describe MetalServer::DhcpUpdater do
         expect(Dir.glob(tmp_glob)).to be_empty
       end
 
+      # NOTE: Periodically check if this test still work. It looks like it could
+      # fail silently at any-moment
       it 'deletes the tmp files on error' do
         expect do
           described_class.modify_and_restart_dhcp!(base) { raise_test_error }
