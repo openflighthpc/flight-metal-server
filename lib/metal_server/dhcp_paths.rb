@@ -29,6 +29,11 @@
 
 module MetalServer
   DhcpPaths = Struct.new(:base, :version) do
+    # TODO: Make this preform a lookup for the current version of the paths
+    def self.current(base)
+      new(base, 'current')
+    end
+
     def self.master_include(base)
       File.join(base, 'master-dhcp.conf')
     end

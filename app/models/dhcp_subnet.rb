@@ -28,6 +28,7 @@
 #===============================================================================
 
 require 'erb'
+require 'metal_server/dhcp_paths'
 
 class DhcpSubnet < SingleIDFileModel
   class << self
@@ -40,8 +41,12 @@ class DhcpSubnet < SingleIDFileModel
     end
   end
 
+  def system_path
+    MetalServer::DhcpPaths.current(self.class.content_base_path).subnet_conf(id)
+  end
+
   def filename
-    "subnet.#{id}.conf"
+    File.dirname(system_path)
   end
 
   def read_dhcp_hosts

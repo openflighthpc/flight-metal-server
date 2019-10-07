@@ -37,5 +37,9 @@ class Kickstart < SingleIDFileModel
   def filename
     "#{id}.ks"
   end
+
+  def system_path
+    File.join(self.class.base_path, filename)
+  end
 end
 

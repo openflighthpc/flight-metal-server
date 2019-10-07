@@ -35,5 +35,9 @@ class Uefi < SingleIDFileModel
   def filename
     "grub.cfg-#{id}"
   end
+
+  def system_path
+    File.join(self.class.base_path, filename)
+  end
 end
 

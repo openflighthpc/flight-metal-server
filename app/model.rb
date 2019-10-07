@@ -103,7 +103,7 @@ class FileModel < Model
   end
 
   def system_path
-    File.join(self.class.base_path, filename)
+    raise NotImplementedError
   end
 
   def uploaded?

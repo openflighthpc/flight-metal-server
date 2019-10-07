@@ -50,8 +50,12 @@ class DhcpHost < FileModel
     "#{subnet}/#{name}"
   end
 
+  def system_path
+    MetalServer::DhcpPaths.current(self.class.content_base_path).host_conf(subnet, name)
+  end
+
   def filename
-    "dhcp-hosts/#{subnet}.subnet/#{name}.host"
+    File.dirname(system_path)
   end
 
   def read_dhcp_subnet
