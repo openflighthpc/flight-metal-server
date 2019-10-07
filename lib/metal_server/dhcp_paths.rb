@@ -116,25 +116,24 @@ module MetalServer
           # Yield control to the API to preform the update
           yield if block_given?
 
-          # Remove the old directory on success
-          FileUtils.rm_f base_old_dir
-        rescue => e
-          # Remove the new directory on failure
-          FileUtils.rm_f base_new_dir
-
-          # Restores the old directory from the temporary files
-          Dir.each_child(base_tmp_dir) do |tmp|
-            FileUtils.mv(File.expand_path(tmp, base_tmp_dir), base_old_dir)
-          end
-
-          # Reraise the error for further handling
-          raise e
+          # Remove the old and tmp directories
+          FileUtils.rm_rf base_tmp_dir
+          FileUtils.rm_rf base_old_dir
         ensure
           # Ensure the updater object clears it self
           FileUtils.rm_f updater.path
 
-          # Deletes the temporary files regardless of outcome
-          FileUtils.rm_rf base_tmp_dir
+          # Assume the update went wrong if the tmp files still exist
+          # rescue should not be used as it will miss Interrupt and
+          # other Exceptions
+          if Dir.exists?(base_tmp_dir)
+            Dir.each_child(base_tmp_dir) do |tmp|
+              FileUtils.mv File.expand_path(tmp, base_tmp_dir), base_old_dir
+            end
+
+            FileUtils.rm_rf base_new_dir
+            FileUtils.rm_rf base_tmp_dir
+          end
         end
       end
     end

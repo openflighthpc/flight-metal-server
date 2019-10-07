@@ -169,6 +169,12 @@ RSpec.describe MetalServer::DhcpUpdater do
         old_paths.map { |path| path.sub(old_id.to_s, (old_id + 1).to_s) }
       end
 
+      let(:test_error) { Interrupt }
+
+      def raise_test_error
+        raise test_error
+      end
+
       # Creates all the files
       before do
         FakeFS.clear!
@@ -199,15 +205,15 @@ RSpec.describe MetalServer::DhcpUpdater do
 
       it 'leaves the old files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
-        end.to raise_error(RuntimeError)
+          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+        end.to raise_error(test_error)
         old_paths.each { |p| expect(File.exists? p).to be(true) }
       end
 
       it 'deletes the new files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
-        end.to raise_error(RuntimeError)
+          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+        end.to raise_error(test_error)
         expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id + 1).join).to be(false)
       end
 
@@ -219,8 +225,8 @@ RSpec.describe MetalServer::DhcpUpdater do
 
       it 'deletes the tmp files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
-        end.to raise_error(RuntimeError)
+          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+        end.to raise_error(test_error)
         tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
         expect(Dir.glob(tmp_glob)).to be_empty
       end
