@@ -29,6 +29,7 @@
 
 task :require_bundler do
   $: << __dir__
+  $: << File.join(__dir__, 'lib')
   ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
 
   require 'rubygems'

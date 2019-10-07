@@ -27,29 +27,36 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'flight_config'
+module MetalServer
+  DhcpPaths = Struct.new(:base, :version) do
+    def self.master_include(base)
+      File.join(base, 'master-dhcp.conf')
+    end
 
-require 'metal_server/dhcp_paths'
+    def master_include
+      self.class.master_include(base)
+    end
 
-require 'app/model'
-require 'app/models/boot_method'
-require 'app/models/dhcp_host'
-require 'app/models/dhcp_subnet'
-require 'app/models/kickstart'
-require 'app/models/uefi'
-require 'app/models/legacy'
-require 'app/models/user'
+    def join(*a)
+      File.join(base, version.to_s, *a)
+    end
 
-Model.content_base_path = Figaro.env.content_base_path
-FileModel.base_path = Figaro.env.default_system_dir
-FileModel.base_url = Figaro.env.default_base_download_url
+    def include_subnets
+      join('subnets.conf')
+    end
 
-FileModel.inherited_classes.each do |klass|
-  value = ENV["#{klass.to_s}_system_dir"]
-  klass.base_path = value if value
+    def subnet_conf(name)
+      join('subnets', "#{name}.conf")
+    end
+
+    # Must be in the same directory as the subnet config. This is to allow relative paths
+    def subnet_hosts(name)
+      join('subnets', "#{name}.hosts.conf")
+    end
+
+    def host_conf(subnet, name)
+      join('subnets', "#{subnet}.hosts", "#{name}.conf")
+    end
+  end
 end
-
-DhcpSubnet.dhcp_subnet_include_path = Figaro.env.dhcp_subnet_include_config_path
-
-User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 

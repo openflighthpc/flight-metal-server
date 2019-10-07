@@ -1,0 +1,73 @@
+# frozen_string_literal: true
+
+#==============================================================================
+# Copyright (C) 2019-present Alces Flight Ltd.
+#
+# This file is part of Metal Server.
+#
+# This program and the accompanying materials are made available under
+# the terms of the Eclipse Public License 2.0 which is available at
+# <https://www.eclipse.org/legal/epl-2.0>, or alternative license
+# terms made available by Alces Flight Ltd - please direct inquiries
+# about licensing to licensing@alces-flight.com.
+#
+# Metal Server is distributed in the hope that it will be useful, but
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR
+# IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS
+# OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+# PARTICULAR PURPOSE. See the Eclipse Public License 2.0 for more
+# details.
+#
+# You should have received a copy of the Eclipse Public License 2.0
+# along with Flight Cloud. If not, see:
+#
+#  https://opensource.org/licenses/EPL-2.0
+#
+# For more information on Metal Server, please visit:
+# https://github.com/openflighthpc/metal-server
+#===============================================================================
+
+require 'spec_helper'
+
+RSpec.describe MetalServer::DhcpPaths do
+  subject { described_class.new(base, version) }
+
+  let(:base)    { '/some/random/base/path' }
+  let(:version) { 10 }
+
+  describe '#master_include' do
+    let(:subject_path) { subject.master_include }
+
+    it 'is not defined with the version' do
+      expect(subject_path).not_to include(version.to_s)
+    end
+  end
+
+  describe '#include_subnets' do
+    let(:subject_path) { subject.include_subnets }
+
+    it 'is defined with the version' do
+      expect(subject_path).to include(version.to_s)
+    end
+  end
+
+  context 'with a named subnet' do
+    let(:subnet_name)     { 'test-subnet' }
+    let(:conf_dir)        { File.dirname(subject.subnet_conf(subnet_name)) }
+    let(:hosts_conf_dir)  { File.dirname(subject.subnet_hosts(subnet_name)) }
+
+    it 'defines its config and hosts list in the same directory' do
+      expect(conf_dir).to eq(hosts_conf_dir)
+    end
+
+    context 'with a named host' do
+      let(:host_name)     { 'test-host' }
+      let(:host_conf_dir) { File.dirname(subject.host_conf(subnet_name, host_name)) }
+
+      it 'defines a config one directory down from its subnet' do
+        expect(host_conf_dir).to eq(File.join(conf_dir, "#{subnet_name}.hosts"))
+      end
+    end
+  end
+end
+
