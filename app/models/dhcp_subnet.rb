@@ -31,27 +31,12 @@ require 'erb'
 
 class DhcpSubnet < SingleIDFileModel
   class << self
-    attr_writer :dhcp_subnet_include_path
-
-    def dhcp_subnet_include_path
-      DhcpSubnet.instance_variable_get(:@dhcp_subnet_include_path) || raise(<<~ERROR.chomp)
-        Could not locate the path to the dhcp subnet include config
-      ERROR
-    end
-
-    def dhcp_subnet_include_template
-      File.join(Figaro.env.app_root_dir, 'templates', 'dhcp-subnets.conf')
-    end
-
     def type
       'dhcp-subnets'
     end
 
     def render_subnets
-      FileUtils.mkdir_p File.dirname(dhcp_subnet_include_path)
-      template = File.read(dhcp_subnet_include_template)
-      rendered = ERB.new(template, nil, '-').result(binding)
-      File.write(dhcp_subnet_include_path, rendered)
+      raise NotImplementedError
     end
   end
 
