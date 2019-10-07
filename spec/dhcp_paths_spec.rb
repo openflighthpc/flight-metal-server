@@ -194,7 +194,7 @@ RSpec.describe MetalServer::DhcpUpdater do
 
       it 'deletes the old paths if exists noramlly' do
         described_class.modify_and_restart_dhcp!(base)
-        old_paths.each { |p| expect(File.exists? p).to be(false) }
+        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id).join).to be(false)
       end
 
       it 'leaves the old files on error' do
@@ -208,7 +208,7 @@ RSpec.describe MetalServer::DhcpUpdater do
         expect do
           described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
         end.to raise_error(RuntimeError)
-        new_paths.each { |p| expect(File.exists? p).to be(false) }
+        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id + 1).join).to be(false)
       end
 
       it 'deletes the tmp files on success' do

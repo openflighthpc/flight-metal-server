@@ -76,11 +76,11 @@ module MetalServer
     private
 
     def glob_regex
-      DhcpPaths.new(base, '*').include_subnets
+      DhcpPaths.new(base, '*').join
     end
 
     def match_regex
-      /\A#{DhcpPaths.new(base, '(?<id>[\d]+)').include_subnets}\Z/
+      /\A#{DhcpPaths.new(base, '(?<id>[\d]+)').join}\Z/
     end
   end
 
