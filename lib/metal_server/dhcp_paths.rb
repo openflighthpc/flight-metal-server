@@ -231,8 +231,20 @@ CONF
 
   class DhcpValidationError < Sinja::BadRequestError; end
 
+  class DhcpOfflineError < Sinja::HttpError
+    MESSAGE = <<~ERROR.squish
+      The DHCP entires can not be updated as the DHCP server is
+      not currently running. Please contact your system administrator
+      for further assistance.
+    ERROR
+
+    def initialize(msg = MESSAGE)
+      super(500, msg)
+    end
+  end
+
   class HandledDhcpRestartError < Sinja::BadRequestError
-    MESSAGE = <<~ERROR
+    MESSAGE = <<~ERROR.squish
       The DHCP server failed to restart and has been rolled back
       to its last working state. The DHCP config syntax was
       successfully validated before the restart commenced.
@@ -266,6 +278,8 @@ CONF
 
   module DhcpUpdater
     def self.update!(base)
+      raise DhcpOfflineError unless is_running?
+
       backup_and_restore_on_error(base) do |restorer|
         # Yield control to the API to preform the updates
         yield if block_given?
@@ -278,9 +292,14 @@ CONF
         are not currently supported
       ERROR
     rescue UnhandledDhcpRestartError
-      # Attempt a second restart after the rollback
+      # Attempt a second restart if the server is offline
       restart_or_error
       raise HandledDhcpRestartError
+    end
+
+    def self.is_running?
+      _, status = Open3.capture2e('systemctl status dhcpd')
+      status.to_i == 0
     end
 
     def self.validate_or_error
