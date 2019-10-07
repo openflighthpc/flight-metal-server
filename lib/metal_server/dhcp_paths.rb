@@ -27,6 +27,8 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'tmpdir'
+
 module MetalServer
   DhcpPaths = Struct.new(:base, :version) do
     def self.current(base)
@@ -93,12 +95,22 @@ module MetalServer
         begin
           # Set the base paths
           base_old_dir = updater.old_paths.join
+          base_tmp_dir = Dir.mktmpdir(updater.old_index.to_s + '--', File.dirname(base_old_dir))
           base_new_dir = updater.new_paths.join
 
+          # Ensures both the old and new directories exist
+          FileUtils.mkdir_p(base_old_dir)
+          FileUtils.mkdir_p(base_new_dir)
+
           # Copy the old files to the new directory
-          FileUtils.mkdir_p(updater.new_paths.join)
-          existing_dhcp_each_child(base_old_dir) do |old|
-            FileUtils.cp_r(old, base_new_dir)
+          Dir.each_child(base_old_dir) do |old|
+            FileUtils.cp_r(File.expand_path(old, base_old_dir), base_new_dir)
+          end
+
+          # Intentionally break old absolute paths by moving the directory
+          # Only relative paths should be used
+          Dir.each_child(base_old_dir) do |old|
+            FileUtils.mv(File.expand_path(old, base_old_dir), base_tmp_dir)
           end
 
           # Yield control to the API to preform the update
@@ -109,10 +121,20 @@ module MetalServer
         rescue => e
           # Remove the new directory on failure
           FileUtils.rm_f base_new_dir
+
+          # Restores the old directory from the temporary files
+          Dir.each_child(base_tmp_dir) do |tmp|
+            FileUtils.mv(File.expand_path(tmp, base_tmp_dir), base_old_dir)
+          end
+
+          # Reraise the error for further handling
           raise e
         ensure
           # Ensure the updater object clears it self
           FileUtils.rm_f updater.path
+
+          # Deletes the temporary files regardless of outcome
+          FileUtils.rm_rf base_tmp_dir
         end
       end
     end
@@ -125,7 +147,6 @@ module MetalServer
 
     def self.existing_dhcp_each_child(base_old_dir, &b)
       if Dir.exists? base_old_dir
-        Dir.each_child(base_old_dir) { |p| b.call(File.expand_path(p, base_old_dir)) }
       end
     end
 

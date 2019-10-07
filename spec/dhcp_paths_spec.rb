@@ -178,10 +178,11 @@ RSpec.describe MetalServer::DhcpUpdater do
       end
 
       it 'copies the old entries to the new direcotry before yielding' do
+        old_file_content = old_paths.map { |p| File.read p }
         described_class.modify_and_restart_dhcp!(base) do
           new_paths.each_with_index do |path, idx|
             expect(File.exists? path).to be(true)
-            expect(File.read path).to eq(File.read old_paths[idx])
+            expect(File.read path).to eq(old_file_content[idx])
           end
         end
       end
@@ -208,6 +209,20 @@ RSpec.describe MetalServer::DhcpUpdater do
           described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
         end.to raise_error(RuntimeError)
         new_paths.each { |p| expect(File.exists? p).to be(false) }
+      end
+
+      it 'deletes the tmp files on success' do
+        described_class.modify_and_restart_dhcp!(base)
+        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
+        expect(Dir.glob(tmp_glob)).to be_empty
+      end
+
+      it 'deletes the tmp files on error' do
+        expect do
+          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
+        end.to raise_error(RuntimeError)
+        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
+        expect(Dir.glob(tmp_glob)).to be_empty
       end
     end
   end
