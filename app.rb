@@ -149,7 +149,7 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Kickstart, Legacy, Uefi, DhcpSubnet].each do |klass|
+  [Kickstart, Legacy, Uefi].each do |klass|
     resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
@@ -168,19 +168,10 @@ class App < Sinatra::Base
         klass.glob_read('*')
       end
 
+      update { |a| payload_update(a) }
 
-      if klass == DhcpSubnet
-        has_many DhcpHost.type do
-          fetch do
-            resource.read_dhcp_hosts
-          end
-        end
-      else
-        update { |a| payload_update(a) }
-
-        destroy do
-          instance_exec(&system_path_destroy_lambda)
-        end
+      destroy do
+        instance_exec(&system_path_destroy_lambda)
       end
 
       if klass == Kickstart
@@ -188,6 +179,28 @@ class App < Sinatra::Base
           authorize_user!
           env['octet-stream.out'] = File.read resource.system_path
           ''
+        end
+      end
+    end
+  end
+
+  resource DhcpHost.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        DhcpHost.read(id)
+      end
+
+      show do
+        File.exists?(resource.path) ? resource : nil
+      end
+
+      index do
+        klass.glob_read('*')
+      end
+
+      has_many DhcpHost.type do
+        fetch do
+          resource.read_dhcp_hosts
         end
       end
     end

@@ -80,12 +80,8 @@ RSpec.configure do |c|
   end
 end
 
-RSpec.shared_context 'with_system_path_subject' do
+RSpec.shared_context 'with_subject_helpers' do
   subject { read_subject }
-
-  def subject_inputs
-    ["test-subject_#{described_class.type}"]
-  end
 
   def subject_api_path(*a)
     File.join('/', described_class.type, subject_inputs.join('/'), *a)
@@ -95,15 +91,25 @@ RSpec.shared_context 'with_system_path_subject' do
     described_class.read(*subject_inputs)
   end
 
+  def expect_forbidden
+    expect(last_response.status).to be(403)
+  end
+end
+
+RSpec.shared_context 'with_system_path_subject' do
+  include_context 'with_subject_helpers'
+
+  subject { read_subject }
+
+  def subject_inputs
+    ["test-subject_#{described_class.type}"]
+  end
+
   def create_subject_and_system_path
     described_class.create(*subject_inputs) do |meta|
       FileUtils.mkdir_p File.dirname(meta.system_path)
       FileUtils.touch meta.system_path
     end
-  end
-
-  def expect_forbidden
-    expect(last_response.status).to be(403)
   end
 end
 
