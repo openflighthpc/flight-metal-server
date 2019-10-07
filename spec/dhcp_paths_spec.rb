@@ -111,21 +111,21 @@ RSpec.describe MetalServer::DhcpCurrent do
   end
 end
 
-RSpec.describe MetalServer::DhcpUpdater do
+RSpec.describe MetalServer::DhcpRestorer do
   let(:base) { '/some/random/base/path' }
 
-  describe '::modify_and_restart_dhcp!' do
+  describe '::backup_and_restore_on_error' do
     it 'errors if the config already exists' do
       FakeFS.clear!
       described_class.create(base)
       expect do
-        described_class.modify_and_restart_dhcp!(base)
+        described_class.backup_and_restore_on_error(base)
       end.to raise_error(FlightConfig::CreateError)
     end
 
     it 'deletes the config at the end of the update' do
       FakeFS.clear!
-      model = described_class.modify_and_restart_dhcp!(base)
+      model = described_class.backup_and_restore_on_error(base)
       expect(File.exists? model.path).to be(false)
     end
 
@@ -185,7 +185,7 @@ RSpec.describe MetalServer::DhcpUpdater do
 
       it 'copies the old entries to the new direcotry before yielding' do
         old_file_content = old_paths.map { |p| File.read p }
-        described_class.modify_and_restart_dhcp!(base) do
+        described_class.backup_and_restore_on_error(base) do
           new_paths.each_with_index do |path, idx|
             expect(File.exists? path).to be(true)
             expect(File.read path).to eq(old_file_content[idx])
@@ -194,31 +194,31 @@ RSpec.describe MetalServer::DhcpUpdater do
       end
 
       it 'leaves the new files in place if success' do
-        described_class.modify_and_restart_dhcp!(base)
+        described_class.backup_and_restore_on_error(base)
         new_paths.each { |p| expect(File.exists? p).to be(true) }
       end
 
       it 'deletes the old paths if success' do
-        described_class.modify_and_restart_dhcp!(base)
+        described_class.backup_and_restore_on_error(base)
         expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id).join).to be(false)
       end
 
       it 'leaves the old files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+          described_class.backup_and_restore_on_error(base) { raise_test_error }
         end.to raise_error(test_error)
         old_paths.each { |p| expect(File.exists? p).to be(true) }
       end
 
       it 'deletes the new files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+          described_class.backup_and_restore_on_error(base) { raise_test_error }
         end.to raise_error(test_error)
         expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id + 1).join).to be(false)
       end
 
       it 'deletes the tmp files on success' do
-        described_class.modify_and_restart_dhcp!(base)
+        described_class.backup_and_restore_on_error(base)
         tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
         expect(Dir.glob(tmp_glob)).to be_empty
       end
@@ -227,7 +227,7 @@ RSpec.describe MetalServer::DhcpUpdater do
       # fail silently at any-moment
       it 'deletes the tmp files on error' do
         expect do
-          described_class.modify_and_restart_dhcp!(base) { raise_test_error }
+          described_class.backup_and_restore_on_error(base) { raise_test_error }
         end.to raise_error(test_error)
         tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
         expect(Dir.glob(tmp_glob)).to be_empty

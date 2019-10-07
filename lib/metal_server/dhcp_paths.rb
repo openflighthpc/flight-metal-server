@@ -84,19 +84,19 @@ module MetalServer
     end
   end
 
-  class DhcpUpdater
+  class DhcpRestorer
     include FlightConfig::Reader
     include FlightConfig::Updater
     include FlightConfig::Deleter
 
-    def self.modify_and_restart_dhcp!(base)
-      # Tries to create a new Updater as this prevents multiple running at the same time
-      create(base).tap do |updater|
+    def self.backup_and_restore_on_error(base)
+      # Tries to create a new restorer as this prevents multiple running at the same time
+      create(base).tap do |restorer|
         begin
           # Set the base paths
-          base_old_dir = updater.old_paths.join
-          base_tmp_dir = Dir.mktmpdir(updater.old_index.to_s + '--', File.dirname(base_old_dir))
-          base_new_dir = updater.new_paths.join
+          base_old_dir = restorer.old_paths.join
+          base_tmp_dir = Dir.mktmpdir(restorer.old_index.to_s + '--', File.dirname(base_old_dir))
+          base_new_dir = restorer.new_paths.join
 
           # Ensures both the old and new directories exist
           FileUtils.mkdir_p(base_old_dir)
@@ -114,14 +114,14 @@ module MetalServer
           end
 
           # Yield control to the API to preform the update
-          yield if block_given?
+          yield(restorer) if block_given?
 
           # Remove the old and tmp directories
           Dir.rmdir base_old_dir
           FileUtils.rm_rf base_tmp_dir
         ensure
-          # Ensure the updater object clears it self
-          FileUtils.rm_f updater.path
+          # Ensure the restorer object clears it self
+          FileUtils.rm_f restorer.path
 
           # Assume the update went wrong if the tmp files still exist
           # rescue should not be used as it will miss Interrupt and
@@ -161,12 +161,12 @@ module MetalServer
       __inputs__[0]
     end
 
-    def old_paths
-      @old_paths ||= DhcpPaths.new(base, old_index)
-    end
-
     def new_paths
       @new_paths ||= DhcpPaths.new(base, new_index)
+    end
+
+    def old_paths
+      @old_paths ||= DhcpPaths.new(base, old_index)
     end
   end
 end
