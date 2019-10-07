@@ -27,6 +27,7 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'sinja'
 require 'tmpdir'
 require 'open3'
 
@@ -136,7 +137,7 @@ module MetalServer
 # Any changes to this file maybe lost
 #
 
-include #{paths.include_subnets};
+include "#{paths.include_subnets}";
 CONF
       end
     end
@@ -255,7 +256,7 @@ CONF
     end
   end
 
-  class UnhandledDhcpRestartError < HttpError
+  class UnhandledDhcpRestartError < Sinja::HttpError
     MESSAGE = <<~ERROR.squish
       An error has occurred whilst restarting the DHCP server. DHCP
       is likely offline as a result of this error. Please contact your
@@ -280,7 +281,7 @@ CONF
     def self.update!(base)
       raise DhcpOfflineError unless is_running?
 
-      backup_and_restore_on_error(base) do |restorer|
+      DhcpRestorer.backup_and_restore_on_error(base) do |restorer|
         # Yield control to the API to preform the updates
         yield if block_given?
         validate_or_error
