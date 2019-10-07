@@ -91,12 +91,27 @@ module MetalServer
       # Tries to create a new Updater as this prevents multiple running at the same time
       create(base).tap do |updater|
         begin
+          # Set the base paths
+          base_old_dir = updater.old_paths.join
+          base_new_dir = updater.new_paths.join
+
+          # Copy the old files to the new directory
           FileUtils.mkdir_p(updater.new_paths.join)
-          existing_dhcp_each_child(updater) do |old|
-            FileUtils.cp_r(old, updater.new_paths.join)
+          existing_dhcp_each_child(base_old_dir) do |old|
+            FileUtils.cp_r(old, base_new_dir)
           end
+
+          # Yield control to the API to preform the update
           yield if block_given?
+
+          # Remove the old directory on success
+          FileUtils.rm_f base_old_dir
+        rescue => e
+          # Remove the new directory on failure
+          FileUtils.rm_f base_new_dir
+          raise e
         ensure
+          # Ensure the updater object clears it self
           FileUtils.rm_f updater.path
         end
       end
@@ -108,8 +123,7 @@ module MetalServer
 
     private_class_method
 
-    def self.existing_dhcp_each_child(updater, &b)
-      base_old_dir = updater.old_paths.join
+    def self.existing_dhcp_each_child(base_old_dir, &b)
       if Dir.exists? base_old_dir
         Dir.each_child(base_old_dir) { |p| b.call(File.expand_path(p, base_old_dir)) }
       end

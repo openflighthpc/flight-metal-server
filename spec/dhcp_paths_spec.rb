@@ -129,6 +129,16 @@ RSpec.describe MetalServer::DhcpUpdater do
       expect(File.exists? model.path).to be(false)
     end
 
+    it 'deletes the config even if their was an error' do
+      FakeFS.clear!
+      begin
+        described_class.modify_and_restart_dhcp(base) { raise 'Some Error' }
+      rescue
+        # noop
+      end
+      expect(File.exists? described_class.path(base)).to be(false)
+    end
+
     context 'with existing dhcp files' do
       let(:old_id) { 5 }
 
@@ -174,6 +184,30 @@ RSpec.describe MetalServer::DhcpUpdater do
             expect(File.read path).to eq(File.read old_paths[idx])
           end
         end
+      end
+
+      it 'leaves the new files in place if exists normally' do
+        described_class.modify_and_restart_dhcp!(base)
+        new_paths.each { |p| expect(File.exists? p).to be(true) }
+      end
+
+      it 'deletes the old paths if exists noramlly' do
+        described_class.modify_and_restart_dhcp!(base)
+        old_paths.each { |p| expect(File.exists? p).to be(false) }
+      end
+
+      it 'leaves the old files on error' do
+        expect do
+          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
+        end.to raise_error(RuntimeError)
+        old_paths.each { |p| expect(File.exists? p).to be(true) }
+      end
+
+      it 'deletes the new files on error' do
+        expect do
+          described_class.modify_and_restart_dhcp!(base) { raise 'some error' }
+        end.to raise_error(RuntimeError)
+        new_paths.each { |p| expect(File.exists? p).to be(false) }
       end
     end
   end
