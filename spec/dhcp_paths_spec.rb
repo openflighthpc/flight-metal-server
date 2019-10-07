@@ -71,3 +71,23 @@ RSpec.describe MetalServer::DhcpPaths do
   end
 end
 
+RSpec.describe MetalServer::DhcpUpdater do
+  let(:base) { '/some/random/base/path' }
+
+  describe '::modify_and_restart_dhcp!' do
+    it 'errors if the config already exists' do
+      FakeFS.clear!
+      described_class.create(base)
+      expect do
+        described_class.modify_and_restart_dhcp!(base)
+      end.to raise_error(FlightConfig::CreateError)
+    end
+
+    it 'deletes the config at the end of the update' do
+      FakeFS.clear!
+      model = described_class.modify_and_restart_dhcp!(base)
+      expect(File.exists? model.path).to be(false)
+    end
+  end
+end
+

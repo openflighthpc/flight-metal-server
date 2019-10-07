@@ -63,5 +63,35 @@ module MetalServer
       join('subnets', "#{subnet}.hosts", "#{name}.conf")
     end
   end
+
+  class DhcpUpdater
+    include FlightConfig::Reader
+    include FlightConfig::Updater
+    include FlightConfig::Deleter
+
+    def self.modify_and_restart_dhcp!(base)
+      # Tries to create a new Updater as this prevents multiple running at the same time
+      create(base).tap do |updater|
+        begin
+          # noop
+        ensure
+          FileUtils.rm_f updater.path
+        end
+      end
+    end
+
+    def self.path(base)
+      File.join(base, 'dhcp-update.conf')
+    end
+
+    # TODO: Properly set the new and old path versions
+    def old_paths
+      @old_paths ||= DhcpPaths.current(base)
+    end
+
+    def new_paths
+      @new_paths ||= DhcpPaths.new(base, 'new')
+    end
+  end
 end
 
