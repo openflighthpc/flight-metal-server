@@ -28,6 +28,7 @@
 #===============================================================================
 
 require 'tmpdir'
+require 'open3'
 
 module MetalServer
   DhcpPaths = Struct.new(:base, :version) do
@@ -99,6 +100,7 @@ module MetalServer
       paths = DhcpPaths.new(base, cur_index)
       FileUtils.mkdir_p File.dirname(paths.master_include)
       if cur_index == 0
+        FileUtils.rm_f  paths.master_include
         FileUtils.touch paths.master_include
       else
         File.write paths.master_include, <<~CONF
@@ -163,7 +165,10 @@ CONF
             FileUtils.mv(File.expand_path(old, base_old_dir), base_tmp_dir)
           end
 
-          # Yield control to the API to preform the update
+          # Write the new master config
+          write_current_master_config(base)
+
+          # Yield control to the updater to preform the system commands
           yield(restorer) if block_given?
 
           # Remove the old and tmp directories
@@ -221,6 +226,81 @@ CONF
 
     def old_paths
       @old_paths ||= DhcpPaths.new(base, old_index)
+    end
+  end
+
+  class DhcpValidationError < Sinja::BadRequestError; end
+
+  class HandledDhcpRestartError < Sinja::BadRequestError
+    MESSAGE = <<~ERROR
+      The DHCP server failed to restart and has been rolled back
+      to its last working state. The DHCP config syntax was
+      successfully validated before the restart commenced.
+    ERROR
+
+    def initialize(msg = MESSAGE)
+      super
+    end
+  end
+
+  class UnhandledDhcpRestartError < HttpError
+    MESSAGE = <<~ERROR.squish
+      An error has occurred whilst restarting the DHCP server. DHCP
+      is likely offline as a result of this error. Please contact your
+      system administrator for further assistance.
+    ERROR
+
+    def self.with_output(output)
+      new(<<~ERROR)
+        #{MESSAGE}
+
+        Output:
+        #{output}
+      ERROR
+    end
+
+    def initialize(msg = MESSAGE)
+      super(500, msg)
+    end
+  end
+
+  module DhcpUpdater
+    def self.update!(base)
+      backup_and_restore_on_error(base) do |restorer|
+        # Yield control to the API to preform the updates
+        yield if block_given?
+        validate_or_error
+        restart_or_error
+      end
+    rescue FlightConfig::CreateError
+      raise Sinja::ConflictError, <<~ERROR.squish
+        A DHCP update has already been started. Concurrent updates
+        are not currently supported
+      ERROR
+    rescue UnhandledDhcpRestartError
+      # Attempt a second restart after the rollback
+      restart_or_error
+      raise HandledDhcpRestartError
+    end
+
+    def self.validate_or_error
+      cmd = 'dhcpd -t -cf /etc/dhcp/dhcpd.conf'
+      output, status = Open3.capture2e(cmd)
+      return if status.to_i == 0
+      raise DhcpValidationError, <<~ERROR
+        Updating DHCP settings has failed as the config failed validation.
+        The new configuration has been discarded.
+
+        Output from: #{cmd}
+
+        #{output}
+      ERROR
+    end
+
+    def self.restart_or_error
+      output, status = Open3.capture2e('systemctl restart dhcpd')
+      return if status.to_i == 0
+      raise UnhandledDhcpRestartError.with_output(output)
     end
   end
 end
