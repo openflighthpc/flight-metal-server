@@ -168,27 +168,18 @@ class App < Sinatra::Base
         klass.glob_read('*')
       end
 
-      update { |a| payload_update(a) }
-
-      if klass == DhcpSubnet
-        destroy do
-          raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
-            Can not delete the subnet whilst it still has hosts. Please delete
-            the hosts and try again.
-          ERROR
-          instance_exec(&system_path_destroy_lambda)
-        end
-      else
-        destroy do
-          instance_exec(&system_path_destroy_lambda)
-        end
-      end
 
       if klass == DhcpSubnet
         has_many DhcpHost.type do
           fetch do
             resource.read_dhcp_hosts
           end
+        end
+      else
+        update { |a| payload_update(a) }
+
+        destroy do
+          instance_exec(&system_path_destroy_lambda)
         end
       end
 
@@ -221,8 +212,6 @@ class App < Sinatra::Base
 
     show
     index   { DhcpHost.glob_read('*', '*') }
-    update  { |a| payload_update(a) }
-    destroy { instance_exec(&system_path_destroy_lambda) }
 
     has_one DhcpSubnet.type do
       pluck { resource.read_dhcp_subnet }

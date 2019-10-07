@@ -48,8 +48,6 @@ RSpec.describe DhcpHost do
     end
   end
 
-  it_behaves_like 'system path deleter'
-
   describe 'GET show' do
     context 'with an existing file but without a subnet' do
       context 'with user credentials' do
@@ -64,6 +62,40 @@ RSpec.describe DhcpHost do
         it 'returns a conflict' do
           expect(last_response.status).to be(409)
         end
+      end
+    end
+  end
+
+  describe 'PATCH update' do
+    context 'with admin credentials, payload, and subnet buy without a model' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        DhcpSubnet.create(read_subject.subnet)
+        patch subject_api_path
+      end
+
+      it 'response method not allowed' do
+        expect(last_response.status).to be(405)
+      end
+    end
+  end
+
+  describe 'DELETE destroy' do
+    context 'with admin credentials, a subnet, and a model' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
+        admin_headers
+        delete subject_api_path
+      end
+
+      it 'responds method not allowed' do
+        expect(last_response.status).to be(405)
+      end
+
+      it 'does not delete the file' do
+        expect(File.exists? subject.system_path).to be(true)
       end
     end
   end

@@ -33,20 +33,39 @@ require 'shared_examples/system_path_deleter'
 RSpec.describe DhcpSubnet do
   include_context 'with_system_path_subject'
 
-  it_behaves_like 'system path deleter'
+  describe 'PATCH update' do
+    context 'with admin credentials and without a model' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path
+      end
+
+      it 'responds method not allowed' do
+        expect(last_response.status).to be(405)
+      end
+
+      it 'does not create the model' do
+        expect(File.exists? subject.path).to be(false)
+      end
+    end
+  end
 
   describe 'DELETE destroy' do
-    context 'with admin credentials, meta, and a host files' do
+    context 'with admin credentials and a model' do
       before(:all) do
         FakeFS.clear!
         create_subject_and_system_path
-        DhcpHost.create(*subject_inputs, 'foo-host')
         admin_headers
         delete subject_api_path
       end
 
-      it 'returns a conflict' do
-        expect(last_response.status).to be(409)
+      it 'responds method not allowed' do
+        expect(last_response.status).to be(405)
+      end
+
+      it 'does not delete the system file' do
+        expect(File.exists? subject.system_path).to be(true)
       end
     end
   end
