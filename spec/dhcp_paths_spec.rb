@@ -114,6 +114,12 @@ end
 RSpec.describe MetalServer::DhcpRestorer do
   let(:base) { '/some/random/base/path' }
 
+  let(:test_error) { Interrupt }
+
+  def raise_test_error
+    raise test_error
+  end
+
   describe '::backup_and_restore_on_error' do
     it 'errors if the config already exists' do
       FakeFS.clear!
@@ -139,8 +145,44 @@ RSpec.describe MetalServer::DhcpRestorer do
       expect(File.exists? described_class.path(base)).to be(false)
     end
 
+    context 'without and dhcp files but with a current index' do
+      let(:old_index)   { 5 }
+      let(:new_index)  { old_index + 1 }
+
+      let(:old_subnets_path) { MetalServer::DhcpPaths.new(base, old_index).include_subnets }
+      let(:new_subnets_path) { MetalServer::DhcpPaths.new(base, new_index).include_subnets }
+
+      let(:base) { '/path/to/empty/dhcp-dir' }
+
+      let(:master_path) { MetalServer::DhcpPaths.master_include(base) }
+
+      before do
+        FakeFS.clear!
+        FileUtils.mkdir_p MetalServer::DhcpPaths.new(base, old_index).join
+      end
+
+      # Confirms the spec setup is correct
+      it 'has a spec that sets ther initial current index to be non-zero' do
+        expect(MetalServer::DhcpCurrent.new(base).index).to eq(old_index)
+      end
+
+      it 'writes the next version into the master config on success' do
+        described_class.backup_and_restore_on_error(base)
+        expect(File.read master_path).to include(new_subnets_path)
+      end
+
+      it 'writes the old version into the master config on failure' do
+        expect do
+          described_class.backup_and_restore_on_error(base) do
+            raise_test_error
+          end
+        end.to raise_error(test_error)
+        expect(File.read master_path).to include(old_subnets_path)
+      end
+    end
+
     context 'with existing dhcp files' do
-      let(:old_id) { 5 }
+      let(:old_index) { 5 }
 
       let(:test_content) { 'test dhcp content' }
 
@@ -156,7 +198,7 @@ RSpec.describe MetalServer::DhcpRestorer do
       end
 
       let(:old_paths) do
-        cur_paths = MetalServer::DhcpPaths.new(base, old_id)
+        cur_paths = MetalServer::DhcpPaths.new(base, old_index)
         [
           cur_paths.include_subnets,
           *subnets.map { |s| cur_paths.subnet_conf(s) },
@@ -166,13 +208,7 @@ RSpec.describe MetalServer::DhcpRestorer do
       end
 
       let(:new_paths) do
-        old_paths.map { |path| path.sub(old_id.to_s, (old_id + 1).to_s) }
-      end
-
-      let(:test_error) { Interrupt }
-
-      def raise_test_error
-        raise test_error
+        old_paths.map { |path| path.sub(old_index.to_s, (old_index + 1).to_s) }
       end
 
       # Creates all the files
@@ -200,7 +236,7 @@ RSpec.describe MetalServer::DhcpRestorer do
 
       it 'deletes the old paths if success' do
         described_class.backup_and_restore_on_error(base)
-        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id).join).to be(false)
+        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_index).join).to be(false)
       end
 
       it 'leaves the old files on error' do
@@ -214,12 +250,12 @@ RSpec.describe MetalServer::DhcpRestorer do
         expect do
           described_class.backup_and_restore_on_error(base) { raise_test_error }
         end.to raise_error(test_error)
-        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_id + 1).join).to be(false)
+        expect(Dir.exists? MetalServer::DhcpPaths.new(base, old_index + 1).join).to be(false)
       end
 
       it 'deletes the tmp files on success' do
         described_class.backup_and_restore_on_error(base)
-        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
+        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_index}--*").join('**/*.conf')
         expect(Dir.glob(tmp_glob)).to be_empty
       end
 
@@ -229,7 +265,7 @@ RSpec.describe MetalServer::DhcpRestorer do
         expect do
           described_class.backup_and_restore_on_error(base) { raise_test_error }
         end.to raise_error(test_error)
-        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_id}--*").join('**/*.conf')
+        tmp_glob = MetalServer::DhcpPaths.new(base, "#{old_index}--*").join('**/*.conf')
         expect(Dir.glob(tmp_glob)).to be_empty
       end
     end

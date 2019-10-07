@@ -66,11 +66,16 @@ module MetalServer
   end
 
   DhcpCurrent = Struct.new(:base) do
-    def id
+    def index
       Dir.glob(glob_regex)
          .select { |p| match_regex.match?(p) }
          .map { |p| match_regex.match(p)[:id].to_i }
          .max || 0
+    end
+
+    # Deprecated: Use index
+    def id
+      index
     end
 
     private
@@ -88,6 +93,46 @@ module MetalServer
     include FlightConfig::Reader
     include FlightConfig::Updater
     include FlightConfig::Deleter
+
+    def self.write_current_master_config(base)
+      paths = DhcpPaths.current(base)
+      FileUtils.mkdir_p File.dirname(paths.master_include)
+      File.write paths.master_include, <<~CONF
+#==============================================================================
+# Copyright (C) 2019-present Alces Flight Ltd.
+#
+# This file is part of Metal Server.
+#
+# This program and the accompanying materials are made available under
+# the terms of the Eclipse Public License 2.0 which is available at
+# <https://www.eclipse.org/legal/epl-2.0>, or alternative license
+# terms made available by Alces Flight Ltd - please direct inquiries
+# about licensing to licensing@alces-flight.com.
+#
+# Metal Server is distributed in the hope that it will be useful, but
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR
+# IMPLIED INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS
+# OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A
+# PARTICULAR PURPOSE. See the Eclipse Public License 2.0 for more
+# details.
+#
+# You should have received a copy of the Eclipse Public License 2.0
+# along with Flight Cloud. If not, see:
+#
+#  https://opensource.org/licenses/EPL-2.0
+#
+# For more information on Metal Server, please visit:
+# https://github.com/openflighthpc/metal-server
+#===============================================================================
+
+#
+# This file has been rendered by OpenFlightHPC - Metal Server
+# Any changes to this file maybe lost
+#
+
+include #{paths.include_subnets};
+CONF
+    end
 
     def self.backup_and_restore_on_error(base)
       # Tries to create a new restorer as this prevents multiple running at the same time
@@ -136,6 +181,10 @@ module MetalServer
           end
         end
       end
+    ensure
+      # Set the master DHCP config to the current version!
+      # This is required for fail over
+      self.write_current_master_config(base)
     end
 
     def self.path(base)
