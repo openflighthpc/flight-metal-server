@@ -91,7 +91,11 @@ module MetalServer
       # Tries to create a new Updater as this prevents multiple running at the same time
       create(base).tap do |updater|
         begin
-          # noop
+          FileUtils.mkdir_p(updater.new_paths.join)
+          existing_dhcp_each_child(updater) do |old|
+            FileUtils.cp_r(old, updater.new_paths.join)
+          end
+          yield if block_given?
         ensure
           FileUtils.rm_f updater.path
         end
@@ -102,13 +106,33 @@ module MetalServer
       File.join(base, 'dhcp-update.conf')
     end
 
-    # TODO: Properly set the new and old path versions
+    private_class_method
+
+    def self.existing_dhcp_each_child(updater, &b)
+      base_old_dir = updater.old_paths.join
+      if Dir.exists? base_old_dir
+        Dir.each_child(base_old_dir) { |p| b.call(File.expand_path(p, base_old_dir)) }
+      end
+    end
+
+    attr_reader :old_index, :new_index
+
+    def initialize(*a)
+      super
+      @old_index = DhcpCurrent.new(base).id
+      @new_index = @old_index + 1
+    end
+
+    def base
+      __inputs__[0]
+    end
+
     def old_paths
-      @old_paths ||= DhcpPaths.current(base)
+      @old_paths ||= DhcpPaths.new(base, old_index)
     end
 
     def new_paths
-      @new_paths ||= DhcpPaths.new(base, 'new')
+      @new_paths ||= DhcpPaths.new(base, new_index)
     end
   end
 end

@@ -128,6 +128,54 @@ RSpec.describe MetalServer::DhcpUpdater do
       model = described_class.modify_and_restart_dhcp!(base)
       expect(File.exists? model.path).to be(false)
     end
+
+    context 'with existing dhcp files' do
+      let(:old_id) { 5 }
+
+      let(:test_content) { 'test dhcp content' }
+
+      let(:subnets) do
+        ['subnet1', 'subnetA']
+      end
+
+      let(:hosts) do
+        [
+          ['subnet1', 'host1'], ['subnet1', 'host2'],
+          ['subnetA', 'hostA'], ['subnet2', 'hostB']
+        ]
+      end
+
+      let(:old_paths) do
+        cur_paths = MetalServer::DhcpPaths.new(base, old_id)
+        [
+          cur_paths.include_subnets,
+          *subnets.map { |s| cur_paths.subnet_conf(s) },
+          *subnets.map { |s| cur_paths.subnet_hosts(s) },
+          *hosts.map { |s, h| cur_paths.host_conf(s, h) }
+        ]
+      end
+
+      let(:new_paths) do
+        old_paths.map { |path| path.sub(old_id.to_s, (old_id + 1).to_s) }
+      end
+
+      # Creates all the files
+      before do
+        FakeFS.clear!
+        old_paths.each do |path|  FileUtils.mkdir_p File.dirname(path)
+          File.write path, test_content
+        end
+      end
+
+      it 'copies the old entries to the new direcotry before yielding' do
+        described_class.modify_and_restart_dhcp!(base) do
+          new_paths.each_with_index do |path, idx|
+            expect(File.exists? path).to be(true)
+            expect(File.read path).to eq(File.read old_paths[idx])
+          end
+        end
+      end
+    end
   end
 end
 
