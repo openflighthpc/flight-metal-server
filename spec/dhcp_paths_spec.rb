@@ -309,7 +309,7 @@ RSpec.describe MetalServer::DhcpIncluder do
       end
     end
 
-    context 'with multiuple subnet system paths without metadata' do
+    context 'with multiple subnet system paths without metadata nor hosts' do
       def subnets
         ['subnet1', 'potato', 'subnet2']
       end
@@ -328,6 +328,26 @@ RSpec.describe MetalServer::DhcpIncluder do
         content = File.read(paths.include_subnets)
         expect(content).to include(*subnets)
       end
+
+      it 'writes a empty hosts include file for each subnet' do
+        subnets.each do |subnet|
+          expect(File.read current_dhcp_paths.subnet_hosts(subnet)).to be_empty
+        end
+      end
+    end
+
+    context 'with a host file but without a subnet and without meta files' do
+      it 'does not write the host include script' do
+        FakeFS.clear!
+        subnet  = 'subnet1'
+        host    = 'host1'
+        host_path = DhcpHost.new(subnet, host).system_path
+        FileUtils.mkdir_p File.dirname(host_path)
+        FileUtils.touch   host_path
+        described_class.new(base, index).write_include_files
+        expect(File.exists? current_dhcp_paths.subnet_hosts(subnet)).to be(false)
+      end
     end
   end
 end
+

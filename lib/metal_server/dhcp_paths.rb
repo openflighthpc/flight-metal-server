@@ -281,6 +281,7 @@ module MetalServer
   DhcpIncluder = Struct.new(:base, :index) do
     def write_include_files
       write_include_subnets
+      write_include_hosts
     end
 
     def write_include_subnets
@@ -300,6 +301,14 @@ module MetalServer
       end
     end
 
+    def write_include_hosts
+      subnets.each do |subnet|
+        hosts_path = paths.subnet_hosts(subnet)
+        FileUtils.mkdir_p File.dirname(hosts_path)
+        FileUtils.touch hosts_path
+      end
+    end
+
     private
 
     def paths
@@ -307,7 +316,11 @@ module MetalServer
     end
 
     def subnet_paths
-      Dir.glob(paths.subnet_conf('*'))
+      @subnet_paths ||= Dir.glob(paths.subnet_conf('*'))
+    end
+
+    def subnets
+      subnet_paths.map { |p| File.basename(p).chomp('.conf') }
     end
   end
 
