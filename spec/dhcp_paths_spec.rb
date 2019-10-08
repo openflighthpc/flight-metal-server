@@ -111,6 +111,54 @@ RSpec.describe MetalServer::DhcpCurrent do
   end
 end
 
+RSpec.describe MetalServer::DhcpIncluder do
+  describe '#write_include_files' do
+    def base
+      DhcpBase.path
+    end
+
+    def index
+      MetalServer::DhcpCurrent.new(base).index
+    end
+
+    def paths
+      MetalServer::DhcpPaths.current(base)
+    end
+
+    context 'without any files' do
+      before(:all) do
+        FakeFS.clear!
+        described_class.new(base, index).write_include_files
+      end
+
+      it 'writes an empty subnet list file' do
+        expect(File.read paths.include_subnets).to be_empty
+      end
+    end
+
+    context 'with multiuple subnet system paths without metadata' do
+      def subnets
+        ['subnet1', 'potato', 'subnet2']
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        subnets.each do |name|
+          path = DhcpSubnet.new(name).system_path
+          FileUtils.mkdir_p File.dirname(path)
+          FileUtils.touch path
+        end
+        described_class.new(base, index).write_include_files
+      end
+
+      it 'writes each subnet into the include file' do
+        content = File.read(paths.include_subnets)
+        expect(content).to include(*subnets)
+      end
+    end
+  end
+end
+
 RSpec.describe MetalServer::DhcpRestorer do
   let(:base) { '/some/random/base/path' }
 
