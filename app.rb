@@ -126,6 +126,16 @@ class App < Sinatra::Base
       end
     end
 
+    def resource_or_error
+      if File.exists? resource.path
+        resource
+      else
+        raise Sinja::NotFoundError, <<~ERROR.chomp
+          Could not locate DHCP subnet: #{resource.id}
+        ERROR
+      end
+    end
+
     private
 
     def token
@@ -191,16 +201,6 @@ class App < Sinatra::Base
       def find(id)
         DhcpSubnet.read(id)
       end
-
-      def resource_or_error
-        if File.exists? resource.path
-          resource
-        else
-          raise Sinja::NotFoundError, <<~ERROR.chomp
-            Could not locate DHCP subnet: #{resource.id}
-          ERROR
-        end
-      end
     end
 
     show { resource_or_error }
@@ -260,13 +260,13 @@ class App < Sinatra::Base
       end
     end
 
-    show
+    show    { resource_or_error }
     index   { DhcpHost.glob_read('*', '*') }
     update  { |a| payload_update(a) }
     destroy { instance_exec(&system_path_destroy_lambda) }
 
     has_one DhcpSubnet.type do
-      pluck { resource.read_dhcp_subnet }
+      pluck { resource_or_error.read_dhcp_subnet }
     end
   end
 
