@@ -229,7 +229,9 @@ class App < Sinatra::Base
         Can not delete the subnet whilst it still has hosts. Please delete
         the hosts and try again.
       ERROR
-      raise NotImplementedError
+      DhcpSubnet.delete(*resource.__inputs__) do |subnet|
+        FileUtils.rm_f subnet.system_path
+      end
     end
 
     has_many DhcpHost.type do

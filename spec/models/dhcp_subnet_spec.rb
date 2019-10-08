@@ -154,6 +154,27 @@ RSpec.describe DhcpSubnet do
         expect(last_response.status).to be(409)
       end
     end
+
+    context 'with admin credentials, meta, but without host files' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
+        admin_headers
+        delete subject_api_path
+      end
+
+      it 'returns No Content' do
+        expect(last_response.status).to be(204)
+      end
+
+      it 'removes the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'removes the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
   end
 end
 
