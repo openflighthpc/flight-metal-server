@@ -125,39 +125,6 @@ module MetalServer
     end
   end
 
-  DhcpIncluder = Struct.new(:base, :index) do
-    def write_include_files
-      write_include_subnets
-    end
-
-    def write_include_subnets
-      FileUtils.mkdir_p File.dirname(paths.include_subnets)
-      subnets = subnet_paths
-      if subnets.empty?
-        FileUtils.touch paths.include_subnets
-      else
-        includes = subnets.map { |p| File.basename(p) }
-                          .map { |n| "include \"../#{n}\";" }
-                          .join("\n")
-        File.write paths.include_subnets, <<~CONF
-          #{MANAGED_FILE_COPYRIGHT}
-
-          #{includes}
-        CONF
-      end
-    end
-
-    private
-
-    def paths
-      @paths ||= DhcpPaths.new(base, index)
-    end
-
-    def subnet_paths
-      Dir.glob(paths.subnet_conf('*'))
-    end
-  end
-
   class DhcpRestorer
     include FlightConfig::Reader
     include FlightConfig::Updater
@@ -314,6 +281,39 @@ module MetalServer
     end
   end
 
+  DhcpIncluder = Struct.new(:base, :index) do
+    def write_include_files
+      write_include_subnets
+    end
+
+    def write_include_subnets
+      FileUtils.mkdir_p File.dirname(paths.include_subnets)
+      subnets = subnet_paths
+      if subnets.empty?
+        FileUtils.touch paths.include_subnets
+      else
+        includes = subnets.map { |p| File.basename(p) }
+                          .map { |n| "include \"./subnets/#{n}\";" }
+                          .join("\n")
+        File.write paths.include_subnets, <<~CONF
+          #{MANAGED_FILE_COPYRIGHT}
+
+          #{includes}
+        CONF
+      end
+    end
+
+    private
+
+    def paths
+      @paths ||= DhcpPaths.new(base, index)
+    end
+
+    def subnet_paths
+      Dir.glob(paths.subnet_conf('*'))
+    end
+  end
+
   module DhcpUpdater
     def self.update!(base)
       raise DhcpOfflineError unless is_running?
@@ -321,6 +321,9 @@ module MetalServer
       DhcpRestorer.backup_and_restore_on_error(base) do |restorer|
         # Yield control to the API to preform the updates
         yield if block_given?
+
+        DhcpIncluder.new(base, restorer.new_index).write_include_files
+
         validate_or_error
         restart_or_error
       end

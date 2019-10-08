@@ -108,6 +108,10 @@ RSpec.describe DhcpSubnet do
       it 'writes the payload to the system file' do
         expect(File.read subject.system_path).to eq(test_payload)
       end
+
+      it 'appears in the main subnet include file' do
+        expect(File.read current_dhcp_paths.include_subnets).to include(subject.filename)
+      end
     end
 
     context 'with admin credentials and payload, but without files when dhcp validation fails' do

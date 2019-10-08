@@ -46,7 +46,7 @@ class DhcpSubnet < SingleIDFileModel
   end
 
   def filename
-    File.dirname(system_path)
+    File.basename(system_path)
   end
 
   def read_dhcp_hosts

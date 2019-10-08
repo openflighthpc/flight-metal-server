@@ -83,6 +83,10 @@ RSpec.configure do |c|
   def parse_last_response_body
     Hashie::Mash.new(JSON.parse(last_response.body))
   end
+
+  def current_dhcp_paths
+    MetalServer::DhcpPaths.current(DhcpBase.path)
+  end
 end
 
 RSpec.shared_context 'with_system_path_subject' do
