@@ -277,7 +277,12 @@ class App < Sinatra::Base
       end
     end
 
-    destroy { instance_exec(&system_path_destroy_lambda) }
+    destroy do
+      DhcpHost.delete(*resource.__inputs__) do |host|
+        FileUtils.rm_f host.system_path
+        true
+      end
+    end
 
     has_one DhcpSubnet.type do
       pluck { resource_or_error.read_dhcp_subnet }

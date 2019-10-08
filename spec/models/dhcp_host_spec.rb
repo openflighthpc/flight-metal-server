@@ -130,5 +130,28 @@ RSpec.describe DhcpHost do
       end
     end
   end
+
+  describe 'DELETE destroy' do
+    context 'with admin credentials, meta, subnet, and files' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
+        admin_headers
+        delete subject_api_path
+      end
+
+      it 'returns No Content' do
+        expect(last_response.status).to be(204)
+      end
+
+      it 'deletes the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'deletes the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+  end
 end
 
