@@ -187,9 +187,7 @@ module MetalServer
       if subnets.empty?
         FileUtils.touch paths.include_subnets
       else
-        includes = subnets.map { |p| File.basename(p) }
-                          .map { |n| "include \"./subnets/#{n}\";" }
-                          .join("\n")
+        includes = subnets.map { |p| "include \"#{p}\";" }.join("\n")
         File.write paths.include_subnets, <<~CONF
           #{MANAGED_FILE_COPYRIGHT}
 
@@ -206,9 +204,7 @@ module MetalServer
         if hosts.empty?
           FileUtils.touch hosts_path
         else
-          includes = hosts.map { |p| File.basename(p) }
-                          .map { |n| "include \"./hosts.#{subnet}/#{n}\";" }
-                          .join("\n")
+          includes = hosts.map { |p| "include \"#{p}\";" }.join("\n")
           File.write paths.subnet_hosts(subnet), <<~CONF
             #{MANAGED_FILE_COPYRIGHT}
 
