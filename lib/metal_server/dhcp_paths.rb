@@ -299,12 +299,12 @@ CONF
     end
 
     def self.is_running?
-      _, status = Open3.capture2e('systemctl status dhcpd')
+      _, status = Open3.capture2e(Figaro.env.dhcpd_is_running_command)
       status.to_i == 0
     end
 
     def self.validate_or_error
-      cmd = 'dhcpd -t -cf /etc/dhcp/dhcpd.conf'
+      cmd = Figaro.env.validate_dhcpd_command
       output, status = Open3.capture2e(cmd)
       return if status.to_i == 0
       raise DhcpValidationError, <<~ERROR
@@ -318,7 +318,7 @@ CONF
     end
 
     def self.restart_or_error
-      output, status = Open3.capture2e('systemctl restart dhcpd')
+      output, status = Open3.capture2e(Figaro.env.restart_dhcpd_command)
       return if status.to_i == 0
       raise UnhandledDhcpRestartError.with_output(output)
     end

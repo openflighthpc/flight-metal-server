@@ -37,6 +37,11 @@ require 'rake'
 load File.expand_path('../Rakefile', __dir__)
 Rake::Task[:require].invoke
 
+# Sets DHCP Commands to always succeed:
+ENV['validate_dhcpd_command']   = 'echo Mock Validate DHCPD Command'
+ENV['restart_dhcpd_command']    = 'echo Mock Restart DHCPD Command'
+ENV['dhcpd_is_running_command'] = 'echo Mock DHCPD Is Running Command'
+
 require 'fakefs/spec_helpers'
 
 require 'json'

@@ -37,6 +37,10 @@ Figaro.application = Figaro::Application.new(
 Figaro.load.each { |key, value| ENV[key] = value }
 ENV['app_root_dir'] ||= File.expand_path('../..', __dir__)
 
+ENV['validate_dhcpd_command']   ||= 'dhcpd -t -cf /etc/dhcp/dhcpd.conf'
+ENV['restart_dhcpd_command']    ||= 'systemctl restart dhcpd.service'
+ENV['dhcpd_is_running_command'] ||= 'systemctl status dhcpd.service'
+
 Figaro.require_keys 'app_base_url',
                     'app_root_dir',
                     'content_base_path',
