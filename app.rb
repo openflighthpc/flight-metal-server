@@ -130,7 +130,7 @@ class App < Sinatra::Base
     def token
       if bearer_match = BEARER_REGEX.match(env['HTTP_AUTHORIZATION'] || '')
         bearer_match[:token]
-      elsif cookie = cookies[:bearer]
+      elsif cookie = cookies[:Bearer]
         cookie
       else
         raise Sinja::UnauthorizedError, <<~ERROR.squish

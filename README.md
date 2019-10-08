@@ -1,4 +1,4 @@
-# OpenFlight Tools
+# Metal Server
 
 Manage Cluster Network Boot and DHCP Files
 
@@ -33,8 +33,8 @@ cd metal-server
 export -a PATH=$PATH:$(pwd)/bin
 bundle install --without development test --path vendor
 
-# Alternatively append `bin/` to the beginning of the following commands
-# Skip export
+# The following command can be ran without modifying the PATH variable by
+# prefixing `bin/` to the commands
 bin/bundle install --without --development test --path vendor
 ```
 
@@ -42,28 +42,28 @@ bin/bundle install --without --development test --path vendor
 
 TBA
 
-### Intro To Unicorn
+## Intro To Unicorn
 
 TBA
 
-#### Starting Unicorn
+### Starting Unicorn
 
 TBA
 
-### Stopping The Application
+## Stopping The Application
 
-The application should be shut down gracefully as it modifies external
-services. Shutting down the application abruptly may result in a miss
-configuration of the DHCP server.
+The application should be shut down gracefully as it modifies external services. Shutting down the application abruptly may result in a miss configuration of the DHCP server.
 
 [Refer here for how to shutdown the server gracefully](docs/stopping_the_application.md)
 
-## Operation
+## Authorization
 
-### Generating Tokens
+The API requires all requests to carry with a [jwt](https://jwt.io). Within the token either `user: true` or `admin: true` needs to be set. This will authenticate with either `user` or `admin` privileges respectively. Admins have full access to the API where users can only make `GET` requests.
 
-The server requires the `Authorization Bearer` header to be set with either a `user` or `admin` token. Broadly,
-users can read from the server and admins can write. All tokens are valid for 30 days.
+The following `rake` tasks are used to generate tokens with 30 days expiry. Tokens from other sources will be accepted as long as they:
+1. Where signed with the same shared secret,
+2. Set either `user: true` or `admin: true` in the token body, and
+3. An [expiry claim](https://tools.ietf.org/html/rfc7519#section-4.1.4) has been made.
 
 ```
 # Generate a admin token:
@@ -73,9 +73,11 @@ rake token:admin
 rake token:user
 ```
 
-When testing through a browser, the token can also be set in a `cookie` called `bearer`.
+### Browser Cookie
 
-### API Information
+It is recommended that all requests are made with the `Authorization: Bearer ...` header set. The authorization header is the canonical source for the `jwt`, however a browser `cookie` called `Bearer` can be used as a fallback. This is an unsupported feature and may change without notice.
+
+## API Information
 
 The API is typically mounted onto `nginx` something along the lines of `https://www.example.com/api/...`,
 however this will depend on how the application has been configured. It conforms to the JSONAPI
