@@ -110,6 +110,20 @@ RSpec.shared_context 'with_system_path_subject' do
   def expect_forbidden
     expect(last_response.status).to be(403)
   end
+
+  def subject_api_body(payload: nil)
+      <<~APIJSON
+        {
+          "data": {
+            "type": "#{described_class.type}",
+            "id": "#{subject_inputs.join('/')}",
+            "attributes": {
+              #{ "payload: #{payload}" if payload}
+            }
+          }
+        }
+      APIJSON
+  end
 end
 
 RSpec.shared_examples 'error_without_credentials' do

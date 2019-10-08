@@ -206,6 +206,17 @@ class App < Sinatra::Base
 
     show { resource_or_error }
 
+    update do |attr|
+      if payload = attr[:payload]
+        raise NotImplementedError
+      else
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The 'payload' attribute has not been set with this request. Failed to update the
+          DHCP subnet.
+        ERROR
+      end
+    end
+
     destroy do
       raise Sinja::ConflictError, <<~ERROR.squish if resource_or_error.read_dhcp_hosts.any?
         Can not delete the subnet whilst it still has hosts. Please delete

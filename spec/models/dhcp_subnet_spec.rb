@@ -61,6 +61,32 @@ RSpec.describe DhcpSubnet do
     end
   end
 
+  describe 'PATCH update' do
+    context 'with user crendentials, without the meta file' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        patch subject_api_path
+      end
+
+      it 'returns Forbidden' do
+        expect(last_response.status).to be(403)
+      end
+    end
+
+    context 'with admin crendentials, without any dhcp files or a payload' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns Bad Request' do
+        expect(last_response.status).to be(400)
+      end
+    end
+  end
+
   describe 'DELETE destroy' do
     context 'with admin credentials, meta, and a host files' do
       before(:all) do
