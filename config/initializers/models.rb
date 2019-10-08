@@ -49,5 +49,11 @@ FileModel.inherited_classes.each do |klass|
   klass.base_path = value if value
 end
 
+class DhcpBase
+  def self.path
+    File.join(Model.content_base_path, 'etc/dhcp')
+  end
+end
+
 User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 

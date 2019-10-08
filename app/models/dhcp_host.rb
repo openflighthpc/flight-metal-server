@@ -51,7 +51,7 @@ class DhcpHost < FileModel
   end
 
   def system_path
-    MetalServer::DhcpPaths.current(self.class.content_base_path).host_conf(subnet, name)
+    MetalServer::DhcpPaths.current(DhcpBase.path).host_conf(subnet, name)
   end
 
   def filename

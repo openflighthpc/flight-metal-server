@@ -31,6 +31,8 @@ require 'sinatra/base'
 require "sinatra/cookies"
 require 'sinatra/jsonapi'
 
+require 'metal_server/dhcp_paths'
+
 module Sinja
   class UnauthorizedError < HttpError
     HTTP_STATUS = 401
@@ -209,8 +211,10 @@ class App < Sinatra::Base
     update do |attr|
       if payload = attr[:payload]
         DhcpSubnet.create_or_update(*resource.__inputs__) do |subnet|
-          FileUtils.mkdir_p File.dirname(subnet.system_path)
-          File.write subnet.system_path, payload
+          MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+            FileUtils.mkdir_p File.dirname(subnet.system_path)
+            File.write subnet.system_path, payload
+          end
         end
       else
         raise Sinja::BadRequestError, <<~ERROR.squish

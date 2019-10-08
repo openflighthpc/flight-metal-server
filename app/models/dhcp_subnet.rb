@@ -42,7 +42,7 @@ class DhcpSubnet < SingleIDFileModel
   end
 
   def system_path
-    MetalServer::DhcpPaths.current(self.class.content_base_path).subnet_conf(id)
+    MetalServer::DhcpPaths.current(DhcpBase.path).subnet_conf(id)
   end
 
   def filename

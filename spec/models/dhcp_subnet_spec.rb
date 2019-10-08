@@ -62,6 +62,10 @@ RSpec.describe DhcpSubnet do
   end
 
   describe 'PATCH update' do
+    def test_payload
+      'I am the test payload'
+    end
+
     context 'with user crendentials, without the meta file' do
       before(:all) do
         FakeFS.clear!
@@ -87,10 +91,6 @@ RSpec.describe DhcpSubnet do
     end
 
     context 'with admin credentials and payload, but without any files' do
-      def test_payload
-        'I am the test payload'
-      end
-
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -107,6 +107,31 @@ RSpec.describe DhcpSubnet do
 
       it 'writes the payload to the system file' do
         expect(File.read subject.system_path).to eq(test_payload)
+      end
+    end
+
+    context 'with admin credentials and payload, but without files when dhcp validation fails' do
+      before(:all) do
+        ENV['validate_dhcpd_command'] = 'exit 1'
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path, subject_api_body(payload: test_payload)
+      end
+
+      after(:all) do
+        ENV['validate_dhcpd_command'] = 'echo Reset Mock DHCPD Is Running Command'
+      end
+
+      it 'returns Bad Request' do
+        expect(last_response.status).to be(400)
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not write the system file' do
+        expect(File.exists? subject.system_path).to be(false)
       end
     end
   end
