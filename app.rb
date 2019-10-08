@@ -149,7 +149,7 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Kickstart, Legacy, Uefi, DhcpSubnet].each do |klass|
+  [Kickstart, Legacy, Uefi].each do |klass|
     resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
@@ -171,24 +171,9 @@ class App < Sinatra::Base
       update { |a| payload_update(a) }
 
       if klass == DhcpSubnet
-        destroy do
-          raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
-            Can not delete the subnet whilst it still has hosts. Please delete
-            the hosts and try again.
-          ERROR
-          instance_exec(&system_path_destroy_lambda)
-        end
       else
         destroy do
           instance_exec(&system_path_destroy_lambda)
-        end
-      end
-
-      if klass == DhcpSubnet
-        has_many DhcpHost.type do
-          fetch do
-            resource.read_dhcp_hosts
-          end
         end
       end
 
@@ -198,6 +183,28 @@ class App < Sinatra::Base
           env['octet-stream.out'] = File.read resource.system_path
           ''
         end
+      end
+    end
+  end
+
+  resource DhcpSubnet.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        DhcpSubnet.read(id)
+      end
+    end
+
+    destroy do
+      raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
+        Can not delete the subnet whilst it still has hosts. Please delete
+        the hosts and try again.
+      ERROR
+      raise NotImplementedError
+    end
+
+    has_many DhcpHost.type do
+      fetch do
+        resource.read_dhcp_hosts
       end
     end
   end

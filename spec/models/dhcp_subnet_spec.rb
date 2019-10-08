@@ -33,8 +33,6 @@ require 'shared_examples/system_path_deleter'
 RSpec.describe DhcpSubnet do
   include_context 'with_system_path_subject'
 
-  it_behaves_like 'system path deleter'
-
   describe 'DELETE destroy' do
     context 'with admin credentials, meta, and a host files' do
       before(:all) do
