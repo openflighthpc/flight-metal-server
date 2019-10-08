@@ -72,7 +72,7 @@ module MetalServer
     end
 
     def self.master_include(base)
-      File.join(base, 'master-dhcp.conf')
+      File.join(base, 'dhcpd.conf')
     end
 
     def master_include
