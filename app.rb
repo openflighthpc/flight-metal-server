@@ -172,11 +172,8 @@ class App < Sinatra::Base
 
       update { |a| payload_update(a) }
 
-      if klass == DhcpSubnet
-      else
-        destroy do
-          instance_exec(&system_path_destroy_lambda)
-        end
+      destroy do
+        instance_exec(&system_path_destroy_lambda)
       end
 
       if klass == Kickstart
@@ -207,6 +204,8 @@ class App < Sinatra::Base
     end
 
     show { resource_or_error }
+
+    index { DhcpSubnet.glob_read('*') }
 
     update do |attr|
       if payload = attr[:payload]
