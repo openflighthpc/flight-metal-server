@@ -33,15 +33,26 @@ require 'shared_examples/system_path_deleter'
 RSpec.describe DhcpHost do
   include_context 'with_system_path_subject'
 
+  def subnet_inputs
+    ["subnet-for-subject_#{described_class.type}"]
+  end
+
   def subject_inputs
     [
-      "subnet-for-subject_#{described_class.type}",
+      *subnet_inputs,
       "test-subject_#{described_class.type}"
     ]
   end
 
+  def create_subject_subnet
+    DhcpSubnet.create(*subnet_inputs) do |model|
+      FileUtils.mkdir_p File.dirname(model.system_path)
+      FileUtils.touch model.system_path
+    end
+  end
+
   def create_subject_and_system_path
-    DhcpSubnet.create(subject_inputs.first)
+    create_subject_subnet
     DhcpHost.create(*subject_inputs) do |model|
       FileUtils.mkdir_p File.dirname(model.system_path)
       FileUtils.touch   model.system_path
@@ -65,7 +76,7 @@ RSpec.describe DhcpHost do
       end
     end
 
-    context 'with an subnet but without a meta file' do
+    context 'with user credentials, a subnet but without a meta file' do
       before(:all) do
         FakeFS.clear!
         create_subject_and_system_path
@@ -76,6 +87,46 @@ RSpec.describe DhcpHost do
 
       it 'returns Not Found' do
         expect(last_response.status).to be(404)
+      end
+    end
+  end
+
+  describe 'PATCH update' do
+    def test_payload
+      "I am the test PATCH payload for #{described_class.type}"
+    end
+
+    context 'with admin credentials and a subnet but without a payload or any hosts' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_subnet
+        admin_headers
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns Bad Request' do
+        expect(last_response.status).to be(400)
+      end
+    end
+
+    context 'with admin credentials, payload, and a subnet but without any hosts' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_subnet
+        admin_headers
+        patch subject_api_path, subject_api_body(payload: test_payload)
+      end
+
+      it 'succeeds' do
+        expect(last_response).to be_ok
+      end
+
+      it 'creates the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      it 'writes the payload to the system file' do
+        expect(File.read subject.system_path).to eq(test_payload)
       end
     end
   end

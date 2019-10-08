@@ -262,7 +262,21 @@ class App < Sinatra::Base
 
     show    { resource_or_error }
     index   { DhcpHost.glob_read('*', '*') }
-    update  { |a| payload_update(a) }
+
+    update do |attr|
+      if payload = attr[:payload]
+        DhcpHost.create_or_update(*resource.__inputs__) do |host|
+          FileUtils.mkdir_p File.dirname(host.system_path)
+          File.write host.system_path, payload
+        end
+      else
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The 'payload' attribute has not been set with this request. Failed to update the
+          DHCP host.
+        ERROR
+      end
+    end
+
     destroy { instance_exec(&system_path_destroy_lambda) }
 
     has_one DhcpSubnet.type do
