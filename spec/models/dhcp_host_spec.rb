@@ -128,6 +128,11 @@ RSpec.describe DhcpHost do
       it 'writes the payload to the system file' do
         expect(File.read subject.system_path).to eq(test_payload)
       end
+
+      it 'includes the host in the hosts list' do
+        path = current_dhcp_paths.subnet_hosts(*subnet_inputs)
+        expect(File.read path).to include(subject.system_path)
+      end
     end
   end
 
@@ -151,6 +156,32 @@ RSpec.describe DhcpHost do
       it 'deletes the system file' do
         expect(File.exists? subject.system_path).to be(false)
       end
+    end
+  end
+
+  context 'with admin credentials, meta, subnet, and files when validation fails' do
+    before(:all) do
+      ENV['validate_dhcpd_command'] = 'exit 1'
+      FakeFS.clear!
+      create_subject_and_system_path
+      admin_headers
+      delete subject_api_path
+    end
+
+    after(:all) do
+      ENV['validate_dhcpd_command'] = 'echo Reset Mock DHCPD Is Running Command'
+    end
+
+    it 'returns Bad Request' do
+      expect(last_response.status).to be(400)
+    end
+
+    it 'does not delete the meta file' do
+      expect(File.exists? subject.path).to be(true)
+    end
+
+    it 'does not delete the system file' do
+      expect(File.exists? subject.system_path).to be(true)
     end
   end
 end

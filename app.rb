@@ -259,8 +259,10 @@ class App < Sinatra::Base
     update do |attr|
       if payload = attr[:payload]
         DhcpHost.create_or_update(*resource.__inputs__) do |host|
-          FileUtils.mkdir_p File.dirname(host.system_path)
-          File.write host.system_path, payload
+          MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+            FileUtils.mkdir_p File.dirname(host.system_path)
+            File.write host.system_path, payload
+          end
         end
       else
         raise Sinja::BadRequestError, <<~ERROR.squish
@@ -272,7 +274,9 @@ class App < Sinatra::Base
 
     destroy do
       DhcpHost.delete(*resource.__inputs__) do |host|
-        FileUtils.rm_f host.system_path
+        MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+          FileUtils.rm_f host.system_path
+        end
         true
       end
     end
