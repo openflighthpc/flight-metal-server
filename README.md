@@ -77,13 +77,12 @@ rake token:user
 
 It is recommended that all requests are made with the `Authorization: Bearer ...` header set. The authorization header is the canonical source for the `jwt`, however a browser `cookie` called `Bearer` can be used as a fallback. This is an unsupported feature and may change without notice.
 
-## API Information
+## API Documentation
 
-The API is typically mounted onto `nginx` something along the lines of `https://www.example.com/api/...`,
-however this will depend on how the application has been configured. It conforms to the JSONAPI
-standard where the `id` can be alaphanumeric.
+The API conforms to the [JSON:API](https://jsonapi.org/) specifications with a few additions
+that have been flagged.
 
-NOTE: `nginx` assumes that unicorn is listed under the `api` path.
+[Refer here for full API documentation](docs/routes.md)
 
 The valid types for the API are listed above and must be pluralized. The supported requests are:
 
