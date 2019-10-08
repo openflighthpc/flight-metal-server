@@ -7,30 +7,19 @@ Manage Cluster Network Boot and DHCP Files
 Run the Metal Server for managing the building of bare metal clusters. The server provides
 the following file types:
 
-* \<API TYPE\>      : \<Model\>    : \<Description\>
-* `kickstarts`    : Kickstart  : Kickstart Files
-* `uefis`         : Uefi       : UEFI PXE Boot Configs
-* `legacies`      : Legacy     : BIOS PXE Boot Configs
-* `kernels`       : Kernel     : Kenerl Images
-* `initrds`       : Initrd     : Initial Ram Disks
-* `dhcp-subnets`  : DhcpSubnet : DHCP Subnet Configs
-
-The application is comprised of three main components:
-1. The base Sinatra app running a JSON API with the above file types,
-2. Process load balancing provided by `unicorn` (kinda like `puma`), and
-3. Reverse proxying and static file hosting provided by `nginx`.
+The application is comprised of two main components:
+1. The base Sinatra app running a JSON API with the above file types, and
+2. Process load balancing provided by `unicorn` (as opposed to `puma`)
 
 ## Installation
 
 ### Preconditions
 
-This application has been designed on:
+The following are required to run this application:
 
-* OS:    Centos7
-* Ruby:  2.6+
-* Nginx: 1.12+
-* Required Nginx Modules: `--with-http_auth_request_module`,
-                        etc...
+* OS:           Centos7
+* Ruby:         2.6+ [Possible ruby 2.x?]
+* Yum Packages: gcc
 
 ### Manual installation
 
@@ -42,96 +31,32 @@ cd metal-server
 
 # Add the binaries to your path, which will be used by the remainder of this guide
 export -a PATH=$PATH:$(pwd)/bin
-bundle install
+bundle install --without development test --path vendor
 
 # Alternatively append `bin/` to the beginning of the following commands
-# Excluding nginx and ruby which are already installed
-bin/bundle  ...
-bin/rake    ...
-bin/unicorn ...
+# Skip export
+bin/bundle install --without --development test --path vendor
 ```
 
-Next the application needs to be configured. Refer to the example config file
-for a complete list of configuration parameters: `config/application.yaml.example`
+### Configuration
 
-Alternatively for a default production ready setup, the `rake configure` command
-can be used. This will prompt for the required configuration and generate
-the `config/application.yaml` file.
+TBA
 
-```
-rake configure
-> What is the url to the server? (https://www.example.com)
-....
-```
+### Intro To Unicorn
 
-The `rake configure` task will automatically re render the `nginx` configuration
-files. These files will need to be re-rendered if `config/application.yaml` is
-changed. The `nginx` needs to be restarted.
+TBA
 
-```
-# Re render the nginx configs with the current setup
-rake render:nginx
+#### Starting Unicorn
 
-# The configs are rendered to the default epel nginx locations
-# nginx can be started using:
-nginx
+TBA
 
-# Restart nginx if it is already running
-ngnix -s reload
-```
+### Stopping The Application
 
-Finally the `unicorn` application needs to be started. This depends on how
-the application has been configured. In production, the "api port" should
-not be set. This cause `nginx` to server the `api`/`unicorn` using a `unix`
-socket.
+The application should be shut down gracefully as it modifies external
+services. Shutting down the application abruptly may result in a miss
+configuration of the DHCP server.
 
-```
-# Start a deamonized unicorn server on the unix socket:
-unicorn -c unicorn.rb -D -E production
-
-# Alternatively it can be started on port 8080 for development purposes
-# This will only spawn a single worker and is not intended for production
-unicorn
-```
-
-### Stopping Unicorn
-Extract from: http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn#label-Stopping+the+server
-
-So now that you're using nginx and unicorn, at some point you might end up asking yourself: How do I stop this thing?
-
-There is an internal unicorn `workers.pid` file that contains the process ID of the unicorn master. It can be used
-to gracefully stop the server using `SIGQUIT`
-
-```
-cat <configured-temporary-directory>/unicorn/master.pid | xargs kill -QUIT
-```
-
-If that doesn't work though, you might want to try:
-
-```
-ps -ax | grep unicorn
-```
-
-This will output the processes running unicorn, in the first column should be the process id (pid). In order to stop unicorn in it's tracks:
-
-### Less Aggressive Way to Stop Unicorn
-Extract from: http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn#label-The+Less+Aggressive+Approach+to+Unicorn+Slaying
-
-Unicorn is based upon unix-y forking, the master process can manage the workers, i.e. kill them. Once you have identified the master process, you can send it the WINCH signal. To do this:
-
-```
-kill -WINCH <PID>
-```
-
-This will have the master process “instruct” its workers to die off when they are finished. This should allow for a safer completion state.
-
-Once all the workers are finished and dead, the unicorn master will be the only unicorn process left. You can now instruct it to die off.
-
-```
-kill -QUIT <PID>
-```
-
-Checking again as above, you should no longer see any unicorn processes.  
+[Refer here for how to shutdown the server gracefully](docs/stopping_the_application.md)
 
 ## Operation
 
