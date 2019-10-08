@@ -231,53 +231,6 @@ module MetalServer
     end
   end
 
-  class DhcpValidationError < Sinja::BadRequestError; end
-
-  class DhcpOfflineError < Sinja::HttpError
-    MESSAGE = <<~ERROR.squish
-      The DHCP entires can not be updated as the DHCP server is
-      not currently running. Please contact your system administrator
-      for further assistance.
-    ERROR
-
-    def initialize(msg = MESSAGE)
-      super(500, msg)
-    end
-  end
-
-  class HandledDhcpRestartError < Sinja::BadRequestError
-    MESSAGE = <<~ERROR.squish
-      The DHCP server failed to restart and has been rolled back
-      to its last working state. The DHCP config syntax was
-      successfully validated before the restart commenced.
-    ERROR
-
-    def initialize(msg = MESSAGE)
-      super
-    end
-  end
-
-  class UnhandledDhcpRestartError < Sinja::HttpError
-    MESSAGE = <<~ERROR.squish
-      An error has occurred whilst restarting the DHCP server. DHCP
-      is likely offline as a result of this error. Please contact your
-      system administrator for further assistance.
-    ERROR
-
-    def self.with_output(output)
-      new(<<~ERROR)
-        #{MESSAGE}
-
-        Output:
-        #{output}
-      ERROR
-    end
-
-    def initialize(msg = MESSAGE)
-      super(500, msg)
-    end
-  end
-
   DhcpIncluder = Struct.new(:base, :index) do
     def write_include_files
       write_include_subnets
@@ -337,6 +290,53 @@ module MetalServer
 
     def hosts_paths(subnet)
       Dir.glob(paths.host_conf(subnet, '*'))
+    end
+  end
+
+  class DhcpValidationError < Sinja::BadRequestError; end
+
+  class DhcpOfflineError < Sinja::HttpError
+    MESSAGE = <<~ERROR.squish
+      The DHCP entires can not be updated as the DHCP server is
+      not currently running. Please contact your system administrator
+      for further assistance.
+    ERROR
+
+    def initialize(msg = MESSAGE)
+      super(500, msg)
+    end
+  end
+
+  class HandledDhcpRestartError < Sinja::BadRequestError
+    MESSAGE = <<~ERROR.squish
+      The DHCP server failed to restart and has been rolled back
+      to its last working state. The DHCP config syntax was
+      successfully validated before the restart commenced.
+    ERROR
+
+    def initialize(msg = MESSAGE)
+      super
+    end
+  end
+
+  class UnhandledDhcpRestartError < Sinja::HttpError
+    MESSAGE = <<~ERROR.squish
+      An error has occurred whilst restarting the DHCP server. DHCP
+      is likely offline as a result of this error. Please contact your
+      system administrator for further assistance.
+    ERROR
+
+    def self.with_output(output)
+      new(<<~ERROR)
+        #{MESSAGE}
+
+        Output:
+        #{output}
+      ERROR
+    end
+
+    def initialize(msg = MESSAGE)
+      super(500, msg)
     end
   end
 
