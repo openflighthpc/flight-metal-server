@@ -33,6 +33,34 @@ require 'shared_examples/system_path_deleter'
 RSpec.describe DhcpSubnet do
   include_context 'with_system_path_subject'
 
+  describe 'GET show' do
+    context 'with user crendentials, without the meta file' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        get subject_api_path
+      end
+
+      it 'returns Not Found' do
+        expect(last_response.status).to be(404)
+      end
+    end
+  end
+
+  describe 'GET fetch dhcp-hosts' do
+    context 'with user crendentials, without the meta file' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        get subject_api_path('dhcp-hosts')
+      end
+
+      it 'returns Not Found' do
+        expect(last_response.status).to be(404)
+      end
+    end
+  end
+
   describe 'DELETE destroy' do
     context 'with admin credentials, meta, and a host files' do
       before(:all) do

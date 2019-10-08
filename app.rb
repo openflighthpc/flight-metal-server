@@ -192,10 +192,22 @@ class App < Sinatra::Base
       def find(id)
         DhcpSubnet.read(id)
       end
+
+      def resource_or_error
+        if File.exists? resource.path
+          resource
+        else
+          raise Sinja::NotFoundError, <<~ERROR.chomp
+            Could not locate DHCP subnet: #{resource.id}
+          ERROR
+        end
+      end
     end
 
+    show { resource_or_error }
+
     destroy do
-      raise Sinja::ConflictError, <<~ERROR.squish if resource.read_dhcp_hosts.any?
+      raise Sinja::ConflictError, <<~ERROR.squish if resource_or_error.read_dhcp_hosts.any?
         Can not delete the subnet whilst it still has hosts. Please delete
         the hosts and try again.
       ERROR
@@ -204,7 +216,7 @@ class App < Sinatra::Base
 
     has_many DhcpHost.type do
       fetch do
-        resource.read_dhcp_hosts
+        resource_or_error.read_dhcp_hosts
       end
     end
   end
