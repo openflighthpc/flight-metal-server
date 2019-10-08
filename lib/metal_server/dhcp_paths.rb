@@ -93,11 +93,11 @@ module MetalServer
 
     # Must be in the same directory as the subnet config. This is to allow relative paths
     def subnet_hosts(name)
-      join('subnets', "#{name}.hosts.conf")
+      join('subnets', "hosts.#{name}.conf")
     end
 
     def host_conf(subnet, name)
-      join('subnets', "#{subnet}.hosts", "#{name}.conf")
+      join('subnets', "hosts.#{subnet}", "#{name}.conf")
     end
   end
 
@@ -305,7 +305,19 @@ module MetalServer
       subnets.each do |subnet|
         hosts_path = paths.subnet_hosts(subnet)
         FileUtils.mkdir_p File.dirname(hosts_path)
-        FileUtils.touch hosts_path
+        hosts = hosts_paths(subnet)
+        if hosts.empty?
+          FileUtils.touch hosts_path
+        else
+          includes = hosts.map { |p| File.basename(p) }
+                          .map { |n| "include \"./hosts.#{subnet}/#{n}\";" }
+                          .join("\n")
+          File.write paths.subnet_hosts(subnet), <<~CONF
+            #{MANAGED_FILE_COPYRIGHT}
+
+            #{includes}
+          CONF
+        end
       end
     end
 
@@ -321,6 +333,10 @@ module MetalServer
 
     def subnets
       subnet_paths.map { |p| File.basename(p).chomp('.conf') }
+    end
+
+    def hosts_paths(subnet)
+      Dir.glob(paths.host_conf(subnet, '*'))
     end
   end
 

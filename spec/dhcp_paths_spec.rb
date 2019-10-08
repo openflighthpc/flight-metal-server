@@ -65,7 +65,7 @@ RSpec.describe MetalServer::DhcpPaths do
       let(:host_conf_dir) { File.dirname(subject.host_conf(subnet_name, host_name)) }
 
       it 'defines a config one directory down from its subnet' do
-        expect(host_conf_dir).to eq(File.join(conf_dir, "#{subnet_name}.hosts"))
+        expect(host_conf_dir).to eq(File.join(conf_dir, "hosts.#{subnet_name}"))
       end
     end
   end
@@ -346,6 +346,37 @@ RSpec.describe MetalServer::DhcpIncluder do
         FileUtils.touch   host_path
         described_class.new(base, index).write_include_files
         expect(File.exists? current_dhcp_paths.subnet_hosts(subnet)).to be(false)
+      end
+    end
+
+    context 'with a subnet and host files but no meta files' do
+      def subnet
+        'test-subnet'
+      end
+
+      def hosts
+        ['host1', 'host2', 'host3']
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        subnet_path = MetalServer::DhcpPaths.current(base).subnet_conf(subnet)
+        FileUtils.mkdir_p File.dirname(subnet_path)
+        FileUtils.touch subnet_path
+        hosts.each do |host|
+          host_path = MetalServer::DhcpPaths.current(base).host_conf(subnet, host)
+          FileUtils.mkdir_p File.dirname(host_path)
+          FileUtils.touch host_path
+        end
+        described_class.new(base, index).write_include_files
+      end
+
+      it 'includes the hosts in the subnet hosts list' do
+        content = File.read(MetalServer::DhcpPaths.current(base).subnet_hosts(subnet))
+        hosts.each do |host|
+          path = MetalServer::DhcpPaths.current(base).host_conf(subnet, host)
+          expect(content).to include(File.basename(path))
+        end
       end
     end
   end
