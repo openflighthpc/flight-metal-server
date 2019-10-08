@@ -115,17 +115,6 @@ class App < Sinatra::Base
       User.from_jwt(token).role
     end
 
-    def payload_update(attr)
-      if payload = attr[:payload]
-        resource.class.create_or_update(*resource.__inputs__) do |model|
-          FileUtils.mkdir_p File.dirname(model.system_path)
-          File.write model.system_path, payload.to_s
-        end
-      else
-        raise Sinja::BadRequestError, 'The payload attribute is required with this request'
-      end
-    end
-
     def resource_or_error
       if File.exists? resource.path
         resource
@@ -151,14 +140,6 @@ class App < Sinatra::Base
     end
   end
 
-  system_path_destroy_lambda = -> do
-    raise Sinja::NotFoundError unless File.exists?(resource.path)
-    resource.class.delete(*resource.__inputs__) do |model|
-      FileUtils.rm_f model.system_path
-      true
-    end
-  end
-
   ID_REGEX = /[\w-]+/
 
   [Kickstart, Legacy, Uefi].each do |klass|
@@ -180,10 +161,22 @@ class App < Sinatra::Base
         klass.glob_read('*')
       end
 
-      update { |a| payload_update(a) }
+      update do |attr|
+        if payload = attr[:payload]
+          klass.create_or_update(*resource.__inputs__) do |model|
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write model.system_path, payload.to_s
+          end
+        else
+          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+        end
+      end
 
       destroy do
-        instance_exec(&system_path_destroy_lambda)
+        klass.delete(*resource_or_error.__inputs__) do |model|
+          FileUtils.rm_f model.system_path
+          true
+        end
       end
 
       if klass == Kickstart
