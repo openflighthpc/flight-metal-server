@@ -230,7 +230,10 @@ class App < Sinatra::Base
         the hosts and try again.
       ERROR
       DhcpSubnet.delete(*resource.__inputs__) do |subnet|
-        FileUtils.rm_f subnet.system_path
+        MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+          FileUtils.rm_f subnet.system_path
+        end
+        true
       end
     end
 
