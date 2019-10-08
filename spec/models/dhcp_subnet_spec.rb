@@ -85,6 +85,30 @@ RSpec.describe DhcpSubnet do
         expect(last_response.status).to be(400)
       end
     end
+
+    context 'with admin credentials and payload, but without any files' do
+      def test_payload
+        'I am the test payload'
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path, subject_api_body(payload: test_payload)
+      end
+
+      it 'succeeds' do
+        expect(last_response).to be_ok
+      end
+
+      it 'creates the meta file' do
+        expect(File.exist? subject.path).to be(true)
+      end
+
+      it 'writes the payload to the system file' do
+        expect(File.read subject.system_path).to eq(test_payload)
+      end
+    end
   end
 
   describe 'DELETE destroy' do

@@ -118,7 +118,7 @@ RSpec.shared_context 'with_system_path_subject' do
             "type": "#{described_class.type}",
             "id": "#{subject_inputs.join('/')}",
             "attributes": {
-              #{ "payload: #{payload}" if payload}
+              #{ "\"payload\": \"#{payload}\"" if payload}
             }
           }
         }

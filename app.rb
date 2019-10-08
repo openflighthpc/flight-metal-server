@@ -208,7 +208,10 @@ class App < Sinatra::Base
 
     update do |attr|
       if payload = attr[:payload]
-        raise NotImplementedError
+        DhcpSubnet.create_or_update(*resource.__inputs__) do |subnet|
+          FileUtils.mkdir_p File.dirname(subnet.system_path)
+          File.write subnet.system_path, payload
+        end
       else
         raise Sinja::BadRequestError, <<~ERROR.squish
           The 'payload' attribute has not been set with this request. Failed to update the
