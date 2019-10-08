@@ -170,9 +170,6 @@ module MetalServer
             FileUtils.mv(File.expand_path(old, base_old_dir), base_tmp_dir)
           end
 
-          # Write the new master config
-          write_current_master_config(base)
-
           # Yield control to the updater to preform the system commands
           yield(restorer) if block_given?
 
@@ -322,7 +319,11 @@ module MetalServer
         # Yield control to the API to preform the updates
         yield if block_given?
 
+        # Writes the new includes excluding the master config
         DhcpIncluder.new(base, restorer.new_index).write_include_files
+
+        # Write the new master config
+        restorer.class.write_current_master_config(base)
 
         validate_or_error
         restart_or_error
