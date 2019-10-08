@@ -71,14 +71,6 @@ module MetalServer
       new(base, DhcpCurrent.new(base).id)
     end
 
-    def self.master_include(base)
-      File.join(base, 'dhcpd.conf')
-    end
-
-    def master_include
-      self.class.master_include(base)
-    end
-
     def join(*a)
       File.join(base, version.to_s, *a)
     end
@@ -101,27 +93,19 @@ module MetalServer
     end
   end
 
+  # TODO: Review the use of DhcpCurrent
+  # It was originally implemented when the indexing was being increment on each edit, but this
+  # breaks the DHCP absolute paths. Relative paths do not work well with DHCP as they are dependent
+  # on the current working directory which is unpredictable. Instead the index will always be
+  # `current`
   DhcpCurrent = Struct.new(:base) do
     def index
-      Dir.glob(glob_regex)
-         .select { |p| match_regex.match?(p) }
-         .map { |p| match_regex.match(p)[:id].to_i }
-         .max || 0
+      'current'
     end
 
     # Deprecated: Use index
     def id
       index
-    end
-
-    private
-
-    def glob_regex
-      DhcpPaths.new(base, '*').join
-    end
-
-    def match_regex
-      /\A#{DhcpPaths.new(base, '(?<id>[\d]+)').join}\Z/
     end
   end
 
@@ -130,73 +114,45 @@ module MetalServer
     include FlightConfig::Updater
     include FlightConfig::Deleter
 
-    def self.write_current_master_config(base)
-      cur_index = DhcpCurrent.new(base).index
-      paths = DhcpPaths.new(base, cur_index)
-      FileUtils.mkdir_p File.dirname(paths.master_include)
-      if cur_index == 0
-        FileUtils.rm_f  paths.master_include
-        FileUtils.touch paths.master_include
-      else
-        File.write paths.master_include, <<~CONF
-          #{MANAGED_FILE_COPYRIGHT}
-
-          include "#{paths.include_subnets}";
-        CONF
-      end
-    end
-
     def self.backup_and_restore_on_error(base)
       # Tries to create a new restorer as this prevents multiple running at the same time
       create(base).tap do |restorer|
         begin
           # Set the base paths
-          base_old_dir = restorer.old_paths.join
-          base_tmp_dir = Dir.mktmpdir(restorer.old_index.to_s + '--', File.dirname(base_old_dir))
-          base_new_dir = restorer.new_paths.join
+          base_dir = restorer.paths.join
+          base_tmp_dir = Dir.mktmpdir(File.dirname(base_dir))
 
-          # Ensures both the old and new directories exist
-          FileUtils.mkdir_p(base_old_dir)
-          FileUtils.mkdir_p(base_new_dir)
+          # Ensures the directory exists
+          FileUtils.mkdir_p(base_dir)
 
-          # Copy the old files to the new directory
-          Dir.each_child(base_old_dir) do |old|
-            FileUtils.cp_r(File.expand_path(old, base_old_dir), base_new_dir)
-          end
-
-          # Intentionally break old absolute paths by moving the directory
-          # Only relative paths should be used
-          Dir.each_child(base_old_dir) do |old|
-            FileUtils.mv(File.expand_path(old, base_old_dir), base_tmp_dir)
+          # Copy the original files to the temporary directory
+          Dir.each_child(base_dir) do |name|
+            FileUtils.cp_r(File.expand_path(name, base_dir), base_tmp_dir)
           end
 
           # Yield control to the updater to preform the system commands
           yield(restorer) if block_given?
 
-          # Remove the old and tmp directories
-          Dir.rmdir base_old_dir
+          # Remove the temporary directory on success
           FileUtils.rm_rf base_tmp_dir
         ensure
-          # Ensure the restorer object clears it self
-          FileUtils.rm_f restorer.path
-
-          # Assume the update went wrong if the tmp files still exist
-          # rescue should not be used as it will miss Interrupt and
-          # other Exceptions
+          # Restore from the temporary directory if it still exists
+          # This indicates something went wrong and works with Interrupt
           if Dir.exists?(base_tmp_dir)
+            FileUtils.rm_rf base_dir
+            FileUtils.mkdir_p base_dir
+
             Dir.each_child(base_tmp_dir) do |tmp|
-              FileUtils.mv File.expand_path(tmp, base_tmp_dir), base_old_dir
+              FileUtils.mv File.expand_path(tmp, base_tmp_dir), base_dir
             end
 
-            Dir.rmdir base_tmp_dir
-            FileUtils.rm_rf base_new_dir
+            FileUtils.rmdir base_tmp_dir
           end
+
+          # Ensure the restorer object clears it self
+          FileUtils.rm_f restorer.path
         end
       end
-    ensure
-      # Set the master DHCP config to the current version!
-      # This is required for fail over
-      self.write_current_master_config(base)
     end
 
     def self.path(base)
@@ -210,24 +166,12 @@ module MetalServer
       end
     end
 
-    attr_reader :old_index, :new_index
-
-    def initialize(*a)
-      super
-      @old_index = DhcpCurrent.new(base).id
-      @new_index = @old_index + 1
-    end
-
     def base
       __inputs__[0]
     end
 
-    def new_paths
-      @new_paths ||= DhcpPaths.new(base, new_index)
-    end
-
-    def old_paths
-      @old_paths ||= DhcpPaths.new(base, old_index)
+    def paths
+      @paths ||= DhcpPaths.current(base)
     end
   end
 
@@ -349,10 +293,7 @@ module MetalServer
         yield if block_given?
 
         # Writes the new includes excluding the master config
-        DhcpIncluder.new(base, restorer.new_index).write_include_files
-
-        # Write the new master config
-        restorer.class.write_current_master_config(base)
+        DhcpIncluder.new(base, DhcpCurrent.new(base).index).write_include_files
 
         validate_or_error
         restart_or_error
