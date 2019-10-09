@@ -39,7 +39,7 @@ class Kickstart < SingleIDFileModel
   end
 
   def system_path
-    File.join(self.class.content_base_path, 'www', filename)
+    File.join(self.class.content_base_path, 'www/kickstarts', filename)
   end
 end
 
