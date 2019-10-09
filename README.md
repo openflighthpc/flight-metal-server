@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/alces-software/alces-flight-center.svg?token=qyRatWzqg3dUGse7cSyd&branch=master)](https://travis-ci.com/alces-software/alces-flight-center)
+
 # Metal Server
 
 Manage Cluster Network Boot and DHCP Files
@@ -40,15 +42,46 @@ bin/bundle install --without development test --path vendor
 
 ### Configuration
 
-The application needs the following configuration values in order to run. These can either be exported into your environment or directly set in `config/application.yaml`. This application uses 
+The application needs the following configuration values in order to run. These can either be exported into your environment or directly set in `config/application.yaml`.
 
-## Intro To Unicorn
+```
+# Either set them into the environment
+export app_base_url=http://example.com
+export jwt_shared_secret=<keep-this-secret-safe>
 
-TBA
+# Or hard code them in the config file:
+vim config/application.yaml
+```
+
+## Starting the Server
+
+This application ships with `unicorn` as it load balancer and will automatically scale the number processes available for machines. `unicorn` also recovers from failures if something goes wrong from within the application.
+
+Run the following to start the unicorn daemon process:
+
+```
+unicorn -c unicorn.rb -p 80 -E production -D
+```
 
 ### Running the Application Behind a Reverse Proxy
 
-It is recommended that `unicorn` is ran behind 
+As this is a `unicorn` application, it has been designed to server fast clients with low latency. Therefore it should be located behind a reverse proxy such as `nginx` or `apache`.
+
+[Refer here for more details](docs/ssl_and_reverse_proxy.md)
+
+#### Basic Development Environment
+
+For development purposes, the application can be started in a single threaded `unicorn` process on port `8080`:
+
+```
+unicorn
+```
+
+Or the underlining rack app can be be started with `rackup`:
+
+```
+bin/rackup -p <port> -o 0.0.0.0
+```
 
 ## Stopping The Application
 
@@ -56,7 +89,7 @@ The application should be shut down gracefully as it modifies external services.
 
 [Refer here for how to shutdown the server gracefully](docs/stopping_the_application.md)
 
-## Authorization
+## Authentication
 
 The API requires all requests to carry with a [jwt](https://jwt.io). Within the token either `user: true` or `admin: true` needs to be set. This will authenticate with either `user` or `admin` privileges respectively. Admins have full access to the API where users can only make `GET` requests.
 
@@ -65,7 +98,12 @@ The following `rake` tasks are used to generate tokens with 30 days expiry. Toke
 2. Set either `user: true` or `admin: true` in the token body, and
 3. An [expiry claim](https://tools.ietf.org/html/rfc7519#section-4.1.4) has been made.
 
+As the shared secret is environment dependant, the `RACK_ENV` must be set within your environment.
+
 ```
+# Set the rack environment
+export RACK_ENV=production
+
 # Generate a admin token:
 rake token:admin
 

@@ -116,7 +116,7 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Directly Kickstart Download
+### Direct Kickstart Download
 
 This is a non `JSON:API` path that returns the raw kickstart file without any `JSON`. This route does not need an authroization token as it is required when the `BIOS` pxeboots.
 
