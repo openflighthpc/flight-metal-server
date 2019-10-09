@@ -27,13 +27,57 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Initrd < SingleIDFileModel
+class BootMethod < SingleIDFileModel
   def self.type
-    'initrds'
+    'boot-methods'
   end
 
-  def filename
+  def id
+    __inputs__[0]
+  end
+
+  def kernel_filename
+    "#{id}.kernel"
+  end
+
+  def initrd_filename
     "#{id}.initrd"
+  end
+
+  def kernel_system_path
+    File.join(Figaro.env.Kernel_system_dir, kernel_filename)
+  end
+
+  def initrd_system_path
+    File.join(Figaro.env.Initrd_system_dir, initrd_filename)
+  end
+
+  def complete?
+    initrd_uploaded? && kernel_uploaded?
+  end
+
+  def complete
+    complete?
+  end
+
+  {
+    'kernel' => ->(model) { model.kernel_system_path },
+    'initrd' => ->(model) { model.initrd_system_path }
+  }.map { |k, p| [k, p, ->(m) { File.exists? p.call(m) }] }
+   .each do |type, path_lambda, exists_lambda|
+    define_method("#{type}_uploaded?") do
+      exists_lambda.call(self)
+    end
+
+    # Defined to make it easy to serialize
+    define_method("#{type}_uploaded") do
+      exists_lambda.call(self)
+    end
+
+    define_method("#{type}_size") do
+      return 0 unless exists_lambda.call(self)
+      File.size path_lambda.call(self)
+    end
   end
 end
 

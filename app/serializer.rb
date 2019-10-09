@@ -47,15 +47,55 @@ class Serializer
   end
 end
 
+module SerializePayload
+  extend ActiveSupport::Concern
+
+  included do
+    attribute :payload
+  end
+end
+
+class BootMethodSerializer < Serializer
+  has_one :kernel_blob
+  has_one :initrd_blob
+
+  attributes :complete
+
+  [
+    'system_path', 'size', 'uploaded'
+  ].each do |attr|
+    attributes :"kernel_#{attr}", :"initrd_#{attr}"
+  end
+end
+
 class FileModelSerializer < Serializer
-  attributes :size, :system_path, :download_url
+  attributes :size, :system_path
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
-class KickstartSerializer < FileModelSerializer; end
-class KernelFileSerializer < FileModelSerializer; end
-class LegacySerializer < FileModelSerializer; end
-class UefiSerializer < FileModelSerializer; end
-class InitrdSerializer < FileModelSerializer; end
-class DhcpSubnetSerializer < FileModelSerializer; end
+class KickstartSerializer < FileModelSerializer
+  include SerializePayload
+
+  has_one :blob
+end
+
+class LegacySerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class UefiSerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class DhcpSubnetSerializer < FileModelSerializer
+  include SerializePayload
+
+  has_many :dhcp_hosts
+end
+
+class DhcpHostSerializer < FileModelSerializer
+  include SerializePayload
+
+  has_one :dhcp_subnet
+end
 

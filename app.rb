@@ -30,7 +30,8 @@
 require 'sinatra/base'
 require "sinatra/cookies"
 require 'sinatra/jsonapi'
-require 'app/version'
+
+require 'metal_server/dhcp_paths'
 
 module Sinja
   class UnauthorizedError < HttpError
@@ -74,6 +75,20 @@ class App < Sinatra::Base
   end
 
   helpers do
+    def authorize_user!
+      return if [:user, :admin].include? role
+      raise Sinja::ForbiddenError, <<~ERROR.squish
+        You do not have permission to access this content!
+      ERROR
+    end
+
+    def authorize_admin!
+      return if role == :admin
+      raise Sinja::ForbiddenError, <<~ERROR.squish
+        You do not have permission to access this content!
+      ERROR
+    end
+
     def serialize_model(model, options = {})
       options[:is_collection] = false
       options[:skip_collection_check] = true
@@ -84,7 +99,7 @@ class App < Sinatra::Base
     # Sinja is opinionated and does not allow this by default.
     # See App::Middleware::SetContentHeaders for details
     def write_octet_stream(path)
-      payload = env['cached.octet_stream'].read
+      payload = env['octet-stream.in'].read
       if payload.length.to_s == env['CONTENT_LENGTH']
         FileUtils.mkdir_p File.dirname(path)
         File.write(path, payload)
@@ -100,12 +115,22 @@ class App < Sinatra::Base
       User.from_jwt(token).role
     end
 
+    def resource_or_error
+      if File.exists? resource.path
+        resource
+      else
+        raise Sinja::NotFoundError, <<~ERROR.chomp
+          Could not locate DHCP subnet: #{resource.id}
+        ERROR
+      end
+    end
+
     private
 
     def token
       if bearer_match = BEARER_REGEX.match(env['HTTP_AUTHORIZATION'] || '')
         bearer_match[:token]
-      elsif cookie = cookies[:bearer]
+      elsif cookie = cookies[:Bearer]
         cookie
       else
         raise Sinja::UnauthorizedError, <<~ERROR.squish
@@ -115,67 +140,208 @@ class App < Sinatra::Base
     end
   end
 
-  FileModel.inherited_classes.each do |klass|
-    get("/authorize/download/#{klass.type}/:filename") do
-      valid_role = [:user, :admin].include?(role)
-      if klass.find_from_filename(params[:filename]) && valid_role
-        return 201
-      else
-        raise Sinja::ForbiddenError
-      end
-    end
+  ID_REGEX = /[\w-]+/
 
-    resource klass.type, pkre: /\w+/ do
+  [Kickstart, Legacy, Uefi].each do |klass|
+    resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
         # a closure around the parent context. This way the `klass` variable is
         # available inside the block
         define_method(:find) do |id|
-          klass.exists?(id) ? klass.read(id) : nil
+          klass.read(id)
         end
       end
 
-      show
+      show do
+        File.exists?(resource.path) ? resource : nil
+      end
 
       index do
         klass.glob_read('*')
       end
 
-      create do |_attr, id|
-        model = find(id) || klass.create(id)
-        next model.id, model
-      end
-
-      get('/:id/upload') do
-        raise Sinja::MethodNotAllowedError
-      end
-
-      standard_upload_block = proc do
-        unless role == :admin
-          raise Sinja::ForbiddenError, <<~ERROR.squish
-            You do not have permission to upload files. Please contact your
-            system administrator for further assistance.
-          ERROR
-        end
-        write_octet_stream(resource.system_path)
-        serialize_model(resource)
-      end
-
-      if klass == DhcpSubnet
-        post('/:id/upload') do
-          instance_exec(&standard_upload_block).tap do
-            DhcpSubnet.render_subnets
+      update do |attr|
+        if payload = attr[:payload]
+          klass.create_or_update(*resource.__inputs__) do |model|
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write model.system_path, payload.to_s
           end
+        else
+          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
         end
-      else
-        post('/:id/upload', &standard_upload_block)
+      end
+
+      destroy do
+        klass.delete(*resource_or_error.__inputs__) do |model|
+          FileUtils.rm_f model.system_path
+          true
+        end
+      end
+
+      if klass == Kickstart
+        get("/:id/blob") do
+          authorize_user!
+          env['octet-stream.out'] = File.read resource.system_path
+          ''
+        end
       end
     end
   end
 
-  # Catch all reject all other authorize requests
-  get('/authorize/*') do
-    raise Sinja::ForbiddenError
+  resource DhcpSubnet.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        DhcpSubnet.read(id)
+      end
+    end
+
+    show { resource_or_error }
+
+    index { DhcpSubnet.glob_read('*') }
+
+    update do |attr|
+      if payload = attr[:payload]
+        DhcpSubnet.create_or_update(*resource.__inputs__) do |subnet|
+          MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+            FileUtils.mkdir_p File.dirname(subnet.system_path)
+            File.write subnet.system_path, payload
+          end
+        end
+      else
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The 'payload' attribute has not been set with this request. Failed to update the
+          DHCP subnet.
+        ERROR
+      end
+    end
+
+    destroy do
+      raise Sinja::ConflictError, <<~ERROR.squish if resource_or_error.read_dhcp_hosts.any?
+        Can not delete the subnet whilst it still has hosts. Please delete
+        the hosts and try again.
+      ERROR
+      DhcpSubnet.delete(*resource.__inputs__) do |subnet|
+        MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+          FileUtils.rm_f subnet.system_path
+        end
+        true
+      end
+    end
+
+    has_many DhcpHost.type do
+      fetch do
+        resource_or_error.read_dhcp_hosts
+      end
+    end
+  end
+
+  SimpleHostRegex = /#{ID_REGEX}\/#{ID_REGEX}/
+  MatchHostRegex  = /(#{ID_REGEX})\/(#{ID_REGEX})/
+  resource DhcpHost.type, pkre: SimpleHostRegex do
+    helpers do
+      def find(id)
+        subnet, name = MatchHostRegex.match(id).captures
+        if DhcpSubnet.exists?(subnet)
+          DhcpHost.read(subnet, name)
+        else
+          raise Sinja::ConflictError, <<~ERROR.squish
+            Can not proceed with this request as the DHCP subnet does
+            not exist. Missing subnet: #{subnet}
+          ERROR
+        end
+      end
+    end
+
+    show    { resource_or_error }
+    index   { DhcpHost.glob_read('*', '*') }
+
+    update do |attr|
+      if payload = attr[:payload]
+        DhcpHost.create_or_update(*resource.__inputs__) do |host|
+          MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+            FileUtils.mkdir_p File.dirname(host.system_path)
+            File.write host.system_path, payload
+          end
+        end
+      else
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The 'payload' attribute has not been set with this request. Failed to update the
+          DHCP host.
+        ERROR
+      end
+    end
+
+    destroy do
+      DhcpHost.delete(*resource.__inputs__) do |host|
+        MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+          FileUtils.rm_f host.system_path
+        end
+        true
+      end
+    end
+
+    has_one DhcpSubnet.type do
+      pluck { resource_or_error.read_dhcp_subnet }
+    end
+  end
+
+  resource BootMethod.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        BootMethod.exists?(id) ? BootMethod.read(id) : nil
+      end
+
+      def filter(collection, fields = {})
+        if fields[:complete]
+          collection.select(&:complete?)
+        else
+          collection
+        end
+      end
+    end
+
+    show
+
+    index(filter_by: [:complete])  do
+      BootMethod.glob_read('*')
+    end
+
+    create do |_attr, id|
+      model = find(id) || BootMethod.create(id)
+      next model.id, model
+    end
+
+    destroy do
+      BootMethod.delete(*resource.__inputs__) do |boot|
+        FileUtils.rm_f boot.kernel_system_path
+        FileUtils.rm_f boot.initrd_system_path
+        true
+      end
+    end
+
+    {
+      'kernel-blob' => -> (model) { model.kernel_system_path },
+      'initrd-blob' => -> (model) { model.initrd_system_path }
+    }.each do |blob_type, path_lambda|
+      get("/:id/#{blob_type}") do
+        authorize_user!
+        # The response is cached in the environment as Middleware is needed to
+        # Sinja enforcing JSON responses
+        env['octet-stream.out'] = File.read path_lambda.call(resource)
+        ''
+      end
+
+      post("/:id/#{blob_type}") do
+        authorize_admin!
+        write_octet_stream(path_lambda.call(resource))
+        serialize_model(resource)
+      end
+    end
   end
 end
+
+require 'app/version'
+
+
 

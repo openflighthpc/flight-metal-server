@@ -1,4 +1,4 @@
-# vim: set syntax=nginx:
+# frozen_string_literal: true
 
 #==============================================================================
 # Copyright (C) 2019-present Alces Flight Ltd.
@@ -27,21 +27,39 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-#
-# This file has been rendered by OpenFlightHPC - Metal Server
-# Any changes to this file maybe lost
-#
+class DhcpHost < FileModel
+  class << self
+    def path(subnet, name)
+      File.join(content_base_path, "dhcp-hosts/#{subnet}.subnet/etc/#{name}.yaml")
+    end
 
-map $api_authorize_ext $api_authorize_ext {
-  default: '';
-}
+    def type
+      'dhcp-hosts'
+    end
+  end
 
-upstream api_server {
-<% if Figaro.env.api_port  -%>
-  server 127.0.0.1:<%= Figaro.env.api_port %>;
-<% else -%>
-  server unix:<%= File.join(Figaro.env.temporary_directory, 'unicorn/api.sock') %>
-    fail_timeout=0;
-<% end -%>
-}
+  def subnet
+    __inputs__[0]
+  end
+
+  def name
+    __inputs__[1]
+  end
+
+  def id
+    "#{subnet}/#{name}"
+  end
+
+  def system_path
+    MetalServer::DhcpPaths.current(DhcpBase.path).host_conf(subnet, name)
+  end
+
+  def filename
+    File.dirname(system_path)
+  end
+
+  def read_dhcp_subnet
+    DhcpSubnet.read(subnet, registry: __registry__)
+  end
+end
 

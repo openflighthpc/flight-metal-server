@@ -35,5 +35,9 @@ class Uefi < SingleIDFileModel
   def filename
     "grub.cfg-#{id}"
   end
+
+  def system_path
+    File.join(Figaro.env.Uefi_system_dir, filename)
+  end
 end
 

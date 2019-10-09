@@ -31,17 +31,24 @@ source "https://rubygems.org"
 
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
-gem 'sinatra'
-gem 'sinja'
 gem 'figaro'
 gem 'flight_config'
-gem 'rake'
 gem 'hashie'
 gem 'jwt'
-gem 'tty-prompt'
-
+gem 'rake'
+gem 'sinatra'
+gem 'sinja'
 gem 'unicorn'
 
-gem 'pry'
-gem 'pry-byebug'
+group :development, :test do
+  gem 'pry'
+  gem 'pry-byebug'
+end
+
+group :test do
+	gem 'fakefs'
+	gem 'rack-test'
+  gem 'rspec'
+  gem 'rspec-collection_matchers'
+end
 

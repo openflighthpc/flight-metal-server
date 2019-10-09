@@ -27,13 +27,41 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class KernelFile < SingleIDFileModel
-  def self.type
-    'kernels'
-  end
+require 'spec_helper'
+require 'shared_examples/system_path_deleter'
 
-  def filename
-    "#{id}.kernel"
+RSpec.describe Kickstart do
+  include_context 'with_system_path_subject'
+
+  it_behaves_like 'system path deleter'
+
+  describe 'GET /kickstart/:id/blob' do
+    context 'without credentials' do
+      it 'errors 403' do
+        unknown_headers
+        get subject_api_path('blob')
+        expect([401, 403]).to include(last_response.status)
+      end
+    end
+
+    context 'with a file' do
+      context 'with a user token' do
+        before(:all) do
+          FakeFS.clear!
+          create_subject_and_system_path
+          user_headers
+          get subject_api_path('blob')
+        end
+
+        it 'returns ok' do
+          expect(last_response).to be_ok
+        end
+
+        it 'returns the file' do
+          expect(last_response.body).to eq(File.read(subject.system_path))
+        end
+      end
+    end
   end
 end
 

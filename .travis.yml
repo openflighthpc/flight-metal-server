@@ -1,0 +1,18 @@
+language: ruby
+script: rspec spec -f d
+
+install:
+  - gem update bundler
+  - bundle install
+
+rvm:
+  - 2.3.8
+  - 2.4.6
+  - 2.5.5
+  - 2.6.3
+
+branches:
+  only:
+    - master
+    - develop
+
