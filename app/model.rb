@@ -58,7 +58,7 @@ end
 
 class FileModel < Model
   class << self
-    attr_writer :base_url, :base_path
+    attr_writer :base_path
 
     def inherited(subclass)
       FileModel.inherited_classes << subclass
@@ -79,16 +79,6 @@ class FileModel < Model
         @base_path
       else
         File.join(FileModel.base_path, type)
-      end
-    end
-
-    def base_url
-      if self == FileModel && !@base_url
-        raise "The base url has not been set"
-      elsif @base_url
-        @base_url
-      else
-        File.join(FileModel.base_url, type)
       end
     end
 

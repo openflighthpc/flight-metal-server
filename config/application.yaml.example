@@ -58,14 +58,6 @@ jwt_shared_secret:
 default_system_dir:
 
 # =============================================================================
-# Default Base Download URL
-# The default download url pointing to the download server. The files are stored
-# according to type with the following URI pattern:
-# <base_download_url>/<type>/<filename>
-# =============================================================================
-default_base_download_url:
-
-# =============================================================================
 # DHCP Subnet Include Config Path
 # Specify the path for where to store the DHCP include config. This config
 # must be included by the main DHCP configuration. This will subsequently

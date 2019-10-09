@@ -11,6 +11,7 @@
 /tmp/
 /var
 /log
+/vendor
 config/application.yaml
 
 # Used by dotenv library to load environment variables.

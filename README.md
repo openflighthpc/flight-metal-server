@@ -17,9 +17,8 @@ The application is comprised of two main components:
 
 The following are required to run this application:
 
-* OS:           Centos7
-* Ruby:         2.6+ [Possible ruby 2.x?]
-* Yum Packages: gcc
+* OS:   Centos7
+* Ruby: 2.6+ [Possible ruby 2.x as the `backports` gem is being used]
 
 ### Manual installation
 

@@ -38,7 +38,6 @@ gem 'flight_config'
 gem 'rake'
 gem 'hashie'
 gem 'jwt'
-gem 'tty-prompt'
 
 gem 'unicorn'
 

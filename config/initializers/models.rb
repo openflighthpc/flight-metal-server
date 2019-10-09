@@ -42,7 +42,6 @@ require 'app/models/user'
 
 Model.content_base_path = Figaro.env.content_base_path
 FileModel.base_path = Figaro.env.default_system_dir
-FileModel.base_url = Figaro.env.default_base_download_url
 
 FileModel.inherited_classes.each do |klass|
   value = ENV["#{klass.to_s}_system_dir"]
