@@ -288,7 +288,7 @@ class App < Sinatra::Base
   resource BootMethod.type, pkre: ID_REGEX do
     helpers do
       def find(id)
-        BootMethod.exists?(id) ? BootMethod.read(id) : nil
+        BootMethod.read(id)
       end
 
       def filter(collection, fields = {})
@@ -300,19 +300,18 @@ class App < Sinatra::Base
       end
     end
 
-    show
+    show { resource_or_error }
 
     index(filter_by: [:complete])  do
       BootMethod.glob_read('*')
     end
 
-    create do |_attr, id|
-      model = find(id) || BootMethod.create(id)
-      next model.id, model
+    update do |_|
+      BootMethod.create_or_update(*resource.__inputs__)
     end
 
     destroy do
-      BootMethod.delete(*resource.__inputs__) do |boot|
+      BootMethod.delete(*resource_or_error.__inputs__) do |boot|
         FileUtils.rm_f boot.kernel_system_path
         FileUtils.rm_f boot.initrd_system_path
         true
@@ -327,14 +326,14 @@ class App < Sinatra::Base
         authorize_user!
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
-        env['octet-stream.out'] = File.read path_lambda.call(resource)
+        env['octet-stream.out'] = File.read path_lambda.call(resource_or_error)
         ''
       end
 
       post("/:id/#{blob_type}") do
         authorize_admin!
-        write_octet_stream(path_lambda.call(resource))
-        serialize_model(resource)
+        write_octet_stream(path_lambda.call(resource_or_error))
+        serialize_model(resource_or_error)
       end
     end
   end
