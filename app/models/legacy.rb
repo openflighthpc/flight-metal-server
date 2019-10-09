@@ -37,7 +37,7 @@ class Legacy < SingleIDFileModel
   end
 
   def system_path
-    File.join(self.class.base_path, filename)
+    File.join(Figaro.env.Legacy_system_dir, filename)
   end
 end
 

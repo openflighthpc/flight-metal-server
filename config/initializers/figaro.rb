@@ -44,8 +44,9 @@ ENV['dhcpd_is_running_command'] ||= 'systemctl status dhcpd.service'
 Figaro.require_keys 'app_base_url',
                     'app_root_dir',
                     'content_base_path',
-                    'default_system_dir',
                     'temporary_directory',
+                    'Legacy_system_dir',
+                    'Uefi_system_dir',
                     'Kernel_system_dir',
                     'Initrd_system_dir'
 

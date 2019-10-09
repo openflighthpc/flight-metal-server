@@ -58,8 +58,6 @@ end
 
 class FileModel < Model
   class << self
-    attr_writer :base_path
-
     def inherited(subclass)
       FileModel.inherited_classes << subclass
     end
@@ -70,16 +68,6 @@ class FileModel < Model
 
     def inherited_classes
       @inherited_classes ||= []
-    end
-
-    def base_path
-      if self == FileModel && !@base_path
-        raise "The base path has not been set"
-      elsif @base_path
-        @base_path
-      else
-        File.join(FileModel.base_path, type)
-      end
     end
 
     # This is used by the serializer to define the type
@@ -115,7 +103,7 @@ class SingleIDFileModel < FileModel
 
   class << self
     def path(id)
-      File.join(content_base_path, type, id + '.yaml')
+      File.join(content_base_path, 'meta', type, id + '.yaml')
     end
   end
 
