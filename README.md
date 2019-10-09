@@ -17,8 +17,9 @@ The application is comprised of two main components:
 
 The following are required to run this application:
 
-* OS:   Centos7
-* Ruby: 2.6+ [Possible ruby 2.x as the `backports` gem is being used]
+* OS:           Centos7
+* Ruby:         2.6+ [Possible ruby 2.x as the `backports` gem is being used]
+* Yum Packages: gcc
 
 ### Manual installation
 
@@ -29,25 +30,25 @@ git clone https://github.com/openflighthpc/metal-server
 cd metal-server
 
 # Add the binaries to your path, which will be used by the remainder of this guide
-export -a PATH=$PATH:$(pwd)/bin
+export PATH=$PATH:$(pwd)/bin
 bundle install --without development test --path vendor
 
 # The following command can be ran without modifying the PATH variable by
 # prefixing `bin/` to the commands
-bin/bundle install --without --development test --path vendor
+bin/bundle install --without development test --path vendor
 ```
 
 ### Configuration
 
-TBA
+The application needs the following configuration values in order to run. These can either be exported into your environment or directly set in `config/application.yaml`. This application uses 
 
 ## Intro To Unicorn
 
 TBA
 
-### Starting Unicorn
+### Running the Application Behind a Reverse Proxy
 
-TBA
+It is recommended that `unicorn` is ran behind 
 
 ## Stopping The Application
 
