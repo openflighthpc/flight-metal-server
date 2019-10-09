@@ -30,7 +30,7 @@
 require 'figaro'
 
 Figaro.application = Figaro::Application.new(
-  environment: 'production',
+  environment: ENV['RACK_ENV'] || 'development',
   path: File.expand_path('../application.yaml', __dir__)
 )
 
