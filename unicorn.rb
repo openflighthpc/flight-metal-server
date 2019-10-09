@@ -35,7 +35,7 @@
 # Manually load in the configuration doc as Figaro has not setup the ENV yet
 require 'yaml'
 config_path   = File.read File.join(__dir__, 'config/application.yaml')
-content_base  = YAML.load(config_path, symbolize_keys: true)[:content_base_path] || \
+content_base  = YAML.load(config_path, symbolize_names: true)[:content_base_path] || \
                   ENV['content_base_path'] || \
                   raise('The "content_base_path" has not been set! See README.md for assistance')
 tmp_dir = File.expand_path('tmp/unicorn', content_base)
