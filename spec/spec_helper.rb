@@ -57,7 +57,7 @@ RSpec.configure do |c|
 
 	# Fake the File System each test
 	c.include FakeFS::SpecHelpers::All
-  FakeFS::File.define_method(:flock) { |*_| }
+  FakeFS::File.send(:define_method, :flock) { |*_| }
 
   def admin_headers
     header 'Authorization', "Bearer #{User.new(admin: true).generate_jwt}"
