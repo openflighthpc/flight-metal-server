@@ -181,7 +181,6 @@ class App < Sinatra::Base
 
       if klass == Kickstart
         get("/:id/blob") do
-          authorize_user!
           env['octet-stream.out'] = File.read resource.system_path
           ''
         end
