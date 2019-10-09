@@ -1,9 +1,12 @@
-# The following are required configurations. They maybe set as a environment variable
+# REQUIRED Either set them directly here or export them into the enviroment
 # app_base_url:       # [REQUIRED]
 # jwt_shared_secret:  # [REQUIRED]
 
-# Unset the following to retrieve the key from the environment or edit the config directly
-content_base_path:        /opt/flight/opt/metal-server/var
+# The following have defaults relative to where the application has been installed
+# content_dir:  <install-dir>/var
+# log_dir:      <install-dir>/log
+
+# These defaults can be overridden by the enviroment or hard coded here directly
 Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
 Uefi_system_dir:          /var/lib/tftpboot/efi/grub.cfg
 Kernel_system_dir:        /var/lib/tftpboot/boot
@@ -12,10 +15,11 @@ validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
 restart_dhcpd_command:    systemctl restart dhcpd.service
 dhcpd_is_running_command: systemctl status dhcpd.service
 
-test: &test
+# Settings used by RSpec
+test:
   app_base_url:             http://127.0.0.1
   jwt_shared_secret:        SOME_TEST_TOKEN
-  content_base_path:        /tmp/metal-server-spec/content
+  content_dir:              /tmp/metal-server-spec/content
   Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
   Uefi_system_dir:          /tmp/metal-server-spec/tftpboot/efi/grub.cfg
   Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
@@ -24,10 +28,13 @@ test: &test
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
 
+# Alternative path settings. This is to prevent polluting the root file system
+# during development
 development:
   jwt_shared_secret:  SOME_DEVELOPMENT_TOKEN
   app_base_url:       http://127.0.0.1
-  content_base_path:  /var/metal-server/content
+  content_dir:        /var/metal-server/content
+  log_dir:            /var/metal-server/log
   Legacy_system_dir:  /var/metal-server/tftpboot/pxelinux.cfg
   Uefi_system_dir:    /var/metal-server/tftpboot/efi/grub.cfg
   Kernel_system_dir:  /var/metal-server/tftpboot/boot

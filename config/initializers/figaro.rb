@@ -40,10 +40,19 @@ Figaro.load
 
 # Hard sets the app's root directory to the current code base
 ENV['app_root_dir'] = File.expand_path('../..', __dir__)
+root_dir = ENV['app_root_dir']
+
+# Sets relative defaults to the install location
+ENV['content_dir']  ||= File.join(root_dir, 'var')
+ENV['log_dir']      ||= File.join(root_dir, 'log')
+
+# Deprecated: Use `content_dir` instead of `content_base_path` for consistency
+ENV['content_base_path'] = ENV['content_dir']
 
 Figaro.require_keys 'app_root_dir',
                     'app_base_url',
-                    'content_base_path',
+                    'content_dir',
+                    'log_dir',
                     'jwt_shared_secret',
                     'Legacy_system_dir',
                     'Uefi_system_dir',

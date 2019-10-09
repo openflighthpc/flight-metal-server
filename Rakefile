@@ -58,18 +58,13 @@ task require: :require_bundler do
   require 'app/middleware/set_content_headers'
 end
 
-task 'render:nginx' => :require do
-  require 'erb'
-
-  # Renders the default locations
-  template = File.read(File.expand_path('templates/nginx-default-locations.conf', __dir__))
-  rendered = ERB.new(template, nil, '-').result(binding)
-  File.write('/etc/nginx/default.d/metal-server.conf', rendered)
-
-  # Render the Upstream file
-  template = File.read(File.expand_path('templates/nginx-http-include.conf', __dir__))
-  rendered = ERB.new(template, nil, '-').result(binding)
-  File.write('/etc/nginx/conf.d/metal-server.conf', rendered)
+# Unicorn gets these in a subshell so it does not have to setup Bundler in the
+# master process
+task unicorn_dirs: :require do
+  puts <<~PATHS.chomp
+    #{ENV['content_dir']}
+    #{ENV['log_dir']}
+  PATHS
 end
 
 task :console do
