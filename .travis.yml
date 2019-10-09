@@ -11,3 +11,8 @@ rvm:
   - 2.5.5
   - 2.6.3
 
+branches:
+  only:
+    - master
+    - develop
+
