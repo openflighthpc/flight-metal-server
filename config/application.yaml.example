@@ -15,21 +15,6 @@
 app_base_url:
 
 # =============================================================================
-# API Port
-# Optional
-# Switch the API to run over a port on localhost instead of a unix socket.
-# The nginx config will need to be renendered. This is typically used when
-# unicorn is running on port 8080
-#
-# To start the unicorn server with a unix socket:
-# bundle exec unicorn -c /path/to/app/unicorn.rb
-#
-# To start the unicorn server on port 8080:
-# bundle exec unicorn
-# =============================================================================
-# api_port: 8080
-
-# =============================================================================
 # Content Base Path
 # Set the locations the internal configuration files will be stored at
 # =============================================================================
@@ -41,14 +26,6 @@ content_base_path:
 # signatures. This can be used to allow single sign on with other services
 # =============================================================================
 jwt_shared_secret:
-
-# =============================================================================
-# Default System Dir
-# The default directory to server over the nginx server. File a stored within
-# sub directories according to their type. Each file type's system can be
-# explicitly overridden using the <class>_system_dir config value (see below)
-# =============================================================================
-default_system_dir:
 
 # =============================================================================
 # <class> System Dir

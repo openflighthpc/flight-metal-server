@@ -1,11 +1,8 @@
 # The following are required configurations. They maybe set as a environment variable
-app_base_url:       # [REQUIRED]
-
-# The json web token should be set from your environment in production
-# jwt_shared_secret: ENV['jwt_shared_secret']
+# app_base_url:       # [REQUIRED]
+# jwt_shared_secret:  # [REQUIRED]
 
 # Unset the following to retrieve the key from the environment or edit the config directly
-api_port: '8080'
 content_base_path:        /opt/flight/opt/metal-server/var
 Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
 Uefi_system_dir:          /var/lib/tftpboot/efi/grub.cfg
