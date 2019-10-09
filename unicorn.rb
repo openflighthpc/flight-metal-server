@@ -32,36 +32,29 @@
 # http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn
 #
 
-# Figaro sets up the environment once the app has loaded, however unicorn needs
-# the temporary directory before then. It will be properly validated once the app
-# starts
+# Manually load in the configuration doc as Figaro has not setup the ENV yet
 require 'yaml'
-configs = YAML.load(File.read File.join(__dir__, 'config/application.yaml'))
+config_path   = File.read File.join(__dir__, 'config/application.yaml')
+content_base  = YAML.load(config_path, symbolize_keys: true)[:content_base_path] || \
+                  ENV['content_base_path'] || \
+                  raise('The "content_base_path" has not been set! See README.md for assistance')
+tmp_dir = File.expand_path('tmp/unicorn', content_base)
 
 # Set the working directory
 @dir = __dir__
-
-# Set the location of temporary files
-tmp_dir = configs['temporary_directory'] ||\
-  configs[:temporary_directory] ||\
-  ENV['temporary_directory'] ||\
-  File.join(__dir__, 'tmp')
 
 worker_processes Etc.nprocessors + 1
 working_directory @dir
 
 timeout 30
 
-# Create the unicorn directories
-FileUtils.mkdir_p File.expand_path('unicorn/log', tmp_dir)
-
-listen File.expand_path('unicorn/api.sock', tmp_dir),
-       backlog: 64
+listen File.expand_path('api.sock', tmp_dir)
 
 # Set process id path
-pid File.expand_path('unicorn/master.pid', tmp_dir)
+pid File.expand_path('master.pid', tmp_dir)
 
 # Set log file paths
-stderr_path File.expand_path('unicorn/log/stderr.log', tmp_dir)
-stdout_path File.expand_path('unicorn/log/stdout.log', tmp_dir)
+FileUtils.mkdir_p File.expand_path('log', tmp_dir)
+stderr_path File.expand_path('log/stderr.log', tmp_dir)
+stdout_path File.expand_path('log/stdout.log', tmp_dir)
 

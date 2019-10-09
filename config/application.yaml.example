@@ -36,13 +36,6 @@ app_base_url:
 content_base_path:
 
 # =============================================================================
-# Temporary File Directory
-# Set the location where temporary files are stored. This is used by the
-# unicorn unix socket, upload store and default logging. [Eventually, Hopefully]
-# =============================================================================
-temporary_directory:
-
-# =============================================================================
 # JSON Web Token Shared Secret
 # Specify the shared secret used in generating and verifing jwt_token
 # signatures. This can be used to allow single sign on with other services
@@ -56,14 +49,6 @@ jwt_shared_secret:
 # explicitly overridden using the <class>_system_dir config value (see below)
 # =============================================================================
 default_system_dir:
-
-# =============================================================================
-# DHCP Subnet Include Config Path
-# Specify the path for where to store the DHCP include config. This config
-# must be included by the main DHCP configuration. This will subsequently
-# include all the metal configured subnets
-# =============================================================================
-dhcp_subnet_include_config_path:
 
 # =============================================================================
 # <class> System Dir
