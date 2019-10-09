@@ -83,20 +83,6 @@ that have been flagged.
 
 [Refer here for full API documentation](docs/routes.md)
 
-The valid types for the API are listed above and must be pluralized. The supported requests are:
-
-* GET   <leader>/api/<type>       # Index a type of file
-* GET   <leader>/api/<type>/<id>  # Show a file metadata
-* POST  <leader>/api/<type>/<id>  # Create the matadata entry but does not upload the file
-
-### Other Application Paths
-
-The following routes exist in the application but do not follow the JSONAPI standard:
-
-* GET   <leader>/download/<type>/<filename> # Download a file from `nginx`
-* POST  <leader>/api/<type>/<id>/upload     # Upload a file to an existing metadata entry
-* GET   <leader>/api/authorize/download/<type>/<filepath> # Used internally by `nginx`
-
 # Contributing
 
 Fork the project. Make your feature addition or bug fix. Send a pull
