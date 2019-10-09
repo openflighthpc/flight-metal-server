@@ -35,6 +35,13 @@ task :require_bundler do
   require 'rubygems'
   require 'bundler'
 
+  raise <<~ERROR.chomp unless ENV['RACK_ENV']
+    Can not require the application because the RACK_ENV has not been set.
+    Please export the env to your enviroment and try again:
+
+    export RACK_ENV=production
+  ERROR
+
   Bundler.require(:default, ENV['RACK_ENV'].to_sym)
 
   # Turns FakeFS off if running in test mode. The gem isn't installed in production
