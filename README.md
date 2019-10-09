@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/alces-software/alces-flight-center.svg?token=qyRatWzqg3dUGse7cSyd&branch=master)](https://travis-ci.com/alces-software/alces-flight-center)
+[![Build Status](https://travis-ci.org/openflighthpc/metal-server.svg?branch=master)](https://travis-ci.org/openflighthpc/metal-server)
 
 # Metal Server
 
