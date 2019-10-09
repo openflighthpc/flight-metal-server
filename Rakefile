@@ -35,14 +35,10 @@ task :require_bundler do
   require 'rubygems'
   require 'bundler'
 
-  if ['development', 'test'].include?(ENV['RACK_ENV'])
-    Bundler.setup(:default, :development)
-    require 'pry'
-    require 'pry-byebug'
-    $: << File.expand_path('spec', __dir__)
-  else
-    Bundler.setup(:default)
-  end
+  Bundler.require(:default, ENV['RACK_ENV'].to_sym)
+
+  # Turns FakeFS off if running in test mode. The gem isn't installed in production
+  FakeFS.deactivate! if ENV['RACK_ENV'] == 'test'
 end
 
 task require: :require_bundler do

@@ -1,0 +1,38 @@
+# The following are required configurations. They maybe set as a environment variable
+app_base_url:       # [REQUIRED]
+
+# The json web token should be set from your environment in production
+# jwt_shared_secret: ENV['jwt_shared_secret']
+
+# Unset the following to retrieve the key from the environment or edit the config directly
+api_port: '8080'
+content_base_path:        /opt/flight/opt/metal-server/var
+Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
+Uefi_system_dir:          /var/lib/tftpboot/efi/grub.cfg
+Kernel_system_dir:        /var/lib/tftpboot/boot
+Initrd_system_dir:        /var/lib/tftpboot/boot
+validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
+restart_dhcpd_command:    systemctl restart dhcpd.service
+dhcpd_is_running_command: systemctl status dhcpd.service
+
+test: &test
+  app_base_url:             http://127.0.0.1
+  jwt_shared_secret:        SOME_TEST_TOKEN
+  content_base_path:        /tmp/metal-server-spec/content
+  Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
+  Uefi_system_dir:          /tmp/metal-server-spec/tftpboot/efi/grub.cfg
+  Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
+  Initrd_system_dir:        /tmp/metal-server-spec/tftpboot/boot
+  validate_dhcpd_command:   echo Initial Test DHCP Validation Command
+  restart_dhcpd_command:    echo Initial Test DHCP Restart Command
+  dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
+
+development:
+  jwt_shared_secret:  SOME_DEVELOPMENT_TOKEN
+  app_base_url:       http://127.0.0.1
+  content_base_path:  /var/metal-server/content
+  Legacy_system_dir:  /var/metal-server/tftpboot/pxelinux.cfg
+  Uefi_system_dir:    /var/metal-server/tftpboot/efi/grub.cfg
+  Kernel_system_dir:  /var/metal-server/tftpboot/boot
+  Initrd_system_dir:  /var/metal-server/tftpboot/boot
+

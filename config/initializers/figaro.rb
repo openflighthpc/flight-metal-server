@@ -29,23 +29,27 @@
 
 require 'figaro'
 
+# Loads the configurations into the environment
 Figaro.application = Figaro::Application.new(
-  environment: ENV['RACK_ENV'] || 'development',
+  environment: (ENV['RACK_ENV'] || 'development').to_sym,
   path: File.expand_path('../application.yaml', __dir__)
 )
+Figaro.load
+      .reject { |_, v| v.nil? }
+      .each { |key, value| ENV[key] = value }
 
-Figaro.load.each { |key, value| ENV[key] = value }
-ENV['app_root_dir'] ||= File.expand_path('../..', __dir__)
+# Hard sets the app's root directory to the current code base
+ENV['app_root_dir'] = File.expand_path('../..', __dir__)
 
-ENV['validate_dhcpd_command']   ||= 'dhcpd -t -cf /etc/dhcp/dhcpd.conf'
-ENV['restart_dhcpd_command']    ||= 'systemctl restart dhcpd.service'
-ENV['dhcpd_is_running_command'] ||= 'systemctl status dhcpd.service'
-
-Figaro.require_keys 'app_base_url',
-                    'app_root_dir',
+Figaro.require_keys 'app_root_dir',
+                    'app_base_url',
                     'content_base_path',
+                    'jwt_shared_secret',
                     'Legacy_system_dir',
                     'Uefi_system_dir',
                     'Kernel_system_dir',
-                    'Initrd_system_dir'
+                    'Initrd_system_dir',
+                    'validate_dhcpd_command',
+                    'restart_dhcpd_command',
+                    'dhcpd_is_running_command'
 
