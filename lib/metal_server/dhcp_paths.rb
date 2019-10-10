@@ -85,7 +85,7 @@ module MetalServer
 
     # Must be in the same directory as the subnet config. This is to allow relative paths
     def subnet_hosts(name)
-      join('hosts', "#{name}.conf")
+      join('hosts', "subnet.#{name}.conf")
     end
 
     def host_conf(subnet, name)

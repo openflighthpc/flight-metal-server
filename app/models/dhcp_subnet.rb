@@ -45,6 +45,10 @@ class DhcpSubnet < SingleIDFileModel
     MetalServer::DhcpPaths.current(DhcpBase.path).subnet_conf(id)
   end
 
+  def hosts_path
+    MetalServer::DhcpPaths.current(DhcpBase.path).subnet_hosts(id)
+  end
+
   def filename
     File.basename(system_path)
   end
