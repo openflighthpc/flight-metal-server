@@ -47,7 +47,7 @@ class DhcpHost < FileModel
   end
 
   def id
-    "#{subnet}/#{name}"
+    "#{subnet}.#{name}"
   end
 
   def system_path
