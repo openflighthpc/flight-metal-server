@@ -25,7 +25,7 @@ The following are required to run this application:
 
 ### Manual installation
 
-Start by cloning the repo, adding the binaries to your path, and install the gems
+Start by cloning the repo, adding the binaries to your path, and install the gems. This guide assumes the `bin` directory is on your `PATH`. If you prefer not to modify your `PATH`, then some of the commands need to be prefixed with `/path/to/app/bin`.
 
 ```
 git clone https://github.com/openflighthpc/metal-server
@@ -63,13 +63,23 @@ Run the following to start the unicorn daemon process:
 unicorn -c unicorn.rb -p 80 -E production -D
 ```
 
+### Issues Starting the Server
+
+If the above command raises a `Figaro::MissingKeys` error than the server has been missed configured and cannot be start. Please refer [configuration](#Configuration) for further assistance.
+
+The next place to check when debugging server issues is the `stderr` log. The logs location depends on how the application has been configured, but the following will work for the default production environment:
+
+```
+tail -f log/stderr.log
+```
+
 ### Running the Application Behind a Reverse Proxy
 
 As this is a `unicorn` application, it has been designed to server fast clients with low latency. Therefore it should be located behind a reverse proxy such as `nginx` or `apache`.
 
 [Refer here for more details](docs/ssl_and_reverse_proxy.md)
 
-#### Basic Development Environment
+### Basic Development Environment
 
 For development purposes, the application can be started in a single threaded `unicorn` process on port `8080`:
 
@@ -80,7 +90,7 @@ unicorn
 Or the underlining rack app can be be started with `rackup`:
 
 ```
-bin/rackup -p <port> -o 0.0.0.0
+rackup -p <port> -o 0.0.0.0
 ```
 
 ## Stopping The Application
