@@ -235,8 +235,8 @@ class App < Sinatra::Base
     end
   end
 
-  SimpleHostRegex = /#{ID_REGEX}\/#{ID_REGEX}/
-  MatchHostRegex  = /(#{ID_REGEX})\/(#{ID_REGEX})/
+  SimpleHostRegex = /#{ID_REGEX}\.#{ID_REGEX}/
+  MatchHostRegex  = /(#{ID_REGEX})\.(#{ID_REGEX})/
   resource DhcpHost.type, pkre: SimpleHostRegex do
     helpers do
       def find(id)

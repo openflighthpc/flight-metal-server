@@ -15,7 +15,7 @@ Most API's use server generated auto incrementing integer as id's. In this API, 
 
 The id is otherwise used in the same manner according to the `JSON:API` specifications.
 
-The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". The subnet and "name" is subject to the same character restrictions described above. The `id` for a `dhcp-hosts` is always in the format `<subnet>/<name>`.
+The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". The subnet and "name" is subject to the same character restrictions described above. The `id` for a `dhcp-hosts` is always in the format `<subnet>.<name>`.
 
 ## Kickstart Routes
 ### Index
@@ -82,9 +82,15 @@ Content-Type: application/vnd.api+json
 
 Kickstarts have a `blob` relationship that can be use to download the file in a raw format. This should be included in the relevant `Legacy` or `Uefi` file.
 
-### Create and Update
+### Create
 
-Kickstart entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
+
+### Update
+
+Updates the kickstart file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create kickstart that do not exist. This will be fixed in future release.
 
 *SYNTAX:*
 ```
@@ -152,9 +158,15 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Uefis entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
+
+### Update
+
+Updates the uefi file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create uefi that do not exist. This will be fixed in future release.
 
 *SYNTAX:*
 ```
@@ -211,9 +223,15 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Legacy entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
+
+### Update
+
+Updates the legacy file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create legacies that do not exist. This will be fixed in future release.
 
 *SYNTAX:*
 ```
@@ -270,11 +288,15 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Dhcp subnets entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
+### Update
+
+Updates the DHCP subnet file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create subnets that do not exist. This will be fixed in future release.
 
 *SYNTAX:*
 ```
@@ -320,7 +342,7 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-## Dhcp Subnet Routes
+## Dhcp Host Routes
 ### Index
 
 List all the dhcp host entires.
@@ -339,21 +361,26 @@ Retrieve a particular dhcp host entry. The `payload` attribute contains the file
 
 *SYNTAX:*
 ```
-GET /dhcp-hosts/:subnet/:name
+GET /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Dhcp hosts entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
+### Update
+
+Updates the DHCP host file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create hosts that do not exist. This will be fixed in future release.
+
 
 *SYNTAX:*
 ```
-PATCH /dhcp-hosts/:subnet/:name
+PATCH /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -361,7 +388,7 @@ Authorization: Bearer <jwt>
 {
   "data": {
     "type": "dhcp-hosts",
-    "id": "<subnet>/<name>",
+    "id": "<subnet>.<name>",
     "attributes": {
       "payload": "<content of uploaded file>"
     }
@@ -377,7 +404,7 @@ This will trigger the `DHCP` server to be restarted. See [restarting dhcp](resta
 
 *SYNTAX*:
 ```
-DELETE /dhcp-hosts/:subnet/:name
+DELETE /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -389,7 +416,7 @@ Return the subnet entry the host belongs to.
 
 *SYNTAX*:
 ```
-GET /dhcp-hosts/:subnet/:name/dhcp-subnet
+GET /dhcp-hosts/:subnet.:name/dhcp-subnet
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
