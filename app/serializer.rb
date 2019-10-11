@@ -91,6 +91,8 @@ class DhcpSubnetSerializer < FileModelSerializer
   include SerializePayload
 
   has_many :dhcp_hosts
+
+  attribute :hosts_path
 end
 
 class DhcpHostSerializer < FileModelSerializer

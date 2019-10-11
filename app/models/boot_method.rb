@@ -37,11 +37,11 @@ class BootMethod < SingleIDFileModel
   end
 
   def kernel_filename
-    "#{id}.kernel"
+    "kernel-#{id}"
   end
 
   def initrd_filename
-    "#{id}.initrd"
+    "initrd-#{id}"
   end
 
   def kernel_system_path

@@ -37,10 +37,19 @@ RSpec.describe Kickstart do
 
   describe 'GET /kickstart/:id/blob' do
     context 'without credentials' do
-      it 'errors 403' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
         unknown_headers
         get subject_api_path('blob')
-        expect([401, 403]).to include(last_response.status)
+      end
+
+      it 'returns ok' do
+        expect(last_response).to be_ok
+      end
+
+      it 'returns the file' do
+        expect(last_response.body).to eq(File.read(subject.system_path))
       end
     end
 

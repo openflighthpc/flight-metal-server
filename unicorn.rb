@@ -32,29 +32,30 @@
 # http://recipes.sinatrarb.com/p/deployment/nginx_proxied_to_unicorn
 #
 
-# Manually load in the configuration doc as Figaro has not setup the ENV yet
-require 'yaml'
-config_path   = File.read File.join(__dir__, 'config/application.yaml')
-content_base  = YAML.load(config_path, symbolize_keys: true)[:content_base_path] || \
-                  ENV['content_base_path'] || \
-                  raise('The "content_base_path" has not been set! See README.md for assistance')
-tmp_dir = File.expand_path('tmp/unicorn', content_base)
+# Grabs its directories using a subshell. This means the master process doesn't
+# getting polluted with these changes
+require 'open3'
+output, status = Open3.capture2e("#{__dir__}/bin/rake unicorn_dirs")
+content_dir, log_dir = if status.to_i == 0
+  output.split("\n")
+else
+  $stderr.puts output
+  exit 1
+end
 
 # Set the working directory
 @dir = __dir__
-
 worker_processes Etc.nprocessors + 1
 working_directory @dir
 
 timeout 30
 
-listen File.expand_path('api.sock', tmp_dir)
-
 # Set process id path
-pid File.expand_path('master.pid', tmp_dir)
+FileUtils.mkdir_p content_dir
+pid File.join(content_dir, 'var')
 
 # Set log file paths
-FileUtils.mkdir_p File.expand_path('log', tmp_dir)
-stderr_path File.expand_path('log/stderr.log', tmp_dir)
-stdout_path File.expand_path('log/stdout.log', tmp_dir)
+FileUtils.mkdir_p log_dir
+stdout_path File.join(log_dir, 'stdout.log')
+stderr_path File.join(log_dir, 'stderr.log')
 

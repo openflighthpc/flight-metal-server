@@ -15,14 +15,14 @@ Most API's use server generated auto incrementing integer as id's. In this API, 
 
 The id is otherwise used in the same manner according to the `JSON:API` specifications.
 
-The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". The subnet and "name" is subject to the same character restrictions described above. The `id` for a `dhcp-hosts` is always in the format `<subnet>/<name>`.
+The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". The subnet and "name" is subject to the same character restrictions described above. The `id` for a `dhcp-hosts` is always in the format `<subnet>.<name>`.
 
 ## Kickstart Routes
 ### Index
 
 List all the kickstart entries.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /kickstarts
 Content-Type: application/vnd.api+json
@@ -34,7 +34,7 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular kickstart entry. The `payload` attribute contains the kickstart file's content.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /kickstarts/:id
 Content-Type: application/vnd.api+json
@@ -42,11 +42,57 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+*RESPONSE:*
 
-Kickstart entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+The following is an example response for a successful upload:
 
-**SYNTAX:**
+```
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+
+{
+   "data":{
+       "type":"kickstarts",
+       "id":"<id>",
+       "attributes":{
+          "size":<size-of-uploaded-file>,
+          "system-path":"<content_base_path>/var/www/kickstarts/<id>.ks",
+          "uploaded":true,
+          "payload":"<content-of-uploaded-kickstart-file>"
+       },
+       "links":{
+          "self":"<app_base_url>/kickstarts/foo"
+       },
+       "relationships":{
+          "blob":{
+             "links":{
+                "self":"<app_base_url>/kickstarts/foo/relationships/blob",
+                "related":"<app_base_url>/kickstarts/foo/blob"
+             }
+          }
+       }
+    },
+   "jsonapi":{
+      "version":"1.0"
+   },
+   "included":[
+   ]
+}
+```
+
+Kickstarts have a `blob` relationship that can be use to download the file in a raw format. This should be included in the relevant `Legacy` or `Uefi` file.
+
+### Create
+
+TBA
+
+### Update
+
+Updates the kickstart file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create kickstart that do not exist. This will be fixed in future release.
+
+*SYNTAX:*
 ```
 PATCH /kickstarts/:id
 Content-Type: application/vnd.api+json
@@ -68,7 +114,7 @@ Authorization: Bearer <jwt>
 
 Deletes the kickstart entry and associated file.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
 DELETE /kickstarts/:id
 Content-Type: application/vnd.api+json
@@ -76,16 +122,15 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Directly Kickstart Download
+### Direct Kickstart Download
 
-This is a non `JSON:API` path that returns the raw kickstart file without any `JSON`.
+This is a non `JSON:API` path that returns the raw kickstart file without any `JSON`. This route does not need an authroization token as it is required when the `BIOS` pxeboots.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /kickstarts/:id/blob
 Content-Type: application/vnd.api+json
 Accept: application/octet-stream
-Authorization: Bearer <jwt>
 ```
 
 ## Uefi Routes
@@ -93,7 +138,7 @@ Authorization: Bearer <jwt>
 
 List all the Uefi entries.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /uefis
 Content-Type: application/vnd.api+json
@@ -105,7 +150,7 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular uefi entry. The `payload` attribute contains the file content.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /uefis/:id
 Content-Type: application/vnd.api+json
@@ -113,11 +158,17 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Uefis entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-**SYNTAX:**
+### Update
+
+Updates the uefi file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create uefi that do not exist. This will be fixed in future release.
+
+*SYNTAX:*
 ```
 PATCH /uefis/:id
 Content-Type: application/vnd.api+json
@@ -139,7 +190,7 @@ Authorization: Bearer <jwt>
 
 Deletes the uefi entry
 
-**SYNTAX**:
+*SYNTAX*:
 ```
 DELETE /uefis/:id
 Content-Type: application/vnd.api+json
@@ -152,7 +203,7 @@ Authorization: Bearer <jwt>
 
 List all the Legacy entries.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /legacies
 Content-Type: application/vnd.api+json
@@ -164,7 +215,7 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular legacy entry. The `payload` attribute contains the file content.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /legacies/:id
 Content-Type: application/vnd.api+json
@@ -172,11 +223,17 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Legacy entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-**SYNTAX:**
+### Update
+
+Updates the legacy file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create legacies that do not exist. This will be fixed in future release.
+
+*SYNTAX:*
 ```
 PATCH /legacies/:id
 Content-Type: application/vnd.api+json
@@ -198,7 +255,7 @@ Authorization: Bearer <jwt>
 
 Deletes the legacies entry and associated file.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
 DELETE /legacies/:id
 Content-Type: application/vnd.api+json
@@ -211,7 +268,7 @@ Authorization: Bearer <jwt>
 
 List all the dhcp subnet entires.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /dhcp-subnets
 Content-Type: application/vnd.api+json
@@ -223,7 +280,7 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular dhcp subnet entry. The `payload` attribute contains the file content.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /dhcp-subnets/:id
 Content-Type: application/vnd.api+json
@@ -231,13 +288,17 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Dhcp subnets entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
+### Update
 
-**SYNTAX:**
+Updates the DHCP subnet file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create subnets that do not exist. This will be fixed in future release.
+
+*SYNTAX:*
 ```
 PATCH /dhcp-subnets/:id
 Content-Type: application/vnd.api+json
@@ -261,7 +322,7 @@ Deletes the dhcp subnet entry and associated file.
 
 This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
 DELETE /dhcp-subnets/:id
 Content-Type: application/vnd.api+json
@@ -273,7 +334,7 @@ Authorization: Bearer <jwt>
 
 Return the dhcp hosts entries that belong within the subnet.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /dhcp-subnets/:id/dhcp-hosts
 Content-Type: application/vnd.api+json
@@ -281,12 +342,12 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-## Dhcp Subnet Routes
+## Dhcp Host Routes
 ### Index
 
 List all the dhcp host entires.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /dhcp-hosts
 Content-Type: application/vnd.api+json
@@ -298,23 +359,28 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular dhcp host entry. The `payload` attribute contains the file content.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
-GET /dhcp-hosts/:subnet/:name
+GET /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-Dhcp hosts entries are created and updated using the same route. The `payload` attribute must contain the content of the uploaded file.
+TBA
 
-This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
+### Update
 
-**SYNTAX:**
+Updates the DHCP host file with the new file content given by the required `payload` attribute.
+
+*BUG*: Currently this path will create hosts that do not exist. This will be fixed in future release.
+
+
+*SYNTAX:*
 ```
-PATCH /dhcp-hosts/:subnet/:name
+PATCH /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -322,7 +388,7 @@ Authorization: Bearer <jwt>
 {
   "data": {
     "type": "dhcp-hosts",
-    "id": "<subnet>/<name>",
+    "id": "<subnet>.<name>",
     "attributes": {
       "payload": "<content of uploaded file>"
     }
@@ -336,9 +402,9 @@ Deletes the dhcp host entry and associated file.
 
 This will trigger the `DHCP` server to be restarted. See [restarting dhcp](restarting_dhcp.md) for further details.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
-DELETE /dhcp-hosts/:subnet/:name
+DELETE /dhcp-hosts/:subnet.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -348,9 +414,9 @@ Authorization: Bearer <jwt>
 
 Return the subnet entry the host belongs to.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
-GET /dhcp-hosts/:subnet/:name/dhcp-subnet
+GET /dhcp-hosts/:subnet.:name/dhcp-subnet
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -361,7 +427,7 @@ Authorization: Bearer <jwt>
 
 List all the boot method entires.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /boot-methods
 Content-Type: application/vnd.api+json
@@ -373,7 +439,7 @@ Authorization: Bearer <jwt>
 
 Retrieve a particular boot method entry. The `kernel` and `initrd` blobs are not returned as part of a show. Instead they must be request specifically using the `GET` blob routes.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /boot-methods/:id
 Content-Type: application/vnd.api+json
@@ -389,7 +455,7 @@ TBA - Needs Refactor
 
 Deletes the boot method entry, `kenerl`, and `initrd` files.
 
-**SYNTAX**:
+*SYNTAX*:
 ```
 DELETE /boot-methods/:id
 Content-Type: application/vnd.api+json
@@ -401,7 +467,7 @@ Authorization: Bearer <jwt>
 
 Directly download the `kernel` binary. This is a non-jsonapi route.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /boot-methods/:id/kernel-blob
 Content-Type: application/vnd.api+json
@@ -413,7 +479,7 @@ Authorization: Bearer <jwt>
 
 Directly download the `initrd` binary. This is a non-jsonapi route.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 GET /boot-methods/:id/intrd-blob
 Content-Type: application/octet-stream
@@ -425,7 +491,7 @@ Authorization: Bearer <jwt>
 
 Upload a new kernel replacing the old file. This is a non-jsonapi route.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 POST /boot-methods/:id/kernel-blob
 Content-Type: application/octet-stream
@@ -439,7 +505,7 @@ Authorization: Bearer <jwt>
 
 Upload a new initrd replacing the old file. This is a non-jsonapi route.
 
-**SYNTAX:**
+*SYNTAX:*
 ```
 POST /boot-methods/:id/initrd-blob
 Content-Type: application/octet-stream

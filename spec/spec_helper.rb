@@ -92,7 +92,7 @@ RSpec.shared_context 'with_system_path_subject' do
   end
 
   def subject_api_path(*a)
-    File.join('/', described_class.type, subject_inputs.join('/'), *a)
+    File.join('/', described_class.type, subject_inputs.join('.'), *a)
   end
 
   def read_subject
@@ -115,7 +115,7 @@ RSpec.shared_context 'with_system_path_subject' do
         {
           "data": {
             "type": "#{described_class.type}",
-            "id": "#{subject_inputs.join('/')}",
+            "id": "#{subject_inputs.join('.')}",
             "attributes": {
               #{ "\"payload\": \"#{payload}\"" if payload}
             }
