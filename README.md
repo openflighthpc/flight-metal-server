@@ -63,6 +63,8 @@ Run the following to start the unicorn daemon process:
 unicorn -c unicorn.rb -p 80 -E production -D
 ```
 
+\*NOTE: If the application is running behind `apache` and `nginx`, it will need to be proxied to another port. The default port is `8080`.
+
 ### Issues Starting the Server
 
 If the above command raises a `Figaro::MissingKeys` error than the server has been missed configured and cannot be start. Please refer [configuration](#Configuration) for further assistance.
