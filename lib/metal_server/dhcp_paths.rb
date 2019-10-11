@@ -185,7 +185,7 @@ module MetalServer
       FileUtils.mkdir_p File.dirname(paths.include_subnets)
       subnets = subnet_paths
       if subnets.empty?
-        FileUtils.write paths.include_subnets, ''
+        File.write paths.include_subnets, ''
       else
         includes = subnets.map { |p| "include \"#{p}\";" }.join("\n")
         File.write paths.include_subnets, <<~CONF
@@ -202,7 +202,7 @@ module MetalServer
         FileUtils.mkdir_p File.dirname(hosts_path)
         hosts = hosts_paths(subnet)
         if hosts.empty?
-          FileUtils.write hosts_path, ''
+          File.write hosts_path, ''
         else
           includes = hosts.map { |p| "include \"#{p}\";" }.join("\n")
           File.write paths.subnet_hosts(subnet), <<~CONF
