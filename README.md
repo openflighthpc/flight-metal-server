@@ -53,6 +53,28 @@ export jwt_shared_secret=<keep-this-secret-safe>
 vim config/application.yaml
 ```
 
+### Setting up DHCP
+
+This application needs to validate and restart the `DHCP` server each time a new `subnet` or `host` is added. It has been designed with the base yum `dhcpd` rpm in mind. If a different `dhcpd` setup is used, then the following configuration variables need to be modified:
+* `validate_dhcpd_command`
+* `restart_dhcpd_command`
+* `dhcpd_is_running_command`
+
+In order for the default `dhcpd` commands to work, the configuration files need to be included by the core `dhcpd.conf` file. This can be done by adding a single include subnets line to `/etc/dhcp/dhcpd.conf`. To initialize the application
+to manage DHCP run the following `rake` command. The returned path needs to be included in `dhcpd.conf`.
+
+```
+# Set the enviroment the application is running under
+export RACK_ENV=production
+
+# Initialize the internal application DHCP directory
+rake initialize
+> /some/path/to/app/dhcp/subnets.conf
+
+# Include the path in dhcpd.conf
+vi /etc/dhcp/dhcpd.conf
+```
+
 ## Starting the Server
 
 This application ships with `unicorn` as it load balancer and will automatically scale the number processes available for machines. `unicorn` also recovers from failures if something goes wrong from within the application.

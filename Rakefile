@@ -73,6 +73,17 @@ task :console do
   binding.pry
 end
 
+task initialize: :require do
+  path = MetalServer::DhcpPaths.current(DhcpBase.path).include_subnets
+  FileUtils.mkdir_p File.dirname(path)
+  FileUtils.touch path
+  puts <<~MESSAGE.squish
+    In order to update the DHCP records, the following file must be included in
+    /etc/dhcp/dhcpd.conf (or other appropriate location):
+  MESSAGE
+  puts path
+end
+
 task 'token:admin' => :require do
   puts User.new(admin: true).generate_jwt
 end
