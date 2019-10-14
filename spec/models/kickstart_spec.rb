@@ -40,11 +40,101 @@ RSpec.describe Kickstart do
       before(:all) do
         FakeFS.clear!
         user_headers
-        post '/kickstarts', subject_api_body(payload: 'some test payload')
+        post "/#{described_class.type}", subject_api_body(payload: 'some test payload')
       end
 
       it 'returns forbidden' do
         expect_forbidden
+      end
+    end
+
+    context 'with admin credentials but without a payload' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body
+      end
+
+      it 'returns bad request' do
+        expect(last_response.status).to be(400)
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+
+    context 'with admin credentials and a payload but without an id' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", <<~APIJSON
+          {
+            "data": {
+              "type": "#{described_class.type}",
+              "attributes": {
+                "payload": "upload without an id"
+              }
+            }
+          }
+        APIJSON
+      end
+
+      it 'returns forbidden' do
+        expect_forbidden
+      end
+    end
+
+    context 'with admin credentials, payload, and id' do
+      def test_payload
+        'I am the test payload string'
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      it 'returns created' do
+        expect(last_response).to be_created
+      end
+
+      it 'creates the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      it 'writes the system file' do
+        expect(File.read subject.system_path).to eq(test_payload)
+      end
+    end
+
+    context 'with admin credentilas, payload, id, and existing kickstart' do
+      def test_payload
+        'I am the test payload string'
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        create_subject_and_system_path
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      it 'returns a conflict' do
+        expect(last_response.status).to be(409)
+      end
+
+      it 'leaves the meta file in place' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      it 'does not update the system file' do
+        expect(File.read subject.system_path).to be_empty
       end
     end
   end

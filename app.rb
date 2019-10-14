@@ -125,6 +125,10 @@ class App < Sinatra::Base
       end
     end
 
+    def raise_require_payload
+      raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+    end
+
     private
 
     def token
@@ -162,6 +166,21 @@ class App < Sinatra::Base
       end
 
       create do |attr, id|
+        begin
+          new_model = klass.create(id) do |model|
+            if payload = attr[:payload]
+              FileUtils.mkdir_p File.dirname(model.system_path)
+              File.write(model.system_path, payload)
+            else
+              raise_require_payload
+            end
+          end
+          [id, new_model]
+        rescue FlightConfig::CreateError
+          raise Sinja::ConflictError, <<~ERROR.chomp
+            Can not create the '#{klass.type.singularize}' as '#{id}' already exists
+          ERROR
+        end
       end
 
       update do |attr|
