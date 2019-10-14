@@ -275,7 +275,7 @@ class App < Sinatra::Base
       def find(id)
         subnet, name = MatchHostRegex.match(id).captures
         if DhcpSubnet.exists?(subnet)
-          DhcpHost.read(subnet, name)
+          File.exists?(DhcpHost.path(subnet, name)) ? DhcpHost.read(subnet, name) : nil
         else
           raise Sinja::ConflictError, <<~ERROR.squish
             Can not proceed with this request as the DHCP subnet does
@@ -285,22 +285,17 @@ class App < Sinatra::Base
       end
     end
 
-    show    { resource_or_error }
+    show
     index   { DhcpHost.glob_read('*', '*') }
 
     update do |attr|
-      if payload = attr[:payload]
-        DhcpHost.create_or_update(*resource.__inputs__) do |host|
+      DhcpHost.update(*resource.__inputs__) do |host|
+        if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
             FileUtils.mkdir_p File.dirname(host.system_path)
             File.write host.system_path, payload
           end
         end
-      else
-        raise Sinja::BadRequestError, <<~ERROR.squish
-          The 'payload' attribute has not been set with this request. Failed to update the
-          DHCP host.
-        ERROR
       end
     end
 
