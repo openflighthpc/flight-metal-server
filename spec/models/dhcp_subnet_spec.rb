@@ -33,7 +33,32 @@ require 'shared_examples/system_path_creater'
 RSpec.describe DhcpSubnet do
   include_context 'with_system_path_subject'
 
-  include_examples 'system path creater'
+  include_examples 'system path creater' do
+    context 'with admin credentails, with meta or file, and when validation errors' do
+      before(:all) do
+        ENV['validate_dhcpd_command'] = 'exit 1'
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(payload: 'some garbage payload')
+      end
+
+      after(:all) do
+        ENV['validate_dhcpd_command'] = 'echo Reset Mock DHCPD Validate on Create Command'
+      end
+
+      it 'returns bad request' do
+        expect(last_response.status).to be(400)
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+  end
 
   describe 'GET show' do
     context 'with user crendentials, without the meta file' do

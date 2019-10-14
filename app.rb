@@ -221,8 +221,10 @@ class App < Sinatra::Base
       begin
         new_subnet = DhcpSubnet.create(id) do |subnet|
           if payload = attr[:payload]
-            FileUtils.mkdir_p File.dirname(subnet.system_path)
-            File.write(subnet.system_path, payload)
+            MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+              FileUtils.mkdir_p File.dirname(subnet.system_path)
+              File.write(subnet.system_path, payload)
+            end
           else
             raise_require_payload
           end
