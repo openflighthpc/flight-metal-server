@@ -217,6 +217,24 @@ class App < Sinatra::Base
 
     index { DhcpSubnet.glob_read('*') }
 
+    create do |attr, id|
+      begin
+        new_subnet = DhcpSubnet.create(id) do |subnet|
+          if payload = attr[:payload]
+            FileUtils.mkdir_p File.dirname(subnet.system_path)
+            File.write(subnet.system_path, payload)
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_subnet]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpSubnet.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
     update do |attr|
       DhcpSubnet.update(*resource.__inputs__) do |subnet|
         if payload = attr[:payload]

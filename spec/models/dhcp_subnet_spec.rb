@@ -28,10 +28,12 @@
 #===============================================================================
 
 require 'spec_helper'
-require 'shared_examples/system_path_deleter'
+require 'shared_examples/system_path_creater'
 
 RSpec.describe DhcpSubnet do
   include_context 'with_system_path_subject'
+
+  include_examples 'system path creater'
 
   describe 'GET show' do
     context 'with user crendentials, without the meta file' do
