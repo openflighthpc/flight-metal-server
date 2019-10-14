@@ -35,7 +35,10 @@ RSpec.shared_examples 'system path deleter' do
 
     context 'with an existing config' do
       context 'without credentials' do
-        before { create_subject_and_system_path }
+        before do
+          FakeFS.clear!
+          create_subject_and_system_path
+        end
 
         include_examples 'error_without_credentials'
       end
