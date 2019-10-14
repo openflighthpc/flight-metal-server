@@ -144,6 +144,7 @@ RSpec.describe Kickstart do
       before(:all) do
         FakeFS.clear!
         user_headers
+        create_subject_and_system_path
         patch subject_api_path, subject_api_body
       end
 

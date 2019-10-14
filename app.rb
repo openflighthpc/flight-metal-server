@@ -153,13 +153,11 @@ class App < Sinatra::Base
         # a closure around the parent context. This way the `klass` variable is
         # available inside the block
         define_method(:find) do |id|
-          klass.read(id)
+          File.exists?(klass.path(id)) ? klass.read(id) : nil
         end
       end
 
-      show do
-        File.exists?(resource.path) ? resource : nil
-      end
+      show
 
       index do
         klass.glob_read('*')
