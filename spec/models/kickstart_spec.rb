@@ -35,7 +35,21 @@ RSpec.describe Kickstart do
 
   it_behaves_like 'system path deleter'
 
-  describe 'GET /kickstart/:id/blob' do
+  describe 'POST /kickstarts' do
+    context 'with user credentials' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        post '/kickstarts', subject_api_body(payload: 'some test payload')
+      end
+
+      it 'returns forbidden' do
+        expect_forbidden
+      end
+    end
+  end
+
+  describe 'GET /kickstarts/:id/blob' do
     context 'without credentials' do
       before(:all) do
         FakeFS.clear!

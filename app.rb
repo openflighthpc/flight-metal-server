@@ -161,6 +161,9 @@ class App < Sinatra::Base
         klass.glob_read('*')
       end
 
+      create do |attr, id|
+      end
+
       update do |attr|
         if payload = attr[:payload]
           klass.create_or_update(*resource.__inputs__) do |model|
