@@ -139,6 +139,62 @@ RSpec.describe Kickstart do
     end
   end
 
+  describe 'PATCH /kickstarts/:id' do
+    context 'with user credentials' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns forbidden' do
+        expect_forbidden
+      end
+    end
+
+    context 'with admin credentials without an entry' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path, subject_api_body(payload: 'some test payload')
+      end
+
+      it 'returns not found' do
+        expect(last_response).to be_not_found
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+
+    context 'with admin credentials and entry but without a payload' do
+      def original_payload
+        'I am the original file content'
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        create_subject_and_system_path
+        File.write(read_subject.system_path, original_payload)
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns okay' do
+        expect(last_response).to be_ok
+      end
+
+      it 'does not modify the system file' do
+        expect(File.read subject.system_path).to eq(original_payload)
+      end
+    end
+  end
+
   describe 'GET /kickstarts/:id/blob' do
     context 'without credentials' do
       before(:all) do

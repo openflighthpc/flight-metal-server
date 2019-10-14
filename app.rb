@@ -184,13 +184,11 @@ class App < Sinatra::Base
       end
 
       update do |attr|
-        if payload = attr[:payload]
-          klass.create_or_update(*resource.__inputs__) do |model|
+        klass.update(*resource_or_error.__inputs__) do |model|
+          if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
             File.write model.system_path, payload.to_s
           end
-        else
-          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
         end
       end
 
