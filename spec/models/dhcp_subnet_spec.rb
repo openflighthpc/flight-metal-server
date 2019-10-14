@@ -66,10 +66,11 @@ RSpec.describe DhcpSubnet do
       'I am the test payload'
     end
 
-    context 'with user crendentials, without the meta file' do
+    context 'with user crendentials, with the meta file' do
       before(:all) do
         FakeFS.clear!
         user_headers
+        create_subject_and_system_path
         patch subject_api_path
       end
 
@@ -78,31 +79,50 @@ RSpec.describe DhcpSubnet do
       end
     end
 
-    context 'with admin crendentials, without any dhcp files or a payload' do
+    context 'with admin crendentials, without any dhcp files' do
       before(:all) do
         FakeFS.clear!
         admin_headers
         patch subject_api_path, subject_api_body
       end
 
-      it 'returns Bad Request' do
-        expect(last_response.status).to be(400)
+      it 'returns Not Found' do
+        expect(last_response).to be_not_found
       end
     end
 
-    context 'with admin credentials and payload, but without any files' do
+    context 'with admin credentials, dhcp files, but without a payload' do
+      def original_payload
+        'I am the orignal dhcp payload'
+      end
+
       before(:all) do
         FakeFS.clear!
         admin_headers
+        create_subject_and_system_path
+        File.write(read_subject.system_path, original_payload)
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns okay' do
+        expect(last_response).to be_ok
+      end
+
+      it 'does not modify the stored payload' do
+        expect(File.read(subject.system_path)).to eq(original_payload)
+      end
+    end
+
+    context 'with admin credentials, payload, and dhcp files' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        create_subject_and_system_path
         patch subject_api_path, subject_api_body(payload: test_payload)
       end
 
       it 'succeeds' do
         expect(last_response).to be_ok
-      end
-
-      it 'creates the meta file' do
-        expect(File.exist? subject.path).to be(true)
       end
 
       it 'writes the payload to the system file' do
@@ -114,11 +134,12 @@ RSpec.describe DhcpSubnet do
       end
     end
 
-    context 'with admin credentials and payload, but without files when dhcp validation fails' do
+    context 'with admin credentials, payload, and dhcp files when validation fails' do
       before(:all) do
         ENV['validate_dhcpd_command'] = 'exit 1'
         FakeFS.clear!
         admin_headers
+        create_subject_and_system_path
         patch subject_api_path, subject_api_body(payload: test_payload)
       end
 
@@ -130,12 +151,8 @@ RSpec.describe DhcpSubnet do
         expect(last_response.status).to be(400)
       end
 
-      it 'does not create the meta file' do
-        expect(File.exists? subject.path).to be(false)
-      end
-
-      it 'does not write the system file' do
-        expect(File.exists? subject.system_path).to be(false)
+      it 'does not update the system file' do
+        expect(File.read subject.system_path).to be_empty
       end
     end
   end

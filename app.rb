@@ -209,27 +209,22 @@ class App < Sinatra::Base
   resource DhcpSubnet.type, pkre: ID_REGEX do
     helpers do
       def find(id)
-        DhcpSubnet.read(id)
+        File.exists?(DhcpSubnet.path(id)) ? DhcpSubnet.read(id) : nil
       end
     end
 
-    show { resource_or_error }
+    show
 
     index { DhcpSubnet.glob_read('*') }
 
     update do |attr|
-      if payload = attr[:payload]
-        DhcpSubnet.create_or_update(*resource.__inputs__) do |subnet|
+      DhcpSubnet.update(*resource.__inputs__) do |subnet|
+        if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
             FileUtils.mkdir_p File.dirname(subnet.system_path)
             File.write subnet.system_path, payload
           end
         end
-      else
-        raise Sinja::BadRequestError, <<~ERROR.squish
-          The 'payload' attribute has not been set with this request. Failed to update the
-          DHCP subnet.
-        ERROR
       end
     end
 
