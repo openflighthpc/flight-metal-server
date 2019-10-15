@@ -106,9 +106,7 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the kickstart file with the new file content given by the required `payload` attribute.
-
-*BUG*: Currently this path will create kickstart that do not exist. This will be fixed in future release.
+Updates the kickstart file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
 *SYNTAX:*
 ```
@@ -200,9 +198,7 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the uefi file with the new file content given by the required `payload` attribute.
-
-*BUG*: Currently this path will create uefi that do not exist. This will be fixed in future release.
+Updates the uefi file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
 *SYNTAX:*
 ```
@@ -284,9 +280,7 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the legacy file with the new file content given by the required `payload` attribute.
-
-*BUG*: Currently this path will create legacies that do not exist. This will be fixed in future release.
+Updates the legacy file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
 *SYNTAX:*
 ```
@@ -347,6 +341,8 @@ Authorization: Bearer <jwt>
 
 Upload a new DHCP subnet file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
 
+This action will trigger `DHCP` to be restarted. See [restarting DHCP](restarting_dhcp.md) for further details.
+
 *SYNTAX:*
 ```
 POST /dhcp-subnets
@@ -367,9 +363,9 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the DHCP subnet file with the new file content given by the required `payload` attribute.
+Updates the dhcp subnet file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
-*BUG*: Currently this path will create subnets that do not exist. This will be fixed in future release.
+This action will trigger `DHCP` to be restarted. See [restarting DHCP](restarting_dhcp.md) for further details.
 
 *SYNTAX:*
 ```
@@ -444,6 +440,8 @@ Authorization: Bearer <jwt>
 
 Upload a new DHCP host file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
 
+This action will trigger `DHCP` to be restarted. See [restarting DHCP](restarting_dhcp.md) for further details.
+
 *SYNTAX:*
 ```
 POST /dhcp-hosts
@@ -464,10 +462,9 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the DHCP host file with the new file content given by the required `payload` attribute.
+Updates the dhcp host file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
-*BUG*: Currently this path will create hosts that do not exist. This will be fixed in future release.
-
+This action will trigger `DHCP` to be restarted. See [restarting DHCP](restarting_dhcp.md) for further details.
 
 *SYNTAX:*
 ```
