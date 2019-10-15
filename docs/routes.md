@@ -84,7 +84,25 @@ Kickstarts have a `blob` relationship that can be use to download the file in a 
 
 ### Create
 
-TBA
+Upload a new kickstart file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+*SYNTAX:*
+```
+POST /kickstarts
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "kickstarts",
+    "id": "<id>",
+    "attributes": {
+      "payload": "<content of uploaded file>"
+    }
+  }
+}
+```
 
 ### Update
 
@@ -160,7 +178,25 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-TBA
+Upload a new `uefi` file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+*SYNTAX:*
+```
+POST /uefis
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "uefis",
+    "id": "<id>",
+    "attributes": {
+      "payload": "<content of uploaded file>"
+    }
+  }
+}
+```
 
 ### Update
 
@@ -225,7 +261,26 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-TBA
+Upload a new BIOS boot (`legacy`) file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+*SYNTAX:*
+```
+POST /legacies
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "legacies",
+    "id": "<id>",
+    "attributes": {
+      "payload": "<content of uploaded file>"
+    }
+  }
+}
+```
+
 
 ### Update
 
@@ -290,7 +345,25 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-TBA
+Upload a new DHCP subnet file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+*SYNTAX:*
+```
+POST /dhcp-subnets
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "dhcp-subnets",
+    "id": "<id>",
+    "attributes": {
+      "payload": "<content of uploaded file>"
+    }
+  }
+}
+```
 
 ### Update
 
@@ -369,7 +442,25 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-TBA
+Upload a new DHCP host file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+*SYNTAX:*
+```
+POST /dhcp-hosts
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "dhcp-hosts",
+    "id": "<id>",
+    "attributes": {
+      "payload": "<content of uploaded file>"
+    }
+  }
+}
+```
 
 ### Update
 
@@ -447,9 +538,26 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
-### Create and Update
+### Create
 
-TBA - Needs Refactor
+Upload a new DHCP host file to the server. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+
+The [kernel](### Upload the Kernel) and [initrd](### Upload the Initrd) images must be uploaded separately after the meta entry has been created.
+
+*SYNTAX:*
+```
+POST /dhcp-hosts
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "dhcp-hosts",
+    "id": "<id>"
+  }
+}
+```
 
 ### Destroy
 
