@@ -288,6 +288,27 @@ class App < Sinatra::Base
     show
     index   { DhcpHost.glob_read('*', '*') }
 
+    create do |attr, id|
+      begin
+        inputs = MatchHostRegex.match(id).captures
+        new_host = DhcpHost.create(*inputs) do |host|
+          if payload = attr[:payload]
+            MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+              FileUtils.mkdir_p File.dirname(host.system_path)
+              File.write(host.system_path, payload)
+            end
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_host]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpHost.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
     update do |attr|
       DhcpHost.update(*resource.__inputs__) do |host|
         if payload = attr[:payload]

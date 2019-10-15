@@ -28,7 +28,7 @@
 #===============================================================================
 
 require 'spec_helper'
-require 'shared_examples/system_path_deleter'
+require 'shared_examples/system_path_creater'
 
 RSpec.describe DhcpHost do
   include_context 'with_system_path_subject'
@@ -87,6 +87,37 @@ RSpec.describe DhcpHost do
 
       it 'returns Not Found' do
         expect(last_response.status).to be(404)
+      end
+    end
+  end
+
+  include_examples 'system path creater' do
+    context 'with admin credentials, payload, and subnet but when validtion fails' do
+      def test_payload
+        'this payload assumable caused DHCP validtion to fail'
+      end
+
+      before(:all) do
+        ENV['validate_dhcpd_command'] = 'exit 1'
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      after(:all) do
+        ENV['validate_dhcpd_command'] = 'echo Reset Mock DHCPD Is Running Command'
+      end
+
+      it 'returns bad request' do
+        expect(last_response.status).to be(400)
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
       end
     end
   end
