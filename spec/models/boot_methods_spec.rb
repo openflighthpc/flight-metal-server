@@ -67,6 +67,10 @@ RSpec.describe BootMethod do
       end
 
       context 'without any models' do
+        before(:all) do
+          FakeFS.clear!
+        end
+
         it 'passes' do
           make_request
           expect(last_response).to be_ok
