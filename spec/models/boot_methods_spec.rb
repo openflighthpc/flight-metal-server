@@ -46,6 +46,17 @@ RSpec.describe BootMethod do
     join_path(TEST_SUBJECT_ID, *a)
   end
 
+  def subject_api_body
+      <<~APIJSON
+        {
+          "data": {
+            "type": "#{described_class.type}",
+            "id": "#{TEST_SUBJECT_ID}"
+          }
+        }
+      APIJSON
+  end
+
   let(:id) do
     'foo'
   end
@@ -138,6 +149,49 @@ RSpec.describe BootMethod do
       end
     end
 	end
+
+  describe 'POST create' do
+    context 'with user credentials' do
+      before(:all) do
+        FakeFS.clear!
+        user_headers
+        post "/#{described_class.type}", subject_api_body
+      end
+
+      it 'is forbidden' do
+        expect(last_response).to be_forbidden
+      end
+    end
+
+    context 'with admin credentials' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body
+      end
+
+      it 'creates the entry' do
+        expect(last_response).to be_created
+      end
+
+      it 'creates the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+    end
+
+    context 'with admin credentials when the entry exists' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        described_class.create(TEST_SUBJECT_ID)
+        post "/#{described_class.type}", subject_api_body
+      end
+
+      it 'returns conflict' do
+        expect(last_response.status).to be(409)
+      end
+    end
+  end
 
   describe 'DELETE destroy' do
     context 'with admin credentials' do

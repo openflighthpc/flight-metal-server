@@ -355,8 +355,14 @@ class App < Sinatra::Base
       BootMethod.glob_read('*')
     end
 
-    update do |_|
-      BootMethod.create_or_update(*resource.__inputs__)
+    create do |_, id|
+      begin
+        [id, BootMethod.create(id)]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpHost.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
     end
 
     destroy do
