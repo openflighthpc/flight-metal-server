@@ -27,11 +27,14 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-RSpec.shared_examples 'system path creater' do
+RSpec.shared_examples 'system path creater' do |setup_lambda|
+  setup_lambda ||= -> () {}
+
   describe 'POST create' do
     context 'with user credentials' do
       before(:all) do
         FakeFS.clear!
+        instance_exec(&setup_lambda)
         user_headers
         post "/#{described_class.type}", subject_api_body(payload: 'some test payload')
       end
@@ -44,6 +47,7 @@ RSpec.shared_examples 'system path creater' do
     context 'with admin credentials but without a payload' do
       before(:all) do
         FakeFS.clear!
+        instance_exec(&setup_lambda)
         admin_headers
         post "/#{described_class.type}", subject_api_body
       end
@@ -64,6 +68,7 @@ RSpec.shared_examples 'system path creater' do
     context 'with admin credentials and a payload but without an id' do
       before(:all) do
         FakeFS.clear!
+        instance_exec(&setup_lambda)
         admin_headers
         post "/#{described_class.type}", <<~APIJSON
           {
@@ -89,6 +94,7 @@ RSpec.shared_examples 'system path creater' do
 
       before(:all) do
         FakeFS.clear!
+        instance_exec(&setup_lambda)
         admin_headers
         post "/#{described_class.type}", subject_api_body(payload: test_payload)
       end
@@ -131,6 +137,5 @@ RSpec.shared_examples 'system path creater' do
       end
     end
   end
-
 end
 

@@ -289,6 +289,12 @@ class App < Sinatra::Base
     index   { DhcpHost.glob_read('*', '*') }
 
     create do |attr, id|
+      subnet = id.split('.').first
+      unless DhcpSubnet.exists?(subnet)
+        raise Sinja::NotFoundError, <<~ERROR.chomp
+          Could not create the host as subnet '#{subnet}' does not exist!
+        ERROR
+      end
       begin
         inputs = MatchHostRegex.match(id).captures
         new_host = DhcpHost.create(*inputs) do |host|

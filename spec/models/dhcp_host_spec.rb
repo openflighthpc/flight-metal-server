@@ -91,7 +91,33 @@ RSpec.describe DhcpHost do
     end
   end
 
-  include_examples 'system path creater' do
+  setup_lambda = -> { create_subject_subnet }
+  include_examples 'system path creater', setup_lambda do
+    context 'with admin, payload, but without a subnet' do
+      def test_payload
+        'this upload should fail as the subnet does not exist'
+      end
+
+      before(:all) do
+        ENV['validate_dhcpd_command'] = 'exit 1'
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      it 'returns not found' do
+        expect(last_response).to be_not_found
+      end
+
+      it 'does not create the meta entry' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+
     context 'with admin credentials, payload, and subnet but when validtion fails' do
       def test_payload
         'this payload assumable caused DHCP validtion to fail'
@@ -101,6 +127,7 @@ RSpec.describe DhcpHost do
         ENV['validate_dhcpd_command'] = 'exit 1'
         FakeFS.clear!
         admin_headers
+        create_subject_subnet
         post "/#{described_class.type}", subject_api_body(payload: test_payload)
       end
 
