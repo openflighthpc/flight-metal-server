@@ -277,7 +277,7 @@ class App < Sinatra::Base
         if DhcpSubnet.exists?(subnet)
           File.exists?(DhcpHost.path(subnet, name)) ? DhcpHost.read(subnet, name) : nil
         else
-          raise Sinja::ConflictError, <<~ERROR.squish
+          raise Sinja::NotFoundError, <<~ERROR.squish
             Can not proceed with this request as the DHCP subnet does
             not exist. Missing subnet: #{subnet}
           ERROR

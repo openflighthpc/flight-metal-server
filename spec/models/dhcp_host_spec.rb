@@ -70,8 +70,8 @@ RSpec.describe DhcpHost do
           get subject_api_path
         end
 
-        it 'returns a conflict' do
-          expect(last_response.status).to be(409)
+        it 'returns not found' do
+          expect(last_response).to be_not_found
         end
       end
     end
