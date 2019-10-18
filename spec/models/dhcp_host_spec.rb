@@ -28,7 +28,7 @@
 #===============================================================================
 
 require 'spec_helper'
-require 'shared_examples/system_path_deleter'
+require 'shared_examples/system_path_creater'
 
 RSpec.describe DhcpHost do
   include_context 'with_system_path_subject'
@@ -70,8 +70,8 @@ RSpec.describe DhcpHost do
           get subject_api_path
         end
 
-        it 'returns a conflict' do
-          expect(last_response.status).to be(409)
+        it 'returns not found' do
+          expect(last_response).to be_not_found
         end
       end
     end
@@ -91,6 +91,63 @@ RSpec.describe DhcpHost do
     end
   end
 
+  setup_lambda = -> { create_subject_subnet }
+  include_examples 'system path creater', setup_lambda do
+    context 'with admin, payload, but without a subnet' do
+      def test_payload
+        'this upload should fail as the subnet does not exist'
+      end
+
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      it 'returns not found' do
+        expect(last_response).to be_not_found
+      end
+
+      it 'does not create the meta entry' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+
+    context 'with admin credentials, payload, and subnet but when validtion fails' do
+      def test_payload
+        'this payload assumable caused DHCP validtion to fail'
+      end
+
+      before(:all) do
+        ENV['validate_dhcpd_command'] = "# Validation error on create host \n exit 1"
+        FakeFS.clear!
+        admin_headers
+        create_subject_subnet
+        post "/#{described_class.type}", subject_api_body(payload: test_payload)
+      end
+
+      after(:all) do
+        ENV['validate_dhcpd_command'] = 'echo Reset Mock DHCPD Is Running Command'
+      end
+
+      it 'returns bad request' do
+        expect(last_response.status).to be(400)
+      end
+
+      it 'does not create the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'does not create the system file' do
+        expect(File.exists? subject.system_path).to be(false)
+      end
+    end
+  end
+
   describe 'PATCH update' do
     def test_payload
       "I am the test PATCH payload for #{described_class.type}"
@@ -104,15 +161,37 @@ RSpec.describe DhcpHost do
         patch subject_api_path, subject_api_body
       end
 
-      it 'returns Bad Request' do
-        expect(last_response.status).to be(400)
+      it 'returns not found' do
+        expect(last_response).to be_not_found
       end
     end
 
-    context 'with admin credentials, payload, and a subnet but without any hosts' do
+    context 'with admin credentilas, subnet, host, but without payload' do
+      def original_payload
+        'I am the original host payload'
+      end
+
       before(:all) do
         FakeFS.clear!
-        create_subject_subnet
+        create_subject_and_system_path
+        File.write(read_subject.system_path, original_payload)
+        admin_headers
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns okay' do
+        expect(last_response).to be_ok
+      end
+
+      it 'does not update the system file' do
+        expect(File.read(subject.system_path)).to eq(original_payload)
+      end
+    end
+
+    context 'with admin credentials, payload, subnet, and host' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_system_path
         admin_headers
         patch subject_api_path, subject_api_body(payload: test_payload)
       end
@@ -161,7 +240,7 @@ RSpec.describe DhcpHost do
 
   context 'with admin credentials, meta, subnet, and files when validation fails' do
     before(:all) do
-      ENV['validate_dhcpd_command'] = 'exit 1'
+      ENV['validate_dhcpd_command'] = "# Validation error on delete host \n exit 1"
       FakeFS.clear!
       create_subject_and_system_path
       admin_headers

@@ -125,6 +125,10 @@ class App < Sinatra::Base
       end
     end
 
+    def raise_require_payload
+      raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+    end
+
     private
 
     def token
@@ -149,26 +153,40 @@ class App < Sinatra::Base
         # a closure around the parent context. This way the `klass` variable is
         # available inside the block
         define_method(:find) do |id|
-          klass.read(id)
+          File.exists?(klass.path(id)) ? klass.read(id) : nil
         end
       end
 
-      show do
-        File.exists?(resource.path) ? resource : nil
-      end
+      show
 
       index do
         klass.glob_read('*')
       end
 
+      create do |attr, id|
+        begin
+          new_model = klass.create(id) do |model|
+            if payload = attr[:payload]
+              FileUtils.mkdir_p File.dirname(model.system_path)
+              File.write(model.system_path, payload)
+            else
+              raise_require_payload
+            end
+          end
+          [id, new_model]
+        rescue FlightConfig::CreateError
+          raise Sinja::ConflictError, <<~ERROR.chomp
+            Can not create the '#{klass.type.singularize}' as '#{id}' already exists
+          ERROR
+        end
+      end
+
       update do |attr|
-        if payload = attr[:payload]
-          klass.create_or_update(*resource.__inputs__) do |model|
+        klass.update(*resource_or_error.__inputs__) do |model|
+          if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
             File.write model.system_path, payload.to_s
           end
-        else
-          raise Sinja::BadRequestError, 'The payload attribute is required with this request'
         end
       end
 
@@ -191,27 +209,42 @@ class App < Sinatra::Base
   resource DhcpSubnet.type, pkre: ID_REGEX do
     helpers do
       def find(id)
-        DhcpSubnet.read(id)
+        File.exists?(DhcpSubnet.path(id)) ? DhcpSubnet.read(id) : nil
       end
     end
 
-    show { resource_or_error }
+    show
 
     index { DhcpSubnet.glob_read('*') }
 
+    create do |attr, id|
+      begin
+        new_subnet = DhcpSubnet.create(id) do |subnet|
+          if payload = attr[:payload]
+            MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+              FileUtils.mkdir_p File.dirname(subnet.system_path)
+              File.write(subnet.system_path, payload)
+            end
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_subnet]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpSubnet.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
     update do |attr|
-      if payload = attr[:payload]
-        DhcpSubnet.create_or_update(*resource.__inputs__) do |subnet|
+      DhcpSubnet.update(*resource.__inputs__) do |subnet|
+        if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
             FileUtils.mkdir_p File.dirname(subnet.system_path)
             File.write subnet.system_path, payload
           end
         end
-      else
-        raise Sinja::BadRequestError, <<~ERROR.squish
-          The 'payload' attribute has not been set with this request. Failed to update the
-          DHCP subnet.
-        ERROR
       end
     end
 
@@ -242,9 +275,9 @@ class App < Sinatra::Base
       def find(id)
         subnet, name = MatchHostRegex.match(id).captures
         if DhcpSubnet.exists?(subnet)
-          DhcpHost.read(subnet, name)
+          File.exists?(DhcpHost.path(subnet, name)) ? DhcpHost.read(subnet, name) : nil
         else
-          raise Sinja::ConflictError, <<~ERROR.squish
+          raise Sinja::NotFoundError, <<~ERROR.squish
             Can not proceed with this request as the DHCP subnet does
             not exist. Missing subnet: #{subnet}
           ERROR
@@ -252,22 +285,44 @@ class App < Sinatra::Base
       end
     end
 
-    show    { resource_or_error }
+    show
     index   { DhcpHost.glob_read('*', '*') }
 
+    create do |attr, id|
+      subnet = id.split('.').first
+      unless DhcpSubnet.exists?(subnet)
+        raise Sinja::NotFoundError, <<~ERROR.chomp
+          Could not create the host as subnet '#{subnet}' does not exist!
+        ERROR
+      end
+      begin
+        inputs = MatchHostRegex.match(id).captures
+        new_host = DhcpHost.create(*inputs) do |host|
+          if payload = attr[:payload]
+            MetalServer::DhcpUpdater.update!(DhcpBase.path) do
+              FileUtils.mkdir_p File.dirname(host.system_path)
+              File.write(host.system_path, payload)
+            end
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_host]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpHost.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
     update do |attr|
-      if payload = attr[:payload]
-        DhcpHost.create_or_update(*resource.__inputs__) do |host|
+      DhcpHost.update(*resource.__inputs__) do |host|
+        if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
             FileUtils.mkdir_p File.dirname(host.system_path)
             File.write host.system_path, payload
           end
         end
-      else
-        raise Sinja::BadRequestError, <<~ERROR.squish
-          The 'payload' attribute has not been set with this request. Failed to update the
-          DHCP host.
-        ERROR
       end
     end
 
@@ -306,8 +361,14 @@ class App < Sinatra::Base
       BootMethod.glob_read('*')
     end
 
-    update do |_|
-      BootMethod.create_or_update(*resource.__inputs__)
+    create do |_, id|
+      begin
+        [id, BootMethod.create(id)]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{DhcpHost.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
     end
 
     destroy do

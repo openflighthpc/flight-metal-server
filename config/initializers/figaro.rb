@@ -36,7 +36,7 @@ Figaro.application = Figaro::Application.new(
 )
 Figaro.load
       .reject { |_, v| v.nil? }
-      .each { |key, value| ENV[key] = value }
+      .each { |key, value| ENV[key] ||= value }
 
 # Hard sets the app's root directory to the current code base
 ENV['app_root_dir'] = File.expand_path('../..', __dir__)

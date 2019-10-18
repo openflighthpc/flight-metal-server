@@ -1,5 +1,5 @@
 language: ruby
-script: rspec spec -f d
+script: rspec spec --format documentation --order random
 
 install:
   - gem update bundler

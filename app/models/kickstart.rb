@@ -39,7 +39,7 @@ class Kickstart < SingleIDFileModel
   end
 
   def system_path
-    File.join(self.class.content_base_path, 'www/kickstarts', filename)
+    File.join(Figaro.env.Kickstart_system_dir, filename)
   end
 end
 

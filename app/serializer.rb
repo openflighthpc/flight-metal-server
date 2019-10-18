@@ -69,7 +69,7 @@ class BootMethodSerializer < Serializer
 end
 
 class FileModelSerializer < Serializer
-  attributes :size, :system_path
+  attributes :size, :system_path, :filename
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
