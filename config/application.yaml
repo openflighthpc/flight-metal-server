@@ -1,4 +1,4 @@
-# REQUIRED Either set them directly here or export them into the enviroment
+# REQUIRED Either set them directly here or export them into the environment
 # app_base_url:       # [REQUIRED]
 # jwt_shared_secret:  # [REQUIRED]
 
