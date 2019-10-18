@@ -6,37 +6,40 @@
 # content_dir:  <install-dir>/var
 # log_dir:      <install-dir>/log
 
-# These defaults can be overridden by the enviroment or hard coded here directly
-Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
-Uefi_system_dir:          /var/lib/tftpboot/efi/grub.cfg
-Kernel_system_dir:        /var/lib/tftpboot/boot
+# These defaults can be overridden by the environment or hard coded here directly
 Initrd_system_dir:        /var/lib/tftpboot/boot
-validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
-restart_dhcpd_command:    systemctl restart dhcpd.service
+Kernel_system_dir:        /var/lib/tftpboot/boot
+Kickstart_system_dir:     /var/www/kickstarts
+Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
+Uefi_system_dir:          /var/lib/tftpboot/efi
 dhcpd_is_running_command: systemctl status dhcpd.service
+restart_dhcpd_command:    systemctl restart dhcpd.service
+validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
 # Settings used by RSpec
 test:
   app_base_url:             http://127.0.0.1
   jwt_shared_secret:        SOME_TEST_TOKEN
   content_dir:              /tmp/metal-server-spec/content
-  Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
-  Uefi_system_dir:          /tmp/metal-server-spec/tftpboot/efi/grub.cfg
-  Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
   Initrd_system_dir:        /tmp/metal-server-spec/tftpboot/boot
-  validate_dhcpd_command:   echo Initial Test DHCP Validation Command
-  restart_dhcpd_command:    echo Initial Test DHCP Restart Command
+  Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
+  Kickstart_system_dir:     /tmp/metal-server-spec/www/kickstarts
+  Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
+  Uefi_system_dir:          /tmp/metal-server-spec/tftpboot/efi
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
+  restart_dhcpd_command:    echo Initial Test DHCP Restart Command
+  validate_dhcpd_command:   echo Initial Test DHCP Validation Command
 
 # Alternative path settings. This is to prevent polluting the root file system
 # during development
 development:
-  jwt_shared_secret:  SOME_DEVELOPMENT_TOKEN
-  app_base_url:       http://127.0.0.1
-  content_dir:        /var/metal-server/content
-  log_dir:            /var/metal-server/log
-  Legacy_system_dir:  /var/metal-server/tftpboot/pxelinux.cfg
-  Uefi_system_dir:    /var/metal-server/tftpboot/efi/grub.cfg
-  Kernel_system_dir:  /var/metal-server/tftpboot/boot
-  Initrd_system_dir:  /var/metal-server/tftpboot/boot
+  app_base_url:         http://127.0.0.1
+  jwt_shared_secret:    SOME_DEVELOPMENT_TOKEN
+  log_dir:              /var/metal-server/log
+  content_dir:          /var/metal-server/content
+  Initrd_system_dir:    /var/metal-server/tftpboot/boot
+  Kernel_system_dir:    /var/metal-server/tftpboot/boot
+  Kickstart_system_dir: /var/metal-server/www/kickstarts
+  Legacy_system_dir:    /var/metal-server/tftpboot/pxelinux.cfg
+  Uefi_system_dir:      /var/metal-server/tftpboot/efi
 
