@@ -30,7 +30,7 @@
 class DhcpHost < FileModel
   class << self
     def path(subnet, name)
-      File.join(content_base_path, "dhcp-hosts/#{subnet}.subnet/etc/#{name}.yaml")
+      File.join(content_base_path, "meta/dhcp-hosts/#{subnet}.subnet/etc/#{name}.yaml")
     end
 
     def type
