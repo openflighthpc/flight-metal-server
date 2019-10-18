@@ -52,7 +52,7 @@ timeout 30
 
 # Set process id path
 FileUtils.mkdir_p content_dir
-pid File.join(content_dir, 'var')
+pid File.join(content_dir, 'master-unicorn.pid')
 
 # Set log file paths
 FileUtils.mkdir_p log_dir
