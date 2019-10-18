@@ -99,7 +99,6 @@ RSpec.describe DhcpHost do
       end
 
       before(:all) do
-        ENV['validate_dhcpd_command'] = 'exit 1'
         FakeFS.clear!
         admin_headers
         post "/#{described_class.type}", subject_api_body(payload: test_payload)
@@ -124,7 +123,7 @@ RSpec.describe DhcpHost do
       end
 
       before(:all) do
-        ENV['validate_dhcpd_command'] = 'exit 1'
+        ENV['validate_dhcpd_command'] = "# Validation error on create host \n exit 1"
         FakeFS.clear!
         admin_headers
         create_subject_subnet
@@ -241,7 +240,7 @@ RSpec.describe DhcpHost do
 
   context 'with admin credentials, meta, subnet, and files when validation fails' do
     before(:all) do
-      ENV['validate_dhcpd_command'] = 'exit 1'
+      ENV['validate_dhcpd_command'] = "# Validation error on delete host \n exit 1"
       FakeFS.clear!
       create_subject_and_system_path
       admin_headers

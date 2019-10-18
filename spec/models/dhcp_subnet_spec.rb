@@ -36,7 +36,7 @@ RSpec.describe DhcpSubnet do
   include_examples 'system path creater' do
     context 'with admin credentails, with meta or file, and when validation errors' do
       before(:all) do
-        ENV['validate_dhcpd_command'] = 'exit 1'
+        ENV['validate_dhcpd_command'] = "#Validation error on create subnet\n exit 1"
         FakeFS.clear!
         admin_headers
         post "/#{described_class.type}", subject_api_body(payload: 'some garbage payload')
@@ -163,7 +163,7 @@ RSpec.describe DhcpSubnet do
 
     context 'with admin credentials, payload, and dhcp files when validation fails' do
       before(:all) do
-        ENV['validate_dhcpd_command'] = 'exit 1'
+        ENV['validate_dhcpd_command'] = "# validation error on update dhcp subnet\n exit 1"
         FakeFS.clear!
         admin_headers
         create_subject_and_system_path
@@ -226,7 +226,7 @@ RSpec.describe DhcpSubnet do
 
     context 'with admin credentials, meta, but without host files, when validation fails' do
       before(:all) do
-        ENV['validate_dhcpd_command'] = 'exit 1'
+        ENV['validate_dhcpd_command'] = "# validation error on delete subnet\n exit 1"
         FakeFS.clear!
         create_subject_and_system_path
         admin_headers
