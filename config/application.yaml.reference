@@ -1,0 +1,81 @@
+# =============================================================================
+# Reference Documentation
+# This document contains the key descriptions for:
+# config/application.yaml
+#
+# This application is configured using `Figaro`. Refer to the documentation
+# for further details:
+# https://github.com/laserlemon/figaro
+#
+# This document is for reference purposes only, setting values here will not
+# configure the application.
+# =============================================================================
+
+# =============================================================================
+# App Base URL
+# Specify a URL where the application is being hosted. This is required for
+# generating the links between models.
+# =============================================================================
+app_base_url:
+
+# =============================================================================
+# Content Directory
+# Specify where internal configuration files will be stored. In practice this
+# is limited to DHCP configs and metadata files.
+# =============================================================================
+content_dir:
+
+# =============================================================================
+# Log Directory
+# Specify where log files will be stored. The application does not manage the
+# size of these logs. Logrotate needs to be setup independently
+# =============================================================================
+log_dir:
+
+# =============================================================================
+# JSON Web Token Shared Secret
+# Specify the shared secret used to generate and verify jwt_tokens. This value
+# should be kept private as anyone with access to it can generate fraudulent
+# credentials. Consider setting it in the environment instead of the
+# application's config file.
+# =============================================================================
+jwt_shared_secret:
+
+# =============================================================================
+# DHCP Is Running Command?
+# This command is used to check if DHCP is currently running. It MUST ONLY
+# exit 0 if DHCP is currently running. All other exit codes are considered
+# offline responses.
+# =============================================================================
+dhcpd_is_running_command:
+
+# =============================================================================
+# Restart DHCP Command
+# This command is used to restart the DHCP server. It MUST ONLY exit 0
+# if the server restarted correctly. All other exit codes are considered
+# failures.
+# =============================================================================
+restart_dhcpd_command:
+
+# =============================================================================
+# Validate DHCP Command
+# This is used to validate if the DHCP configuration is valid before the server
+# is restarted. It SHOULD reject as many syntax errors as possible. It does
+# not have to guarantee DHCP will restart.
+#
+# It MUST ONLY exit 0 if the configurations pass validation. All other exit
+# codes are considered failures.
+# =============================================================================
+validate_dhcpd_command:
+
+# =============================================================================
+# <TYPE> System Directories
+# Configure various paths to system directories. This will store the
+# corresponding file in the given directory.
+# =============================================================================
+Initrd_system_dir:    # Initial ram disks will be stored here
+Kernel_system_dir:    # Kernels will be stored here
+Kickstart_system_dir: # Kickstarts will be stored here
+Legacy_system_dir:    # Legacy bios PXE files will be stored here
+Uefi_system_dir:      # Uefi PXE files will be stored here
+

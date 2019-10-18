@@ -101,8 +101,6 @@ tail -f log/stderr.log
 
 As this is a `unicorn` application, it has been designed to server fast clients with low latency. Therefore it should be located behind a reverse proxy such as `nginx` or `apache`.
 
-[Refer here for more details](docs/ssl_and_reverse_proxy.md)
-
 ### Basic Development Environment
 
 For development purposes, the application can be started in a single threaded `unicorn` process on port `8080`:
