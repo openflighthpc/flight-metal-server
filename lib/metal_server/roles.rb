@@ -29,36 +29,40 @@
 
 module MetalServer
   module Roles
-    def self.pxe_admin
-      [:admin]
-    end
-
-    def self.pxe_user
-      [:user, :admin]
-    end
-
     def self.kickstart_admin
-      [:admin]
+      kickstart_enabled?  ? [:admin]        : [:forbidden]
     end
 
     def self.kickstart_user
-      [:user, :admin]
+      kickstart_enabled?  ? [:user, :admin] : [:forbidden]
     end
 
     def self.dhcp_admin
-      [:admin]
+      dhcp_enabled?       ? [:admin]        : [:forbidden]
     end
 
     def self.dhcp_user
-      [:user, :admin]
+      dhcp_enabled?       ? [:user, :admin] : [:forbidden]
     end
 
-    def self.boot_admin
-      [:admin]
+    def self.netboot_admin
+      netboot_enabled?    ? [:admin]        : [:forbidden]
     end
 
-    def self.boot_user
-      [:user, :admin]
+    def self.netboot_user
+      netboot_enabled?    ? [:user, :admin] : [:forbidden]
+    end
+
+    def self.netboot_enabled?
+      Figaro.env.enable_netboot == 'true'
+    end
+
+    def self.kickstart_enabled?
+      Figaro.env.enable_kickstart == 'true'
+    end
+
+    def self.dhcp_enabled?
+      Figaro.env.enable_dhcp == 'true'
     end
   end
 end

@@ -144,13 +144,13 @@ class App < Sinatra::Base
         end
       end
 
-      show(roles: MetalServer::Roles.pxe_user)
+      show(roles: MetalServer::Roles.netboot_user)
 
-      index(roles: MetalServer::Roles.pxe_user) do
+      index(roles: MetalServer::Roles.netboot_user) do
         klass.glob_read('*')
       end
 
-      create(roles: MetalServer::Roles.pxe_admin) do |attr, id|
+      create(roles: MetalServer::Roles.netboot_admin) do |attr, id|
         begin
           new_model = klass.create(id) do |model|
             if payload = attr[:payload]
@@ -168,7 +168,7 @@ class App < Sinatra::Base
         end
       end
 
-      update(roles: MetalServer::Roles.pxe_admin) do |attr|
+      update(roles: MetalServer::Roles.netboot_admin) do |attr|
         klass.update(*resource_or_error.__inputs__) do |model|
           if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
@@ -177,7 +177,7 @@ class App < Sinatra::Base
         end
       end
 
-      destroy(roles: MetalServer::Roles.pxe_admin) do
+      destroy(roles: MetalServer::Roles.netboot_admin) do
         klass.delete(*resource_or_error.__inputs__) do |model|
           FileUtils.rm_f model.system_path
           true
@@ -388,13 +388,13 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: MetalServer::Roles.boot_user) { resource_or_error }
+    show(roles: MetalServer::Roles.netboot_user) { resource_or_error }
 
-    index(roles: MetalServer::Roles.boot_user, filter_by: [:complete])  do
+    index(roles: MetalServer::Roles.netboot_user, filter_by: [:complete])  do
       BootMethod.glob_read('*')
     end
 
-    create(roles: MetalServer::Roles.boot_admin) do |_, id|
+    create(roles: MetalServer::Roles.netboot_admin) do |_, id|
       begin
         [id, BootMethod.create(id)]
       rescue FlightConfig::CreateError
@@ -404,7 +404,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: MetalServer::Roles.boot_admin) do
+    destroy(roles: MetalServer::Roles.netboot_admin) do
       BootMethod.delete(*resource_or_error.__inputs__) do |boot|
         FileUtils.rm_f boot.kernel_system_path
         FileUtils.rm_f boot.initrd_system_path
@@ -417,7 +417,7 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
-        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_user.include?(role)
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.netboot_user.include?(role)
           You do not have permission to access this content!
         ERROR
 
@@ -428,7 +428,7 @@ class App < Sinatra::Base
       end
 
       post("/:id/#{blob_type}") do
-        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_admin.include?(role)
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.netboot_admin.include?(role)
           You do not have permission to access this content!
         ERROR
 

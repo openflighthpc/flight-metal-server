@@ -16,6 +16,12 @@ dhcpd_is_running_command: systemctl status dhcpd.service
 restart_dhcpd_command:    systemctl restart dhcpd.service
 validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
+# The following are used to enable different features within the application
+# Setting the value to anything but 'true' will result in the feature being disabled
+enable_dhcp:      'true'
+enable_kickstart: 'true'
+enable_netboot:   'true'
+
 # Settings used by RSpec
 test:
   app_base_url:             http://127.0.0.1
