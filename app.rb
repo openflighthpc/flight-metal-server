@@ -76,20 +76,6 @@ class App < Sinatra::Base
   end
 
   helpers do
-    def authorize_user!
-      return if [:user, :admin].include? role
-      raise Sinja::ForbiddenError, <<~ERROR.squish
-        You do not have permission to access this content!
-      ERROR
-    end
-
-    def authorize_admin!
-      return if role == :admin
-      raise Sinja::ForbiddenError, <<~ERROR.squish
-        You do not have permission to access this content!
-      ERROR
-    end
-
     def serialize_model(model, options = {})
       options[:is_collection] = false
       options[:skip_collection_check] = true
@@ -431,7 +417,10 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
-        authorize_user!
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_user_roles.include?(role)
+          You do not have permission to access this content!
+        ERROR
+
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
         env['octet-stream.out'] = File.read path_lambda.call(resource_or_error)
@@ -439,7 +428,10 @@ class App < Sinatra::Base
       end
 
       post("/:id/#{blob_type}") do
-        authorize_admin!
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_admin_roles.include?(role)
+          You do not have permission to access this content!
+        ERROR
+
         write_octet_stream(path_lambda.call(resource_or_error))
         serialize_model(resource_or_error)
       end
