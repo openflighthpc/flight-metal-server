@@ -144,13 +144,13 @@ class App < Sinatra::Base
         end
       end
 
-      show(roles: MetalServer::Roles.pxe_user_roles)
+      show(roles: MetalServer::Roles.pxe_user)
 
-      index(roles: MetalServer::Roles.pxe_user_roles) do
+      index(roles: MetalServer::Roles.pxe_user) do
         klass.glob_read('*')
       end
 
-      create(roles: MetalServer::Roles.pxe_admin_roles) do |attr, id|
+      create(roles: MetalServer::Roles.pxe_admin) do |attr, id|
         begin
           new_model = klass.create(id) do |model|
             if payload = attr[:payload]
@@ -168,7 +168,7 @@ class App < Sinatra::Base
         end
       end
 
-      update(roles: MetalServer::Roles.pxe_admin_roles) do |attr|
+      update(roles: MetalServer::Roles.pxe_admin) do |attr|
         klass.update(*resource_or_error.__inputs__) do |model|
           if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
@@ -177,7 +177,7 @@ class App < Sinatra::Base
         end
       end
 
-      destroy(roles: MetalServer::Roles.pxe_admin_roles) do
+      destroy(roles: MetalServer::Roles.pxe_admin) do
         klass.delete(*resource_or_error.__inputs__) do |model|
           FileUtils.rm_f model.system_path
           true
@@ -193,13 +193,13 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: MetalServer::Roles.kickstart_user_roles)
+    show(roles: MetalServer::Roles.kickstart_user)
 
-    index(roles: MetalServer::Roles.kickstart_user_roles) do
+    index(roles: MetalServer::Roles.kickstart_user) do
       Kickstart.glob_read('*')
     end
 
-    create(roles: MetalServer::Roles.kickstart_admin_roles) do |attr, id|
+    create(roles: MetalServer::Roles.kickstart_admin) do |attr, id|
       begin
         new_model = Kickstart.create(id) do |model|
           if payload = attr[:payload]
@@ -217,7 +217,7 @@ class App < Sinatra::Base
       end
     end
 
-    update(roles: MetalServer::Roles.kickstart_admin_roles) do |attr|
+    update(roles: MetalServer::Roles.kickstart_admin) do |attr|
       Kickstart.update(*resource_or_error.__inputs__) do |model|
         if payload = attr[:payload]
           FileUtils.mkdir_p File.dirname(model.system_path)
@@ -226,7 +226,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: MetalServer::Roles.kickstart_admin_roles) do
+    destroy(roles: MetalServer::Roles.kickstart_admin) do
       Kickstart.delete(*resource_or_error.__inputs__) do |model|
         FileUtils.rm_f model.system_path
         true
@@ -246,11 +246,11 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: MetalServer::Roles.dhcp_user_roles)
+    show(roles: MetalServer::Roles.dhcp_user)
 
-    index(roles: MetalServer::Roles.dhcp_user_roles) { DhcpSubnet.glob_read('*') }
+    index(roles: MetalServer::Roles.dhcp_user) { DhcpSubnet.glob_read('*') }
 
-    create(roles: MetalServer::Roles.dhcp_admin_roles) do |attr, id|
+    create(roles: MetalServer::Roles.dhcp_admin) do |attr, id|
       begin
         new_subnet = DhcpSubnet.create(id) do |subnet|
           if payload = attr[:payload]
@@ -270,7 +270,7 @@ class App < Sinatra::Base
       end
     end
 
-    update(roles: MetalServer::Roles.dhcp_admin_roles) do |attr|
+    update(roles: MetalServer::Roles.dhcp_admin) do |attr|
       DhcpSubnet.update(*resource.__inputs__) do |subnet|
         if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
@@ -281,7 +281,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: MetalServer::Roles.dhcp_admin_roles) do
+    destroy(roles: MetalServer::Roles.dhcp_admin) do
       raise Sinja::ConflictError, <<~ERROR.squish if resource_or_error.read_dhcp_hosts.any?
         Can not delete the subnet whilst it still has hosts. Please delete
         the hosts and try again.
@@ -295,7 +295,7 @@ class App < Sinatra::Base
     end
 
     has_many DhcpHost.type do
-      fetch(roles: MetalServer::Roles.dhcp_user_roles) do
+      fetch(roles: MetalServer::Roles.dhcp_user) do
         resource_or_error.read_dhcp_hosts
       end
     end
@@ -318,10 +318,10 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: MetalServer::Roles.dhcp_user_roles)
-    index(roles: MetalServer::Roles.dhcp_user_roles) { DhcpHost.glob_read('*', '*') }
+    show(roles: MetalServer::Roles.dhcp_user)
+    index(roles: MetalServer::Roles.dhcp_user) { DhcpHost.glob_read('*', '*') }
 
-    create(roles: MetalServer::Roles.dhcp_admin_roles) do |attr, id|
+    create(roles: MetalServer::Roles.dhcp_admin) do |attr, id|
       subnet = id.split('.').first
       unless DhcpSubnet.exists?(subnet)
         raise Sinja::NotFoundError, <<~ERROR.chomp
@@ -348,7 +348,7 @@ class App < Sinatra::Base
       end
     end
 
-    update(roles: MetalServer::Roles.dhcp_admin_roles) do |attr|
+    update(roles: MetalServer::Roles.dhcp_admin) do |attr|
       DhcpHost.update(*resource.__inputs__) do |host|
         if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
@@ -359,7 +359,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: MetalServer::Roles.dhcp_admin_roles) do
+    destroy(roles: MetalServer::Roles.dhcp_admin) do
       DhcpHost.delete(*resource.__inputs__) do |host|
         MetalServer::DhcpUpdater.update!(DhcpBase.path) do
           FileUtils.rm_f host.system_path
@@ -369,7 +369,7 @@ class App < Sinatra::Base
     end
 
     has_one DhcpSubnet.type do
-      pluck(roles: MetalServer::Roles.dhcp_user_roles) { resource_or_error.read_dhcp_subnet }
+      pluck(roles: MetalServer::Roles.dhcp_user) { resource_or_error.read_dhcp_subnet }
     end
   end
 
@@ -388,13 +388,13 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: MetalServer::Roles.boot_user_roles) { resource_or_error }
+    show(roles: MetalServer::Roles.boot_user) { resource_or_error }
 
-    index(roles: MetalServer::Roles.boot_user_roles, filter_by: [:complete])  do
+    index(roles: MetalServer::Roles.boot_user, filter_by: [:complete])  do
       BootMethod.glob_read('*')
     end
 
-    create(roles: MetalServer::Roles.boot_admin_roles) do |_, id|
+    create(roles: MetalServer::Roles.boot_admin) do |_, id|
       begin
         [id, BootMethod.create(id)]
       rescue FlightConfig::CreateError
@@ -404,7 +404,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: MetalServer::Roles.boot_admin_roles) do
+    destroy(roles: MetalServer::Roles.boot_admin) do
       BootMethod.delete(*resource_or_error.__inputs__) do |boot|
         FileUtils.rm_f boot.kernel_system_path
         FileUtils.rm_f boot.initrd_system_path
@@ -417,7 +417,7 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
-        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_user_roles.include?(role)
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_user.include?(role)
           You do not have permission to access this content!
         ERROR
 
@@ -428,7 +428,7 @@ class App < Sinatra::Base
       end
 
       post("/:id/#{blob_type}") do
-        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_admin_roles.include?(role)
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless MetalServer::Roles.boot_admin.include?(role)
           You do not have permission to access this content!
         ERROR
 

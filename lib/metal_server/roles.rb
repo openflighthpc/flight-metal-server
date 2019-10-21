@@ -29,35 +29,35 @@
 
 module MetalServer
   module Roles
-    def self.pxe_admin_roles
+    def self.pxe_admin
       [:admin]
     end
 
-    def self.pxe_user_roles
+    def self.pxe_user
       [:user, :admin]
     end
 
-    def self.kickstart_admin_roles
+    def self.kickstart_admin
       [:admin]
     end
 
-    def self.kickstart_user_roles
+    def self.kickstart_user
       [:user, :admin]
     end
 
-    def self.dhcp_admin_roles
+    def self.dhcp_admin
       [:admin]
     end
 
-    def self.dhcp_user_roles
+    def self.dhcp_user
       [:user, :admin]
     end
 
-    def self.boot_admin_roles
+    def self.boot_admin
       [:admin]
     end
 
-    def self.boot_user_roles
+    def self.boot_user
       [:user, :admin]
     end
   end
