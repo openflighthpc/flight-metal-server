@@ -146,7 +146,7 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Kickstart, Legacy, Uefi].each do |klass|
+  [Legacy, Uefi].each do |klass|
     resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
@@ -203,6 +203,59 @@ class App < Sinatra::Base
           ''
         end
       end
+    end
+  end
+
+  resource Kickstart.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        File.exists?(Kickstart.path(id)) ? Kickstart.read(id) : nil
+      end
+    end
+
+    show
+
+    index do
+      Kickstart.glob_read('*')
+    end
+
+    create do |attr, id|
+      begin
+        new_model = Kickstart.create(id) do |model|
+          if payload = attr[:payload]
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Kickstart.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
+    update do |attr|
+      Kickstart.update(*resource_or_error.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
+        end
+      end
+    end
+
+    destroy do
+      Kickstart.delete(*resource_or_error.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
+      end
+    end
+
+    get("/:id/blob") do
+      env['octet-stream.out'] = File.read resource.system_path
+      ''
     end
   end
 
