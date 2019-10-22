@@ -73,6 +73,7 @@ validate_dhcpd_command:
 # Configure various paths to system directories. This will store the
 # corresponding file in the given directory.
 # =============================================================================
+Dhcp_system_dir:      # Dhcp subnet and host files are stored here
 Initrd_system_dir:    # Initial ram disks will be stored here
 Kernel_system_dir:    # Kernels will be stored here
 Kickstart_system_dir: # Kickstarts will be stored here

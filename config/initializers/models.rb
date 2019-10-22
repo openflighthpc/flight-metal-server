@@ -45,7 +45,7 @@ Model.content_base_path = Figaro.env.content_base_path
 
 class DhcpBase
   def self.path
-    File.join(Model.content_base_path, 'etc/dhcp')
+    Figaro.env.Dhcp_system_dir
   end
 end
 
