@@ -62,14 +62,14 @@ end
 # master process
 task unicorn_dirs: :require do
   puts <<~PATHS.chomp
-    #{File.join(ENV['content_dir'], 'master-unicorn.pid')}
+    #{File.join(ENV['content_dir'], 'etc/master-unicorn.pid')}
     #{ENV['log_dir']}
   PATHS
 end
 
 task 'daemon:stop' => :require do
   require 'open3'
-  pid_file = File.join(ENV['content_dir'], 'master-unicorn.pid')
+  pid_file = File.join(ENV['content_dir'], 'etc/master-unicorn.pid')
   if File.exists?(pid_file)
     pid = File.read(pid_file).chomp.to_i
     Process.kill('WINCH', pid)

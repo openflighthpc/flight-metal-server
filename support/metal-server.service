@@ -1,0 +1,17 @@
+[Unit]
+Description=Flight Metal Build Server
+Requires=network.target
+
+[Service]
+Type=forking
+User=root
+WorkingDirectory=/opt/flight/opt/metal-server
+PIDFile=/opt/flight/opt/metal-server/var/etc/master-unicorn.pid
+ExecStart=/usr/bin/bash -lc 'bin/unicorn -E production -c unicorn.rb -D'
+ExecStop=/usr/bin/bash -lc '(export RACK_ENV=production; bin/rake daemon:stop)'
+TimeoutSec=30
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
