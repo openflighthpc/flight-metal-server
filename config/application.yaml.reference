@@ -79,3 +79,13 @@ Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
 Uefi_system_dir:      # Uefi PXE files will be stored here
 
+# =============================================================================
+# Enable <TYPE>
+# Used to enable/disable different services within the API. By default all
+# the routes are enabled. A route can be disabled by setting the value to
+# 'false'.
+# =============================================================================
+enable_dhcp:      # Enables the /dhcp-subnets and /dhcp-hosts routes
+enable_kickstart: # Enables the /kickstarts routes
+enable_netboot:   # Enables the /legacies, /uefis, and /boot-methods routes
+
