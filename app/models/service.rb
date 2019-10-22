@@ -27,14 +27,10 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'metal_server/roles'
-
 class Service
-  TYPE_MAP = {
-    dhcp:       MetalServer::Roles.dhcp_enabled?,
-    kickstart:  MetalServer::Roles.kickstart_enabled?,
-    netboot:    MetalServer::Roles.netboot_enabled?
-  }
+  TYPE_MAP = [:dhcp, :kickstart, :netboot].map do |id|
+    [id, ENV["enable_#{id}"] == 'true']
+  end.to_h.freeze
 
   def self.pkre
     /#{TYPE_MAP.keys.join('|')}/
@@ -46,6 +42,14 @@ class Service
 
   def self.all
     TYPE_MAP.keys.map { |i| new(i) }
+  end
+
+  def self.enabled?(id)
+    TYPE_MAP[id.to_sym]
+  end
+
+  def self.ids
+    TYPE_MAP.keys
   end
 
   attr_reader :id
@@ -68,4 +72,6 @@ class Service
     enabled?
   end
 end
+
+require 'metal_server/roles'
 

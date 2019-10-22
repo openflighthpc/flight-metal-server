@@ -29,40 +29,22 @@
 
 module MetalServer
   module Roles
-    def self.kickstart_admin
-      kickstart_enabled?  ? [:admin]        : [:forbidden]
+    ::Service.ids.each do |type|
+      define_singleton_method("#{type}_admin") do
+        ::Service.enabled?(type) ? admin : [:forbidden]
+      end
+
+      define_singleton_method("#{type}_user") do
+        ::Service.enabled?(type) ? user : [:forbidden]
+      end
     end
 
-    def self.kickstart_user
-      kickstart_enabled?  ? [:user, :admin] : [:forbidden]
+    def self.admin
+      [:admin]
     end
 
-    def self.dhcp_admin
-      dhcp_enabled?       ? [:admin]        : [:forbidden]
-    end
-
-    def self.dhcp_user
-      dhcp_enabled?       ? [:user, :admin] : [:forbidden]
-    end
-
-    def self.netboot_admin
-      netboot_enabled?    ? [:admin]        : [:forbidden]
-    end
-
-    def self.netboot_user
-      netboot_enabled?    ? [:user, :admin] : [:forbidden]
-    end
-
-    def self.dhcp_enabled?
-      Figaro.env.enable_dhcp == 'true'
-    end
-
-    def self.kickstart_enabled?
-      Figaro.env.enable_kickstart == 'true'
-    end
-
-    def self.netboot_enabled?
-      Figaro.env.enable_netboot == 'true'
+    def self.user
+      [:user, :admin]
     end
   end
 end

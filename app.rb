@@ -445,9 +445,9 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: [])
+    show(roles: MetalServer::Roles.user)
 
-    index(roles: []) { Service.all }
+    index(roles: MetalServer::Roles.user) { Service.all }
   end
 end
 
