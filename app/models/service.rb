@@ -27,27 +27,25 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'flight_config'
+class Service
+  def self.type
+    'service'
+  end
 
-require 'metal_server/dhcp_paths'
+  def id
+    nil
+  end
 
-require 'app/model'
-require 'app/models/boot_method'
-require 'app/models/dhcp_host'
-require 'app/models/dhcp_subnet'
-require 'app/models/kickstart'
-require 'app/models/uefi'
-require 'app/models/legacy'
-require 'app/models/service'
-require 'app/models/user'
+  def dhcp
+    MetalServer::Roles.dhcp_enabled?
+  end
 
-Model.content_base_path = Figaro.env.content_base_path
+  def kickstart
+    MetalServer::Roles.kickstart_enabled?
+  end
 
-class DhcpBase
-  def self.path
-    File.join(Model.content_base_path, 'etc/dhcp')
+  def netboot
+    MetalServer::Roles.netboot_enabled?
   end
 end
-
-User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 

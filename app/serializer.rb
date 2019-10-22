@@ -101,3 +101,7 @@ class DhcpHostSerializer < FileModelSerializer
   has_one :dhcp_subnet
 end
 
+class ServiceSerializer < Serializer
+  attributes :dhcp, :kickstart, :netboot
+end
+

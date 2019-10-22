@@ -131,6 +131,10 @@ class App < Sinatra::Base
     end
   end
 
+  get '/enabled-services' do
+    serialize_model(Service.new)
+  end
+
   ID_REGEX = /[\w-]+/
 
   [Legacy, Uefi].each do |klass|
@@ -440,6 +444,4 @@ class App < Sinatra::Base
 end
 
 require 'app/version'
-
-
 

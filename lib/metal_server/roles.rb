@@ -53,16 +53,16 @@ module MetalServer
       netboot_enabled?    ? [:user, :admin] : [:forbidden]
     end
 
-    def self.netboot_enabled?
-      Figaro.env.enable_netboot == 'true'
+    def self.dhcp_enabled?
+      Figaro.env.enable_dhcp == 'true'
     end
 
     def self.kickstart_enabled?
       Figaro.env.enable_kickstart == 'true'
     end
 
-    def self.dhcp_enabled?
-      Figaro.env.enable_dhcp == 'true'
+    def self.netboot_enabled?
+      Figaro.env.enable_netboot == 'true'
     end
   end
 end
