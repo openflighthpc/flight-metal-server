@@ -131,10 +131,6 @@ class App < Sinatra::Base
     end
   end
 
-  get '/enabled-services' do
-    serialize_model(Service.new)
-  end
-
   ID_REGEX = /[\w-]+/
 
   [Legacy, Uefi].each do |klass|
@@ -440,6 +436,18 @@ class App < Sinatra::Base
         serialize_model(resource_or_error)
       end
     end
+  end
+
+  resource Service.type, pkre: Service.pkre do
+    helpers do
+      def find(id)
+        Service.new(id)
+      end
+    end
+
+    show(roles: [])
+
+    index(roles: []) { Service.all }
   end
 end
 

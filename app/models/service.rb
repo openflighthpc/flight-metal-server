@@ -27,25 +27,45 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'metal_server/roles'
+
 class Service
+  TYPE_MAP = {
+    dhcp:       MetalServer::Roles.dhcp_enabled?,
+    kickstart:  MetalServer::Roles.kickstart_enabled?,
+    netboot:    MetalServer::Roles.netboot_enabled?
+  }
+
+  def self.pkre
+    /#{TYPE_MAP.keys.join('|')}/
+  end
+
   def self.type
-    'service'
+    'services'
   end
 
-  def id
-    nil
+  def self.all
+    TYPE_MAP.keys.map { |i| new(i) }
   end
 
-  def dhcp
-    MetalServer::Roles.dhcp_enabled?
+  attr_reader :id
+
+  def initialize(id)
+    if TYPE_MAP.key?(id.to_sym)
+      @id = id.to_sym
+    else
+      raise Sinja::NotFoundError, <<~ERROR.squish
+        Could not locate the service: #{id}
+      ERROR
+    end
   end
 
-  def kickstart
-    MetalServer::Roles.kickstart_enabled?
+  def enabled?
+    TYPE_MAP[id]
   end
 
-  def netboot
-    MetalServer::Roles.netboot_enabled?
+  def enabled
+    enabled?
   end
 end
 

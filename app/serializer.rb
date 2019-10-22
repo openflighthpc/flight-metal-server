@@ -102,6 +102,6 @@ class DhcpHostSerializer < FileModelSerializer
 end
 
 class ServiceSerializer < Serializer
-  attributes :dhcp, :kickstart, :netboot
+  attributes :enabled
 end
 
