@@ -12,7 +12,8 @@ Initrd_system_dir:        /var/lib/tftpboot/boot
 Kernel_system_dir:        /var/lib/tftpboot/boot
 Kickstart_system_dir:     /var/www/kickstarts
 Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
-Grub_system_dir:          /var/lib/tftpboot/efi
+Grub_x86_system_dir:      /var/lib/tftpboot/efi
+Grub_power_system_dir:    /var/lib/tftpboot/ppc
 dhcpd_is_running_command: systemctl status dhcpd.service
 restart_dhcpd_command:    systemctl restart dhcpd.service
 validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
