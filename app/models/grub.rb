@@ -27,17 +27,64 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+GrubTypes = {
+  'x86'   => 'grub.cfg-',
+  'power' => 'grub.cfg-'
+}
+
 class Grub < SingleIDFileModel
-  def self.type
-    'grubs'
+  class << self
+    def inherited(klass)
+      inherited_classes << klass
+    end
+
+    def inherited_classes
+      @inherited_classes ||= []
+    end
+
+    def type
+      "#{sub_type}-grubs"
+    end
+
+    def system_dir_key
+      "Grub_#{sub_type}_system_dir"
+    end
+
+    def system_dir
+      ENV[system_dir_key]
+    end
+
+    def sub_type
+      raise NotImplementedError
+    end
+
+    def filename_prefix
+      raise NotImplementedError
+    end
   end
 
   def filename
-    "grub.cfg-#{id}"
+    self.class.filename_prefix + id
   end
 
   def system_path
-    File.join(Figaro.env.Grub_system_dir, filename)
+    File.join(self.class.system_dir, filename)
   end
+end
+
+GrubTypes.each do |sub_type, prefix|
+  eval <<~CLASS
+    class #{sub_type.capitalize}Grub < Grub
+      class << self
+        def sub_type
+          '#{sub_type}'
+        end
+
+        def filename_prefix
+          '#{prefix}'
+        end
+      end
+    end
+  CLASS
 end
 
