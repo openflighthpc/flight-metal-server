@@ -27,10 +27,16 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
+require 'app/models/grub'
+
 class Service
   TYPE_MAP = [:dhcp, :kickstart, :netboot].map do |id|
     [id, ENV["enable_#{id}"] == 'true']
-  end.to_h.freeze
+  end.to_h.tap do |types|
+    Grub.inherited_classes.each_with_object(types) do |klass, memo|
+      memo[klass.type.chomp('s').to_sym] = (ENV['enable_netboot'] == 'true')
+    end
+  end.freeze
 
   def self.pkre
     /#{TYPE_MAP.keys.join('|')}/
