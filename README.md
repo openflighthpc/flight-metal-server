@@ -75,9 +75,13 @@ rake initialize
 vi /etc/dhcp/dhcpd.conf
 ```
 
+### Setting Up Systemd
+
+A basic `systemd` unit file can be found [here](support/metal-server.service). The unit file will need to be tweaked according to where the application has been installed/configured. It will start the server on the default port `8080` and gracefully shutdown on `stop`.
+
 ## Starting the Server
 
-This application ships with `unicorn` as it load balancer and will automatically scale the number processes available for machines. `unicorn` also recovers from failures if something goes wrong from within the application.
+This application ships with `unicorn` as it load balancer and will automatically scale the number processes according to the machine's available cores.
 
 Run the following to start the unicorn daemon process:
 
@@ -115,11 +119,26 @@ Or the underlining rack app can be be started with `rackup`:
 rackup -p <port> -o 0.0.0.0
 ```
 
+*NOTE:* It is not possible to stop the server gracefully in the development environment as it hasn't been daemonised. Use with caution!
+
 ## Stopping The Application
 
 The application should be shut down gracefully as it modifies external services. Shutting down the application abruptly may result in a miss configuration of the DHCP server.
 
 [Refer here for how to shutdown the server gracefully](docs/stopping_the_application.md)
+
+### TL;DR
+
+The daemon unicorn process can be stopped using a `rake` command:
+
+```
+export RACK_ENV=production
+rake daemon:stop
+```
+
+This command will attempt to gracefully shutdown the server but may fail for the following to reasons:
+1. The unicorn server is not a `daemon` because it wasn't started with `-D`. In this case a gracefully shutdown isn't possible and you are on your own. Always start the production server with `-D`.
+2. A worker process is handling a particularly long request and didn't finish in time. In this case wait a few seconds and run the command again. In the unlikely event the worker still doesn't stop, a gracefully shutdown is not possible (see point 1).
 
 ## Authentication
 
