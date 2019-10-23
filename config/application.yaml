@@ -12,7 +12,7 @@ Initrd_system_dir:        /var/lib/tftpboot/boot
 Kernel_system_dir:        /var/lib/tftpboot/boot
 Kickstart_system_dir:     /var/www/kickstarts
 Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
-Uefi_system_dir:          /var/lib/tftpboot/efi
+Grub_system_dir:          /var/lib/tftpboot/efi
 dhcpd_is_running_command: systemctl status dhcpd.service
 restart_dhcpd_command:    systemctl restart dhcpd.service
 validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
@@ -33,7 +33,7 @@ test:
   Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
   Kickstart_system_dir:     /tmp/metal-server-spec/www/kickstarts
   Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
-  Uefi_system_dir:          /tmp/metal-server-spec/tftpboot/efi
+  Grub_system_dir:          /tmp/metal-server-spec/tftpboot/efi
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   validate_dhcpd_command:   echo Initial Test DHCP Validation Command
@@ -50,5 +50,5 @@ development:
   Kernel_system_dir:    /var/metal-server/tftpboot/boot
   Kickstart_system_dir: /var/metal-server/www/kickstarts
   Legacy_system_dir:    /var/metal-server/tftpboot/pxelinux.cfg
-  Uefi_system_dir:      /var/metal-server/tftpboot/efi
+  Grub_system_dir:      /var/metal-server/tftpboot/efi
 

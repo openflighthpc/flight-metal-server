@@ -83,7 +83,7 @@ class LegacySerializer < FileModelSerializer
   include SerializePayload
 end
 
-class UefiSerializer < FileModelSerializer
+class GrubSerializer < FileModelSerializer
   include SerializePayload
 end
 

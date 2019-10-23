@@ -78,7 +78,7 @@ Initrd_system_dir:    # Initial ram disks will be stored here
 Kernel_system_dir:    # Kernels will be stored here
 Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
-Uefi_system_dir:      # Uefi PXE files will be stored here
+Grub_system_dir:      # Grub PXE files will be stored here
 
 # =============================================================================
 # Enable <TYPE>
@@ -88,5 +88,5 @@ Uefi_system_dir:      # Uefi PXE files will be stored here
 # =============================================================================
 enable_dhcp:      # Enables the /dhcp-subnets and /dhcp-hosts routes
 enable_kickstart: # Enables the /kickstarts routes
-enable_netboot:   # Enables the /legacies, /uefis, and /boot-methods routes
+enable_netboot:   # Enables the /legacies, /grubs, and /boot-methods routes
 

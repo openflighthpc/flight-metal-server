@@ -27,9 +27,9 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Uefi < SingleIDFileModel
+class Grub < SingleIDFileModel
   def self.type
-    'uefis'
+    'grubs'
   end
 
   def filename
@@ -37,7 +37,7 @@ class Uefi < SingleIDFileModel
   end
 
   def system_path
-    File.join(Figaro.env.Uefi_system_dir, filename)
+    File.join(Figaro.env.Grub_system_dir, filename)
   end
 end
 

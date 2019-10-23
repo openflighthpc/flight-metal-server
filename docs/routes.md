@@ -80,7 +80,7 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Kickstarts have a `blob` relationship that can be use to download the file in a raw format. This should be included in the relevant `Legacy` or `Uefi` file.
+Kickstarts have a `blob` relationship that can be use to download the file in a raw format. This should be included in the relevant `Legacy` or `Grub` file.
 
 ### Create
 
@@ -149,14 +149,14 @@ Content-Type: application/vnd.api+json
 Accept: application/octet-stream
 ```
 
-## Uefi Routes
+## Grub Routes
 ### Index
 
-List all the Uefi entries.
+List all the Grub entries.
 
 *SYNTAX:*
 ```
-GET /uefis
+GET /grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -164,11 +164,11 @@ Authorization: Bearer <jwt>
 
 ### Show
 
-Retrieve a particular uefi entry. The `payload` attribute contains the file content.
+Retrieve a particular grub entry. The `payload` attribute contains the file content.
 
 *SYNTAX:*
 ```
-GET /uefis/:id
+GET /grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -176,18 +176,18 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-Upload a new `uefi` file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+Upload a new `grub` file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
 
 *SYNTAX:*
 ```
-POST /uefis
+POST /grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "uefis",
+    "type": "grubs",
     "id": "<id>",
     "attributes": {
       "payload": "<content of uploaded file>"
@@ -198,18 +198,18 @@ Authorization: Bearer <jwt>
 
 ### Update
 
-Updates the uefi file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
+Updates the grub file with the content given by the `payload` attribute. The system file is unaffected unless the `payload` has been included.
 
 *SYNTAX:*
 ```
-PATCH /uefis/:id
+PATCH /grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "uefis",
+    "type": "grubs",
     "id": "<id>",
     "attributes": {
       "payload": "<content of uploaded file>"
@@ -220,11 +220,11 @@ Authorization: Bearer <jwt>
 
 ### Destroy
 
-Deletes the uefi entry
+Deletes the grub entry
 
 *SYNTAX*:
 ```
-DELETE /uefis/:id
+DELETE /grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>

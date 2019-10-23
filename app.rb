@@ -133,7 +133,7 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Legacy, Uefi].each do |klass|
+  [Legacy, Grub].each do |klass|
     resource klass.type, pkre: ID_REGEX do
       helpers do
         # The find method needs to be dynamically defined as the block preforms
