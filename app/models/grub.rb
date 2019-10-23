@@ -27,11 +27,6 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-GrubTypes = {
-  'x86'   => 'grub.cfg-',
-  'power' => 'grub.cfg-'
-}
-
 class Grub < SingleIDFileModel
   class << self
     def inherited(klass)
@@ -57,14 +52,10 @@ class Grub < SingleIDFileModel
     def sub_type
       raise NotImplementedError
     end
-
-    def filename_prefix
-      raise NotImplementedError
-    end
   end
 
   def filename
-    self.class.filename_prefix + id
+    'grub.cfg-' + id
   end
 
   def system_path
@@ -72,16 +63,14 @@ class Grub < SingleIDFileModel
   end
 end
 
-GrubTypes.each do |sub_type, prefix|
+ENV.select { |k, _| /\AGrub_[[:alpha:]][[:alnum:]]*_system_dir\Z/.match?(k) }
+   .each do |key, _|
+  sub_type = /\AGrub_(?<type>.*)_system_dir\Z/.match(key).named_captures['type']
   eval <<~CLASS
     class #{sub_type.capitalize}Grub < Grub
       class << self
         def sub_type
           '#{sub_type}'
-        end
-
-        def filename_prefix
-          '#{prefix}'
         end
       end
     end
