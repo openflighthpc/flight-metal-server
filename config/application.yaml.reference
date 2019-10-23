@@ -78,7 +78,20 @@ Initrd_system_dir:    # Initial ram disks will be stored here
 Kernel_system_dir:    # Kernels will be stored here
 Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
-Grub_system_dir:      # Grub PXE files will be stored here
+
+# =============================================================================
+# Grub <type> System Directories
+# Configure the grub types that are supported by the application. The only
+# required grub type is 'x86' however any number of types are supported. They
+# should specify the directory the PXE file will be stored in.
+#
+# All keys must be in the format Grub_<sub-type>_system_dir. This will add the
+# '/<sub-type>-grubs' routes to the API. The sub-type must be alphanumeric and
+# start with letter.
+# =============================================================================
+Grub_x86_system_dir:    # Required: Specify where to store the x86 grub files
+# The following is an optional example power pc grub type:
+Grub_power_system_dir:  # Add the '/power-grubs' routes to the API
 
 # =============================================================================
 # Enable <TYPE>

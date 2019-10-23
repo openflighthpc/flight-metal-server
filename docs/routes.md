@@ -22,7 +22,7 @@ The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". 
 
 List all the kickstart entries.
 
-*SYNTAX:*
+*SYNTAX:* routes to the API
 ```
 GET /kickstarts
 Content-Type: application/vnd.api+json
@@ -150,13 +150,15 @@ Accept: application/octet-stream
 ```
 
 ## Grub Routes
+The following documents the `x86-grubs` type which ships with the API. Additional grub types can be configured via the environment. They follow the exact same specifications with a different API type and routes.
+
 ### Index
 
 List all the Grub entries.
 
 *SYNTAX:*
 ```
-GET /grubs
+GET /x86-grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -168,7 +170,7 @@ Retrieve a particular grub entry. The `payload` attribute contains the file cont
 
 *SYNTAX:*
 ```
-GET /grubs/:id
+GET /x86-grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -180,14 +182,14 @@ Upload a new `grub` file to the server. The file's content must be included as t
 
 *SYNTAX:*
 ```
-POST /grubs
+POST /x86-grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "grubs",
+    "type": "x86-grubs",
     "id": "<id>",
     "attributes": {
       "payload": "<content of uploaded file>"
@@ -202,14 +204,14 @@ Updates the grub file with the content given by the `payload` attribute. The sys
 
 *SYNTAX:*
 ```
-PATCH /grubs/:id
+PATCH /x86-grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "grubs",
+    "type": "x86-grubs",
     "id": "<id>",
     "attributes": {
       "payload": "<content of uploaded file>"
@@ -224,7 +226,7 @@ Deletes the grub entry
 
 *SYNTAX*:
 ```
-DELETE /grubs/:id
+DELETE /x86-grubs/:id
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
