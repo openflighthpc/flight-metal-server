@@ -45,6 +45,18 @@ class Model
     def exists?(*a)
       File.exists? path(*a)
     end
+
+    def type
+      raise NotImplementedError
+    end
+
+    def user_roles
+      Service.enabled?(type) ? [:user, :admin] : [:forbidden]
+    end
+
+    def admin_roles
+      Service.enabled?(type) ? [:admin] : [:forbidden]
+    end
   end
 
   def id

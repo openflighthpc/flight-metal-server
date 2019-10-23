@@ -30,11 +30,15 @@
 require 'app/models/grub'
 
 class Service
-  TYPE_MAP = [:dhcp, :kickstart, :netboot].map do |id|
-    [id, ENV["enable_#{id}"] == 'true']
-  end.to_h.tap do |types|
+  TYPE_MAP = {
+    :'dhcp-subnets' => (Figaro.env.enable_dhcp == 'true'),
+    :'dhcp-hosts'   => (Figaro.env.enable_dhcp == 'true'),
+    :'kickstarts'   => (Figaro.env.enable_kickstart == 'true'),
+    :'boot-methods' => (Figaro.env.enable_netboot == 'true'),
+    :legacies       => (Figaro.env.enable_netboot == 'true')
+  }.tap do |types|
     Grub.inherited_classes.each_with_object(types) do |klass, memo|
-      memo[klass.type.chomp('s').to_sym] = (ENV['enable_netboot'] == 'true')
+      memo[klass.type.to_sym] = (Figaro.env.enable_netboot == 'true')
     end
   end.freeze
 
@@ -78,6 +82,4 @@ class Service
     enabled?
   end
 end
-
-require 'metal_server/roles'
 
