@@ -252,8 +252,15 @@ class App < Sinatra::Base
     end
 
     create(roles: Grub.admin_roles) do |attr, id|
+      inputs =  if MATCH_GRUB_REGEX.match?(id)
+                  MATCH_GRUB_REGEX.match(id).captures
+                else
+                  raise Sinja::BadRequestError, <<~ERROR.squish
+                    Could not create the grub config '#{id}'. Either the grub
+                    sub-type has not been configured or the ID is malformed.
+                  ERROR
+                end
       begin
-        inputs = MATCH_GRUB_REGEX.match(id).captures
         new_model = Grub.create(*inputs) do |model|
           if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
