@@ -233,9 +233,11 @@ class App < Sinatra::Base
     end
   end
 
-  SIMPLE_GRUB_REGEX = /#{ID_REGEX}\.#{ID_REGEX}/
-  MATCH_GRUB_REGEX  = /(#{ID_REGEX})\.(#{ID_REGEX})/
-  resource Grub.type, pkre: SIMPLE_GRUB_REGEX do
+  ROUTE_GRUB_REGEX = Regexp.new Grub.sub_types
+                                    .map { |t| Regexp.escape("#{t}.") + ID_REGEX.to_s }
+                                    .join('|')
+  MATCH_GRUB_REGEX  = /\A(#{Grub.sub_types.map{ |t| Regexp.escape(t) }.join('|')})\.(#{ID_REGEX})\z/
+  resource Grub.type, pkre: ROUTE_GRUB_REGEX do
     helpers do
       def find(id)
         inputs = MATCH_GRUB_REGEX.match(id).captures

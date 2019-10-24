@@ -36,6 +36,13 @@ class Grub < FileModel
     def type
       'grubs'
     end
+
+    def sub_types
+      ENV.select { |k, _| /\AGrub_[[:alpha:]][[:alnum:]]*_system_dir\Z/.match?(k) }
+        .map do |key, _|
+        /\AGrub_(?<type>.*)_system_dir\Z/.match(key).named_captures['type']
+      end
+    end
   end
 
   def sub_type
@@ -55,9 +62,10 @@ class Grub < FileModel
   end
 
   def system_dir
-    ENV["Grub_#{sub_type}_system_dir"] || raise(Sinja::NotFoundError, <<~ERROR.squish)
-      Unrecognised Grub sub type '#{sub_type}'. Contact your system administrator for
-      further assistance.
+    ENV["Grub_#{sub_type}_system_dir"] || raise(<<~ERROR.squish)
+      An unexpected error has occurred! This is likely due to the server being
+      misconfigured. Could not locate the 'Grub_#{sub_type}_system_dir'. Please
+      contact your system administrator for further assistance.
     ERROR
   end
 
