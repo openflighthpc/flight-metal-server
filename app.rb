@@ -465,7 +465,7 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
-        raise Sinja::ForbiddenError, <<~ERROR.squish unless BootMethod.admin_roles.include?(role)
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless BootMethod.user_roles.include?(role)
           You do not have permission to access this content!
         ERROR
 
