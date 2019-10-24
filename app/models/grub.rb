@@ -27,53 +27,42 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class Grub < SingleIDFileModel
+class Grub < FileModel
   class << self
-    def inherited(klass)
-      inherited_classes << klass
-    end
-
-    def inherited_classes
-      @inherited_classes ||= []
+    def path(sub_type, name)
+      File.join(content_base_path, 'meta/grub', sub_type, name + '.yaml')
     end
 
     def type
-      "#{sub_type}-grubs"
+      'grubs'
     end
+  end
 
-    def system_dir_key
-      "Grub_#{sub_type}_system_dir"
-    end
+  def sub_type
+    __inputs__[0]
+  end
 
-    def system_dir
-      ENV[system_dir_key]
-    end
+  def name
+    __inputs__[1]
+  end
 
-    def sub_type
-      raise NotImplementedError
-    end
+  def id
+    __inputs__.join('.')
   end
 
   def filename
-    'grub.cfg-' + id
+    'grub.cfg-' + name
+  end
+
+  def system_dir
+    ENV["Grub_#{sub_type}_system_dir"] || raise(Sinja::NotFoundError, <<~ERROR.squish)
+      Unrecognised Grub sub type '#{sub_type}'. Contact your system administrator for
+      further assistance.
+    ERROR
   end
 
   def system_path
-    File.join(self.class.system_dir, filename)
+    File.join(system_dir, filename)
   end
-end
-
-ENV.select { |k, _| /\AGrub_[[:alpha:]][[:alnum:]]*_system_dir\Z/.match?(k) }
-   .each do |key, _|
-  sub_type = /\AGrub_(?<type>.*)_system_dir\Z/.match(key).named_captures['type']
-  eval <<~CLASS
-    class #{sub_type.capitalize}Grub < Grub
-      class << self
-        def sub_type
-          '#{sub_type}'
-        end
-      end
-    end
-  CLASS
 end
 

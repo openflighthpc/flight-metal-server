@@ -83,12 +83,10 @@ class LegacySerializer < FileModelSerializer
   include SerializePayload
 end
 
-Grub.inherited_classes.each do |klass|
-  eval <<~CLASS
-    class #{klass.to_s}Serializer < FileModelSerializer
-      include SerializePayload
-    end
-  CLASS
+class GrubSerializer < FileModelSerializer
+  include SerializePayload
+
+  attributes :sub_type, :name
 end
 
 class DhcpSubnetSerializer < FileModelSerializer

@@ -35,12 +35,9 @@ class Service
     :'dhcp-hosts'   => (Figaro.env.enable_dhcp == 'true'),
     :'kickstarts'   => (Figaro.env.enable_kickstart == 'true'),
     :'boot-methods' => (Figaro.env.enable_netboot == 'true'),
-    :legacies       => (Figaro.env.enable_netboot == 'true')
-  }.tap do |types|
-    Grub.inherited_classes.each_with_object(types) do |klass, memo|
-      memo[klass.type.to_sym] = (Figaro.env.enable_netboot == 'true')
-    end
-  end.freeze
+    :legacies       => (Figaro.env.enable_netboot == 'true'),
+    :grubs          => (Figaro.env.enable_netboot == 'true')
+  }.freeze
 
   def self.pkre
     /#{TYPE_MAP.keys.join('|')}/

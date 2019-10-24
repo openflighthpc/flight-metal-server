@@ -132,55 +132,50 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Legacy, *Grub.inherited_classes].each do |klass|
-    resource klass.type, pkre: ID_REGEX do
-      helpers do
-        # The find method needs to be dynamically defined as the block preforms
-        # a closure around the parent context. This way the `klass` variable is
-        # available inside the block
-        define_method(:find) do |id|
-          File.exists?(klass.path(id)) ? klass.read(id) : nil
-        end
+  resource Legacy.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        File.exists?(Legacy.path(id)) ? Legacy.read(id) : nil
       end
+    end
 
-      show(roles: klass.user_roles)
+    show(roles: Legacy.user_roles)
 
-      index(roles: klass.user_roles) do
-        klass.glob_read('*')
-      end
+    index(roles: Legacy.user_roles) do
+      Legacy.glob_read('*')
+    end
 
-      create(roles: klass.admin_roles) do |attr, id|
-        begin
-          new_model = klass.create(id) do |model|
-            if payload = attr[:payload]
-              FileUtils.mkdir_p File.dirname(model.system_path)
-              File.write(model.system_path, payload)
-            else
-              raise_require_payload
-            end
-          end
-          [id, new_model]
-        rescue FlightConfig::CreateError
-          raise Sinja::ConflictError, <<~ERROR.chomp
-            Can not create the '#{klass.type.singularize}' as '#{id}' already exists
-          ERROR
-        end
-      end
-
-      update(roles: klass.admin_roles) do |attr|
-        klass.update(*resource_or_error.__inputs__) do |model|
+    create(roles: Legacy.admin_roles) do |attr, id|
+      begin
+        new_model = Legacy.create(id) do |model|
           if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
-            File.write model.system_path, payload.to_s
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
           end
         end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Legacy.type.singularize}' as '#{id}' already exists
+        ERROR
       end
+    end
 
-      destroy(roles: klass.admin_roles) do
-        klass.delete(*resource_or_error.__inputs__) do |model|
-          FileUtils.rm_f model.system_path
-          true
+    update(roles: Legacy.admin_roles) do |attr|
+      Legacy.update(*resource_or_error.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
         end
+      end
+    end
+
+    destroy(roles: Legacy.admin_roles) do
+      Legacy.delete(*resource_or_error.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
       end
     end
   end
@@ -235,6 +230,58 @@ class App < Sinatra::Base
     get("/:id/blob") do
       env['octet-stream.out'] = File.read resource.system_path
       ''
+    end
+  end
+
+  SIMPLE_GRUB_REGEX = /#{ID_REGEX}\.#{ID_REGEX}/
+  MATCH_GRUB_REGEX  = /(#{ID_REGEX})\.(#{ID_REGEX})/
+  resource Grub.type, pkre: SIMPLE_GRUB_REGEX do
+    helpers do
+      def find(id)
+        inputs = MATCH_GRUB_REGEX.match(id).captures
+        File.exists?(Grub.path(*inputs)) ? Grub.read(*inputs) : nil
+      end
+    end
+
+    show(roles: Grub.user_roles)
+
+    index(roles: Grub.user_roles) do
+      Grub.glob_read('*', '*')
+    end
+
+    create(roles: Grub.admin_roles) do |attr, id|
+      begin
+        inputs = MATCH_GRUB_REGEX.match(id).captures
+        new_model = Grub.create(*inputs) do |model|
+          if payload = attr[:payload]
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Legacy.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
+    update(roles: Grub.admin_roles) do |attr|
+      Grub.update(*resource.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
+        end
+      end
+    end
+
+    destroy(roles: Grub.admin_roles) do
+      Grub.delete(*resource.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
+      end
     end
   end
 
