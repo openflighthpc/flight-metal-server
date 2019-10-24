@@ -17,7 +17,7 @@ restart_dhcpd_command:    systemctl restart dhcpd.service
 validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
 # Configure the system directories for Grub files. Any number of grub types can be
-# added following the syntax: Grub_<sub-type>_system_dir. The 'x86' type is requried.
+# added following the syntax: Grub_<sub-type>_system_dir. The 'x86' type is required.
 Grub_x86_system_dir:      /var/lib/tftpboot/efi
 # Grub_power_system_dir:    /var/lib/tftpboot/ppc
 

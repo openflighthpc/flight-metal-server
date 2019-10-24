@@ -85,13 +85,12 @@ Legacy_system_dir:    # Legacy bios PXE files will be stored here
 # required grub type is 'x86' however any number of types are supported. They
 # should specify the directory the PXE file will be stored in.
 #
-# All keys must be in the format Grub_<sub-type>_system_dir. This will add the
-# '/<sub-type>-grubs' routes to the API. The sub-type must be alphanumeric and
-# start with letter.
+# All keys must be in the format Grub_<sub-type>_system_dir. The <sub-type>
+# is encoded into the ID of each file in the format: <sub-type>.<name>
 # =============================================================================
 Grub_x86_system_dir:    # Required: Specify where to store the x86 grub files
 # The following is an optional example power pc grub type:
-Grub_power_system_dir:  # Add the '/power-grubs' routes to the API
+Grub_power_system_dir:
 
 # =============================================================================
 # Enable <TYPE>

@@ -15,7 +15,7 @@ Most API's use server generated auto incrementing integer as id's. In this API, 
 
 The id is otherwise used in the same manner according to the `JSON:API` specifications.
 
-The final caveat is `dhcp-hosts` uses a compound id of its `subnet` and "name". The subnet and "name" is subject to the same character restrictions described above. The `id` for a `dhcp-hosts` is always in the format `<subnet>.<name>`.
+The `dhcp-hosts` and `grubs` files use a compound `id` to denote their relationship. The `dhcp-hosts` id is always in the format `<subnet>.<name>` and the `grubs` id is `<sub-type>.<name>`. The `subnet`, `sub-type`, and `name` is subject to the same character restrains described above.
 
 ## Kickstart Routes
 ### Index
@@ -150,15 +150,13 @@ Accept: application/octet-stream
 ```
 
 ## Grub Routes
-The following documents the `x86-grubs` type which ships with the API. Additional grub types can be configured via the environment. They follow the exact same specifications with a different API type and routes.
-
 ### Index
 
 List all the Grub entries.
 
 *SYNTAX:*
 ```
-GET /x86-grubs
+GET /grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -170,7 +168,7 @@ Retrieve a particular grub entry. The `payload` attribute contains the file cont
 
 *SYNTAX:*
 ```
-GET /x86-grubs/:id
+GET /grubs/:sub_type.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -178,19 +176,21 @@ Authorization: Bearer <jwt>
 
 ### Create
 
-Upload a new `grub` file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of `alphanumeric` characters, `-`, and/or `_`.
+Upload a new `grub` file to the server. The file's content must be included as the `payload` attribute. A unique client generated `id` is required and must be comprised of the `sub-type` and `name` components. Each component must be `alphanumierc` and may include `-` and `_`.  
+
+The application must be configured with system directory for each grub type. The easiest way to do this is export the path into the environment. The env var key is always in the format: `Grub_<sub-type>_system_dir`.
 
 *SYNTAX:*
 ```
-POST /x86-grubs
+POST /grubs
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "x86-grubs",
-    "id": "<id>",
+    "type": "grubs",
+    "id": "<sub-type>.<name>",
     "attributes": {
       "payload": "<content of uploaded file>"
     }
@@ -204,15 +204,15 @@ Updates the grub file with the content given by the `payload` attribute. The sys
 
 *SYNTAX:*
 ```
-PATCH /x86-grubs/:id
+PATCH /grubs/:sub_type.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 
 {
   "data": {
-    "type": "x86-grubs",
-    "id": "<id>",
+    "type": "grubs",
+    "id": "<sub-type>.<name>",
     "attributes": {
       "payload": "<content of uploaded file>"
     }
@@ -226,7 +226,7 @@ Deletes the grub entry
 
 *SYNTAX*:
 ```
-DELETE /x86-grubs/:id
+DELETE /x86-grubs/:sub_type.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
