@@ -62,9 +62,32 @@ end
 # master process
 task unicorn_dirs: :require do
   puts <<~PATHS.chomp
-    #{ENV['content_dir']}
+    #{File.join(ENV['content_dir'], 'etc/master-unicorn.pid')}
     #{ENV['log_dir']}
   PATHS
+end
+
+task 'daemon:stop' => :require do
+  require 'open3'
+  pid_file = File.join(ENV['content_dir'], 'etc/master-unicorn.pid')
+  if File.exists?(pid_file)
+    pid = File.read(pid_file).chomp.to_i
+    Process.kill('WINCH', pid)
+    sleep 0.5
+    _, status = Open3.capture2e("ps --ppid #{pid}")
+    if status.to_i == 0
+      raise <<~ERROR.chomp
+        Failed to stop the server as the child processes have not exited!
+        This could be because:
+          * The unicorn server was not daemonized with `-D`, OR
+          * A worker process is handling a long request.
+      ERROR
+    else
+      Process.kill('QUIT', pid)
+    end
+  else
+    $stderr.puts 'The server is not currently running!'
+  end
 end
 
 task :console do

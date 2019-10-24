@@ -83,8 +83,10 @@ class LegacySerializer < FileModelSerializer
   include SerializePayload
 end
 
-class UefiSerializer < FileModelSerializer
+class GrubSerializer < FileModelSerializer
   include SerializePayload
+
+  attributes :sub_type, :name
 end
 
 class DhcpSubnetSerializer < FileModelSerializer
@@ -99,5 +101,9 @@ class DhcpHostSerializer < FileModelSerializer
   include SerializePayload
 
   has_one :dhcp_subnet
+end
+
+class ServiceSerializer < Serializer
+  attributes :enabled
 end
 

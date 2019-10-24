@@ -1,0 +1,27 @@
+[Unit]
+Description=Flight Metal Build Server
+Requires=network.target
+
+[Service]
+Type=forking
+User=root
+
+# The working directory needs to be where the application has been installed
+WorkingDirectory=/opt/flight/opt/metal-server
+
+# The PID file is always <content-dir>/etc/master-unicorn.pid
+# The exact location depends on the application configuration but is typically
+# the `var` directory within the install path
+PIDFile=/opt/flight/opt/metal-server/var/etc/master-unicorn.pid
+
+# The application must be fully configured within the user's environment OR
+# within 'config/application.yaml'
+ExecStart=/usr/bin/bash -lc 'bin/unicorn -E production -c unicorn.rb -D'
+ExecStop=/usr/bin/bash -lc '(export RACK_ENV=production; bin/rake daemon:stop)'
+
+TimeoutSec=30
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

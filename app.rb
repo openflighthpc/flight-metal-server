@@ -50,45 +50,31 @@ class App < Sinatra::Base
   configure_jsonapi do |c|
     # Resource roles
     c.default_roles = {
-      index: [:user, :admin],
-      show: [:user, :admin],
-      create: :admin,
-      update: :admin,
-      destroy: :admin
+      index: :forbidden,
+      show: :forbidden,
+      create: :forbidden,
+      update: :forbidden,
+      destroy: :forbidden
     }
 
     # To-one relationship roles
     c.default_has_one_roles = {
-      pluck: [:user, :admin],
-      prune: :admin,
-      graft: :admin
+      pluck: :forbidden,
+      prune: :forbidden,
+      graft: :forbidden
     }
 
     # To-many relationship roles
     c.default_has_many_roles = {
-      fetch: [:user, :admin],
-      clear: :admin,
-      replace: :admin,
-      merge: :admin,
-      subtract: :admin
+      fetch: :forbidden,
+      clear: :forbidden,
+      replace: :forbidden,
+      merge: :forbidden,
+      subtract: :forbidden
     }
   end
 
   helpers do
-    def authorize_user!
-      return if [:user, :admin].include? role
-      raise Sinja::ForbiddenError, <<~ERROR.squish
-        You do not have permission to access this content!
-      ERROR
-    end
-
-    def authorize_admin!
-      return if role == :admin
-      raise Sinja::ForbiddenError, <<~ERROR.squish
-        You do not have permission to access this content!
-      ERROR
-    end
-
     def serialize_model(model, options = {})
       options[:is_collection] = false
       options[:skip_collection_check] = true
@@ -146,62 +132,157 @@ class App < Sinatra::Base
 
   ID_REGEX = /[\w-]+/
 
-  [Kickstart, Legacy, Uefi].each do |klass|
-    resource klass.type, pkre: ID_REGEX do
-      helpers do
-        # The find method needs to be dynamically defined as the block preforms
-        # a closure around the parent context. This way the `klass` variable is
-        # available inside the block
-        define_method(:find) do |id|
-          File.exists?(klass.path(id)) ? klass.read(id) : nil
-        end
+  resource Legacy.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        File.exists?(Legacy.path(id)) ? Legacy.read(id) : nil
       end
+    end
 
-      show
+    show(roles: Legacy.user_roles)
 
-      index do
-        klass.glob_read('*')
-      end
+    index(roles: Legacy.user_roles) do
+      Legacy.glob_read('*')
+    end
 
-      create do |attr, id|
-        begin
-          new_model = klass.create(id) do |model|
-            if payload = attr[:payload]
-              FileUtils.mkdir_p File.dirname(model.system_path)
-              File.write(model.system_path, payload)
-            else
-              raise_require_payload
-            end
-          end
-          [id, new_model]
-        rescue FlightConfig::CreateError
-          raise Sinja::ConflictError, <<~ERROR.chomp
-            Can not create the '#{klass.type.singularize}' as '#{id}' already exists
-          ERROR
-        end
-      end
-
-      update do |attr|
-        klass.update(*resource_or_error.__inputs__) do |model|
+    create(roles: Legacy.admin_roles) do |attr, id|
+      begin
+        new_model = Legacy.create(id) do |model|
           if payload = attr[:payload]
             FileUtils.mkdir_p File.dirname(model.system_path)
-            File.write model.system_path, payload.to_s
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
           end
         end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Legacy.type.singularize}' as '#{id}' already exists
+        ERROR
       end
+    end
 
-      destroy do
-        klass.delete(*resource_or_error.__inputs__) do |model|
-          FileUtils.rm_f model.system_path
-          true
+    update(roles: Legacy.admin_roles) do |attr|
+      Legacy.update(*resource_or_error.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
         end
       end
+    end
 
-      if klass == Kickstart
-        get("/:id/blob") do
-          env['octet-stream.out'] = File.read resource.system_path
-          ''
+    destroy(roles: Legacy.admin_roles) do
+      Legacy.delete(*resource_or_error.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
+      end
+    end
+  end
+
+  resource Kickstart.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        File.exists?(Kickstart.path(id)) ? Kickstart.read(id) : nil
+      end
+    end
+
+    show(roles: Kickstart.user_roles)
+
+    index(roles: Kickstart.user_roles) do
+      Kickstart.glob_read('*')
+    end
+
+    create(roles: Kickstart.admin_roles) do |attr, id|
+      begin
+        new_model = Kickstart.create(id) do |model|
+          if payload = attr[:payload]
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
+          end
         end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Kickstart.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
+    update(roles: Kickstart.admin_roles) do |attr|
+      Kickstart.update(*resource_or_error.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
+        end
+      end
+    end
+
+    destroy(roles: Kickstart.admin_roles) do
+      Kickstart.delete(*resource_or_error.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
+      end
+    end
+
+    get("/:id/blob") do
+      env['octet-stream.out'] = File.read resource.system_path
+      ''
+    end
+  end
+
+  ROUTE_GRUB_REGEX = Regexp.new Grub.sub_types
+                                    .map { |t| Regexp.escape("#{t}.") + ID_REGEX.to_s }
+                                    .join('|')
+  MATCH_GRUB_REGEX  = /\A(#{Grub.sub_types.map{ |t| Regexp.escape(t) }.join('|')})\.(#{ID_REGEX})\z/
+  resource Grub.type, pkre: ROUTE_GRUB_REGEX do
+    helpers do
+      def find(id)
+        inputs = MATCH_GRUB_REGEX.match(id).captures
+        File.exists?(Grub.path(*inputs)) ? Grub.read(*inputs) : nil
+      end
+    end
+
+    show(roles: Grub.user_roles)
+
+    index(roles: Grub.user_roles) do
+      Grub.glob_read('*', '*')
+    end
+
+    create(roles: Grub.admin_roles) do |attr, id|
+      begin
+        inputs = MATCH_GRUB_REGEX.match(id).captures
+        new_model = Grub.create(*inputs) do |model|
+          if payload = attr[:payload]
+            FileUtils.mkdir_p File.dirname(model.system_path)
+            File.write(model.system_path, payload)
+          else
+            raise_require_payload
+          end
+        end
+        [id, new_model]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Legacy.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+
+    update(roles: Grub.admin_roles) do |attr|
+      Grub.update(*resource.__inputs__) do |model|
+        if payload = attr[:payload]
+          FileUtils.mkdir_p File.dirname(model.system_path)
+          File.write model.system_path, payload.to_s
+        end
+      end
+    end
+
+    destroy(roles: Grub.admin_roles) do
+      Grub.delete(*resource.__inputs__) do |model|
+        FileUtils.rm_f model.system_path
+        true
       end
     end
   end
@@ -213,11 +294,11 @@ class App < Sinatra::Base
       end
     end
 
-    show
+    show(roles: DhcpSubnet.user_roles)
 
-    index { DhcpSubnet.glob_read('*') }
+    index(roles: DhcpSubnet.user_roles) { DhcpSubnet.glob_read('*') }
 
-    create do |attr, id|
+    create(roles: DhcpSubnet.admin_roles) do |attr, id|
       begin
         new_subnet = DhcpSubnet.create(id) do |subnet|
           if payload = attr[:payload]
@@ -237,7 +318,7 @@ class App < Sinatra::Base
       end
     end
 
-    update do |attr|
+    update(roles: DhcpSubnet.admin_roles) do |attr|
       DhcpSubnet.update(*resource.__inputs__) do |subnet|
         if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
@@ -248,7 +329,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy do
+    destroy(roles: DhcpSubnet.admin_roles) do
       raise Sinja::ConflictError, <<~ERROR.squish if resource_or_error.read_dhcp_hosts.any?
         Can not delete the subnet whilst it still has hosts. Please delete
         the hosts and try again.
@@ -262,7 +343,7 @@ class App < Sinatra::Base
     end
 
     has_many DhcpHost.type do
-      fetch do
+      fetch(roles: DhcpSubnet.user_roles) do
         resource_or_error.read_dhcp_hosts
       end
     end
@@ -285,10 +366,10 @@ class App < Sinatra::Base
       end
     end
 
-    show
-    index   { DhcpHost.glob_read('*', '*') }
+    show(roles: DhcpHost.user_roles)
+    index(roles: DhcpHost.user_roles) { DhcpHost.glob_read('*', '*') }
 
-    create do |attr, id|
+    create(roles: DhcpHost.admin_roles) do |attr, id|
       subnet = id.split('.').first
       unless DhcpSubnet.exists?(subnet)
         raise Sinja::NotFoundError, <<~ERROR.chomp
@@ -315,7 +396,7 @@ class App < Sinatra::Base
       end
     end
 
-    update do |attr|
+    update(roles: DhcpHost.admin_roles) do |attr|
       DhcpHost.update(*resource.__inputs__) do |host|
         if payload = attr[:payload]
           MetalServer::DhcpUpdater.update!(DhcpBase.path) do
@@ -326,7 +407,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy do
+    destroy(roles: DhcpHost.admin_roles) do
       DhcpHost.delete(*resource.__inputs__) do |host|
         MetalServer::DhcpUpdater.update!(DhcpBase.path) do
           FileUtils.rm_f host.system_path
@@ -336,7 +417,7 @@ class App < Sinatra::Base
     end
 
     has_one DhcpSubnet.type do
-      pluck { resource_or_error.read_dhcp_subnet }
+      pluck(roles: DhcpHost.user_roles) { resource_or_error.read_dhcp_subnet }
     end
   end
 
@@ -355,13 +436,13 @@ class App < Sinatra::Base
       end
     end
 
-    show { resource_or_error }
+    show(roles: BootMethod.user_roles) { resource_or_error }
 
-    index(filter_by: [:complete])  do
+    index(roles: BootMethod.user_roles, filter_by: [:complete])  do
       BootMethod.glob_read('*')
     end
 
-    create do |_, id|
+    create(roles: BootMethod.admin_roles) do |_, id|
       begin
         [id, BootMethod.create(id)]
       rescue FlightConfig::CreateError
@@ -371,7 +452,7 @@ class App < Sinatra::Base
       end
     end
 
-    destroy do
+    destroy(roles: BootMethod.admin_roles) do
       BootMethod.delete(*resource_or_error.__inputs__) do |boot|
         FileUtils.rm_f boot.kernel_system_path
         FileUtils.rm_f boot.initrd_system_path
@@ -384,7 +465,10 @@ class App < Sinatra::Base
       'initrd-blob' => -> (model) { model.initrd_system_path }
     }.each do |blob_type, path_lambda|
       get("/:id/#{blob_type}") do
-        authorize_user!
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless BootMethod.user_roles.include?(role)
+          You do not have permission to access this content!
+        ERROR
+
         # The response is cached in the environment as Middleware is needed to
         # Sinja enforcing JSON responses
         env['octet-stream.out'] = File.read path_lambda.call(resource_or_error)
@@ -392,15 +476,28 @@ class App < Sinatra::Base
       end
 
       post("/:id/#{blob_type}") do
-        authorize_admin!
+        raise Sinja::ForbiddenError, <<~ERROR.squish unless BootMethod.admin_roles.include?(role)
+          You do not have permission to access this content!
+        ERROR
+
         write_octet_stream(path_lambda.call(resource_or_error))
         serialize_model(resource_or_error)
       end
     end
   end
+
+  resource Service.type, pkre: Service.pkre do
+    helpers do
+      def find(id)
+        Service.new(id)
+      end
+    end
+
+    show(roles: [:user, :admin])
+
+    index(roles: [:user, :admin]) { Service.all }
+  end
 end
 
 require 'app/version'
-
-
 

@@ -36,15 +36,16 @@ require 'app/models/boot_method'
 require 'app/models/dhcp_host'
 require 'app/models/dhcp_subnet'
 require 'app/models/kickstart'
-require 'app/models/uefi'
+require 'app/models/grub'
 require 'app/models/legacy'
+require 'app/models/service'
 require 'app/models/user'
 
 Model.content_base_path = Figaro.env.content_base_path
 
 class DhcpBase
   def self.path
-    File.join(Model.content_base_path, 'etc/dhcp')
+    Figaro.env.Dhcp_system_dir
   end
 end
 

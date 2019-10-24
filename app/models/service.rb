@@ -27,7 +27,56 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-class App
-  VERSION = '2.0.0'
+require 'app/models/grub'
+
+class Service
+  TYPE_MAP = {
+    :'dhcp-subnets' => (Figaro.env.enable_dhcp == 'true'),
+    :'dhcp-hosts'   => (Figaro.env.enable_dhcp == 'true'),
+    :'kickstarts'   => (Figaro.env.enable_kickstart == 'true'),
+    :'boot-methods' => (Figaro.env.enable_netboot == 'true'),
+    :legacies       => (Figaro.env.enable_netboot == 'true'),
+    :grubs          => (Figaro.env.enable_netboot == 'true')
+  }.freeze
+
+  def self.pkre
+    /#{TYPE_MAP.keys.join('|')}/
+  end
+
+  def self.type
+    'services'
+  end
+
+  def self.all
+    TYPE_MAP.keys.map { |i| new(i) }
+  end
+
+  def self.enabled?(id)
+    TYPE_MAP[id.to_sym]
+  end
+
+  def self.ids
+    TYPE_MAP.keys
+  end
+
+  attr_reader :id
+
+  def initialize(id)
+    if TYPE_MAP.key?(id.to_sym)
+      @id = id.to_sym
+    else
+      raise Sinja::NotFoundError, <<~ERROR.squish
+        Could not locate the service: #{id}
+      ERROR
+    end
+  end
+
+  def enabled?
+    TYPE_MAP[id]
+  end
+
+  def enabled
+    enabled?
+  end
 end
 

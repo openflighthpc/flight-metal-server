@@ -35,8 +35,8 @@
 # Grabs its directories using a subshell. This means the master process doesn't
 # getting polluted with these changes
 require 'open3'
-output, status = Open3.capture2e("#{__dir__}/bin/rake unicorn_dirs")
-content_dir, log_dir = if status.to_i == 0
+output, status = Open3.capture2("#{__dir__}/bin/rake unicorn_dirs")
+pid_file, log_dir = if status.to_i == 0
   output.split("\n")
 else
   $stderr.puts output
@@ -51,8 +51,8 @@ working_directory @dir
 timeout 30
 
 # Set process id path
-FileUtils.mkdir_p content_dir
-pid File.join(content_dir, 'master-unicorn.pid')
+FileUtils.mkdir_p File.dirname(pid_file)
+pid pid_file
 
 # Set log file paths
 FileUtils.mkdir_p log_dir
