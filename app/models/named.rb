@@ -32,7 +32,7 @@ class Named < Model
 
   ZONE_PROXY_REGEX = [
     :zone, :zone_path, 'zone_uploaded\?', :zone_uploaded, :zone_size,
-    :zone_name, 'zone_name\='
+    :zone_name, 'zone_name\=', :zone_payload
   ].map { |z| /\A(?<zone>.*)_(?<method>#{z})\Z/ }
 
   def self.type
@@ -67,6 +67,11 @@ class Named < Model
   def zone_size(zone)
     return 0 unless zone_uploaded?(zone)
     File.size zone_path(zone)
+  end
+
+  def zone_payload(zone)
+    return '' unless zone_uploaded?(zone)
+    File.read(zone_path(zone))
   end
 
   def zone_name(zone)

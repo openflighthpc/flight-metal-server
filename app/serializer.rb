@@ -111,7 +111,9 @@ class NamedSerializer < Serializer
              :forward_zone_size,
              :reverse_zone_size,
              :forward_zone_name,
-             :reverse_zone_name
+             :reverse_zone_name,
+             :forward_zone_payload,
+             :reverse_zone_payload
 end
 
 class ServiceSerializer < Serializer
