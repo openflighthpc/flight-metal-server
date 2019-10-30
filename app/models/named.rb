@@ -31,7 +31,8 @@ class Named < Model
   include HasSingleInput
 
   ZONE_PROXY_REGEX = [
-    :zone, :zone_path, 'zone_uploaded\?', :zone_uploaded, :zone_size
+    :zone, :zone_path, 'zone_uploaded\?', :zone_uploaded, :zone_size,
+    :zone_name, 'zone_name\='
   ].map { |z| /\A(?<zone>.*)_(?<method>#{z})\Z/ }
 
   def self.type
@@ -40,6 +41,10 @@ class Named < Model
 
   def self.zone_dir
     File.join(Figaro.env.Named_working_dir, Figaro.env.Named_sub_dir)
+  end
+
+  def zone_names
+    __data__[:zone_names] ||= {}
   end
 
   # Dummy reflective method for use in the proxy
@@ -64,11 +69,19 @@ class Named < Model
     File.size zone_path(zone)
   end
 
-  def method_missing(s, *_a, &_b)
+  def zone_name(zone)
+    zone_names[zone.to_sym] || ''
+  end
+
+  def zone_name=(zone, name)
+    zone_names[zone.to_sym] = name
+  end
+
+  def method_missing(s, *a, &_b)
     if regex = zone_proxy_regex(s)
       matches = regex.match(s).named_captures
       inputs = ['method', 'zone'].map { |s| matches[s] }
-      public_send(*inputs)
+      public_send(*inputs, *a)
     else
       super
     end
