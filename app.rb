@@ -493,6 +493,28 @@ class App < Sinatra::Base
     end
   end
 
+  resource Named.type, pkre: ID_REGEX do
+    helpers do
+      def find(id)
+        Named.exists?(id) ? Named.read(id) : nil
+      end
+    end
+
+    index(roles: Named.user_roles) { Named.glob_read('*') }
+
+    show(roles: Named.user_roles)
+
+    create(roles: Named.admin_roles) do |attr, id|
+      begin
+        [id, Named.create(id)]
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Named.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+    end
+  end
+
   resource Service.type, pkre: Service.pkre do
     helpers do
       def find(id)
@@ -500,9 +522,9 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: [:user, :admin])
-
     index(roles: [:user, :admin]) { Service.all }
+
+    show(roles: [:user, :admin])
   end
 end
 

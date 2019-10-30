@@ -74,8 +74,8 @@ class Named < Model
     end
   end
 
-  def respond_to_missing?(s, **_h)
-    zone_proxy_regex(s) ? true : super
+  def respond_to_missing?(*a)
+    zone_proxy_regex(a.first) ? true : super
   end
 
   def zone_proxy_regex(s)
