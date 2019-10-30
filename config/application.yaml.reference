@@ -80,6 +80,22 @@ Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
 
 # =============================================================================
+# Named System Directories
+# For named relative paths to work correctly, two configuration files are
+# required.
+#
+# First the named working directory as specified in /etc/named.conf or other
+# appropriate config.
+#
+# Secondly a exclusive sub directory is required within the working dir. Only
+# the upload zone file should be stored within this directory. The integrity
+# of other files within this directory can not be guaranteed and maybe lost at
+# any moment.
+# =============================================================================
+Named_working_dir:
+Named_sub_dir:
+
+# =============================================================================
 # Grub <type> System Directories
 # Configure the grub types that are supported by the application. By default
 # the 'x86_64' sub type has been configured. This type can be removed and

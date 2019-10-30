@@ -27,28 +27,60 @@
 # https://github.com/openflighthpc/metal-server
 #===============================================================================
 
-require 'flight_config'
+class Named < Model
+  include HasSingleInput
 
-require 'metal_server/dhcp_paths'
+  ZONE_PROXY_REGEX = [
+    :zone, :zone_path, 'zone_uploaded\?', :zone_uploaded, :zone_size
+  ].map { |z| /\A(?<zone>.*)_(?<method>#{z})\Z/ }
 
-require 'app/model'
-require 'app/models/boot_method'
-require 'app/models/dhcp_host'
-require 'app/models/dhcp_subnet'
-require 'app/models/kickstart'
-require 'app/models/grub'
-require 'app/models/named'
-require 'app/models/legacy'
-require 'app/models/service'
-require 'app/models/user'
+  def self.type
+    'nameds'
+  end
 
-Model.content_base_path = Figaro.env.content_base_path
+  def self.zone_dir
+    File.join(Figaro.env.Named_working_dir, Figaro.env.Named_sub_dir)
+  end
 
-class DhcpBase
-  def self.path
-    Figaro.env.Dhcp_system_dir
+  # Dummy reflective method for use in the proxy
+  def zone(zone)
+    zone
+  end
+
+  def zone_path(zone)
+    File.join(self.class.zone_dir, "#{id}.#{zone}")
+  end
+
+  def zone_uploaded?(zone)
+    File.exists? zone_path(zone)
+  end
+
+  def zone_uploaded(*a)
+    zone_uploaded?(*a)
+  end
+
+  def zone_size(zone)
+    return 0 unless zone_uploaded?(zone)
+    File.size zone_path(zone)
+  end
+
+  def method_missing(s, *_a, &_b)
+    if regex = zone_proxy_regex(s)
+      matches = regex.match(s).named_captures
+      inputs = ['method', 'zone'].map { |s| matches[s] }
+      public_send(*inputs)
+    else
+      super
+    end
+  end
+
+  def respond_to_missing?(s, **_h)
+    zone_proxy_regex(s) ? true : super
+  end
+
+  def zone_proxy_regex(s)
+    str = s.to_s
+    ZONE_PROXY_REGEX.find { |r| r.match?(str) }
   end
 end
-
-User.jwt_shared_secret = Figaro.env.jwt_shared_secret
 
