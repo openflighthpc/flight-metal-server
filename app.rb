@@ -513,6 +513,16 @@ class App < Sinatra::Base
         ERROR
       end
     end
+
+    update(roles: Named.admin_roles) do |attr|
+      Named.update(*resource.__inputs__) do |named|
+      end
+    end
+
+    destroy(roles: Named.admin_roles) do |attr|
+      Named.delete(*resource.__inputs__) do |named|
+      end
+    end
   end
 
   resource Service.type, pkre: Service.pkre do
