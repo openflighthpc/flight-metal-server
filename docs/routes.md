@@ -226,7 +226,7 @@ Deletes the grub entry
 
 *SYNTAX*:
 ```
-DELETE /x86-grubs/:sub_type.:name
+DELETE /grubs/:sub_type.:name
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
