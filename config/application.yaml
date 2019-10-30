@@ -1,12 +1,29 @@
-# REQUIRED Either set them directly here or export them into the environment
-# app_base_url:       # [REQUIRED]
-# jwt_shared_secret:  # [REQUIRED]
+# IMPORTANT:
+# This file contains the default configuration values of the server.
+# Modifications to this file should be handled with care. They maybe
+# lost the next time the application is updated and create a security
+# risk by exposing the shared secret.
 
+# RECOMMENDATION:
+# All configuration values/overrides should be done via the environment as
+# opposed to modifying the configs. This particularly applies to the required
+# keys which must be set before the application has started
+
+# EXAMPLE:
+# To set the shared secret in the environment:
+# export jwt_shared_secret=...Your shared secret ...
+# export ... All the other REQUIRED configs ...
+
+# REQUIRED:
+# jwt_shared_secret:  # [REQUIRED]
+# app_base_url:       # [REQUIRED]
+
+# DYNAMIC DEFAULTS:
 # The following have defaults relative to where the application has been installed
 # content_dir:  <install-dir>/var
 # log_dir:      <install-dir>/log
 
-# These defaults can be overridden by the environment or hard coded here directly
+# STATIC DEFAULTS:
 Dhcp_system_dir:          /etc/dhcp/dhcpd.metal-server
 Initrd_system_dir:        /var/lib/tftpboot/boot
 Kernel_system_dir:        /var/lib/tftpboot/boot
@@ -27,7 +44,7 @@ enable_dhcp:      'true'
 enable_kickstart: 'true'
 enable_netboot:   'true'
 
-# Settings used by RSpec
+# DEVELOPERS ONLY:
 test:
   app_base_url:             http://127.0.0.1
   jwt_shared_secret:        SOME_TEST_TOKEN
@@ -42,8 +59,6 @@ test:
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   validate_dhcpd_command:   echo Initial Test DHCP Validation Command
 
-# Alternative path settings. This is to prevent polluting the root file system
-# during development
 development:
   app_base_url:           http://127.0.0.1
   jwt_shared_secret:      SOME_DEVELOPMENT_TOKEN
