@@ -507,6 +507,28 @@ class App < Sinatra::Base
       def find(id)
         Named.exists?(id) ? Named.read(id) : nil
       end
+
+      def update_named_attributes(named, attr)
+        if name = attr[:forward_zone_name]
+          named.forward_zone_name = name
+        end
+        if payload = attr[:forward_zone_payload]
+          named.forward_zone_path.tap do |path|
+            FileUtils.mkdir_p File.dirname(path)
+            File.write(path, payload)
+          end
+        end
+
+        if name = attr[:reverse_zone_name]
+          named.reverse_zone_name = name
+        end
+        if payload = attr[:reverse_zone_payload]
+          named.reverse_zone_path.tap do |path|
+            FileUtils.mkdir_p File.dirname(path)
+            File.write(path, payload)
+          end
+        end
+      end
     end
 
     index(roles: Named.user_roles) { Named.glob_read('*') }
@@ -524,19 +546,7 @@ class App < Sinatra::Base
 
       new_named = begin
         Named.create(id) do |named|
-          named.forward_zone_name = attr[:forward_zone_name]
-          named.forward_zone_path.tap do |path|
-            FileUtils.mkdir_p File.dirname(path)
-            File.write(path, attr[:forward_zone_payload])
-          end
-
-          if attr[:reverse_zone_name]
-            named.reverse_zone_name = attr[:reverse_zone_name]
-            named.reverse_zone_path.tap do |path|
-              FileUtils.mkdir_p File.dirname(path)
-              File.write(path, attr[:reverse_zone_payload])
-            end
-          end
+          update_named_attributes(named, attr)
         end
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp
