@@ -75,7 +75,7 @@ class Named < Model
   end
 
   def zone_name(zone)
-    zone_names[zone.to_sym] || ''
+    zone_names[zone.to_sym]
   end
 
   def zone_name=(zone, name)

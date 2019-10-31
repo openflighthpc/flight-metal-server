@@ -40,13 +40,21 @@ RSpec.describe Named do
     ["test-subjet_#{described_class.type}"]
   end
 
-  def create_subject_and_system_files
+  def create_subject_forward_and_reverse
     described_class.create(*subject_inputs) do |named|
       named.forward_zone_name = 'forward-zone-name'
       named.reverse_zone_name = 'reverse-zone-name'
       FileUtils.mkdir_p File.dirname(named.forward_zone_path)
       FileUtils.touch named.forward_zone_path
       FileUtils.touch named.reverse_zone_path
+    end
+  end
+
+  def create_subject_and_forward
+    described_class.create(*subject_inputs) do |named|
+      named.forward_zone_name = 'forward-zone-name'
+      FileUtils.mkdir_p File.dirname(named.forward_zone_path)
+      FileUtils.touch named.forward_zone_path
     end
   end
 
@@ -105,7 +113,7 @@ RSpec.describe Named do
     context 'with admin, exiting entry, and system files' do
       before(:all) do
         FakeFS.clear!
-        create_subject_and_system_files
+        create_subject_forward_and_reverse
         admin_headers
         post "/#{described_class.type}", subject_api_body(standard_attributes)
       end
@@ -182,6 +190,68 @@ RSpec.describe Named do
       it 'does not create the reverse zone' do
         expect(File.exists? subject.reverse_zone_path).to be(false)
       end
+    end
+  end
+
+  describe 'PATCH update' do
+    context 'without an existing entry' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        patch subject_api_path, subject_api_body
+      end
+
+      it 'returns not found' do
+        expect(last_response).to be_not_found
+      end
+    end
+
+    context 'with admin and reverse payload, but without reverse name' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_forward
+        admin_headers
+        patch subject_api_path, subject_api_body(reverse_zone_payload: 'I am missing a name')
+      end
+
+      it 'returns bad request' do
+        expect(last_response).to be_bad_request
+      end
+
+      it 'does not create the zone file' do
+        expect(File.exists? subject.reverse_zone_path).to be(false)
+      end
+    end
+
+    context 'with admin, without existing reverse, with reverse payload and name attributes' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_and_forward
+        admin_headers
+        patch subject_api_path, subject_api_body(reverse_zone_name: 'this should set the name',
+                                                 reverse_zone_payload: 'I am the file content')
+      end
+
+      it 'returns ok' do
+        expect(last_response).to be_ok
+      end
+
+      include_examples 'reverse zone exists'
+    end
+
+    context 'with admin, existing reverse, reverse payload attributes, without reverse name attribute' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_forward_and_reverse
+        admin_headers
+        patch subject_api_path, subject_api_body(reverse_zone_payload: 'the name has already been set')
+      end
+
+      it 'returns ok' do
+        expect(last_response).to be_ok
+      end
+
+      include_examples 'reverse zone exists'
     end
   end
 end

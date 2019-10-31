@@ -559,6 +559,12 @@ class App < Sinatra::Base
 
     update(roles: Named.admin_roles) do |attr|
       Named.update(*resource.__inputs__) do |named|
+        if attr[:reverse_zone_payload] && !(named.reverse_zone_name || attr[:reverse_zone_name])
+          raise Sinja::BadRequestError, <<~ERROR.squish
+            Can not update the 'reverse_zone_payload' as the 'reverse_zone_name' has not been set
+          ERROR
+        end
+        update_named_attributes(named, attr)
       end
     end
 
