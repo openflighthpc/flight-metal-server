@@ -110,16 +110,14 @@ module MetalServer
   end
 
   class DhcpRestorer
-    include FlightConfig::Reader
     include FlightConfig::Updater
-    include FlightConfig::Deleter
 
     def self.backup_and_restore_on_error(base)
       # Tries to create a new restorer as this prevents multiple running at the same time
       create(base).tap do |restorer|
         begin
           # Set the base paths
-          base_dir = restorer.paths.join
+          base_dir = restorer.base
           base_tmp_dir = Dir.mktmpdir(File.dirname(base_dir))
 
           # Ensures the directory exists
@@ -161,17 +159,8 @@ module MetalServer
 
     private_class_method
 
-    def self.existing_dhcp_each_child(base_old_dir, &b)
-      if Dir.exists? base_old_dir
-      end
-    end
-
     def base
       __inputs__[0]
-    end
-
-    def paths
-      @paths ||= DhcpPaths.current(base)
     end
   end
 
