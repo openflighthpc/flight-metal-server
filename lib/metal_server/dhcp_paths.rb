@@ -28,8 +28,9 @@
 #===============================================================================
 
 require 'sinja'
-require 'tmpdir'
 require 'open3'
+
+require 'metal_server/restorer'
 
 module MetalServer
   MANAGED_FILE_COPYRIGHT = <<~TEXT
@@ -106,61 +107,6 @@ module MetalServer
     # Deprecated: Use index
     def id
       index
-    end
-  end
-
-  class DhcpRestorer
-    include FlightConfig::Updater
-
-    def self.backup_and_restore_on_error(base)
-      # Tries to create a new restorer as this prevents multiple running at the same time
-      create(base).tap do |restorer|
-        begin
-          # Set the base paths
-          base_dir = restorer.base
-          base_tmp_dir = Dir.mktmpdir(File.dirname(base_dir))
-
-          # Ensures the directory exists
-          FileUtils.mkdir_p(base_dir)
-
-          # Copy the original files to the temporary directory
-          Dir.each_child(base_dir) do |name|
-            FileUtils.cp_r(File.expand_path(name, base_dir), base_tmp_dir)
-          end
-
-          # Yield control to the updater to preform the system commands
-          yield(restorer) if block_given?
-
-          # Remove the temporary directory on success
-          FileUtils.rm_rf base_tmp_dir
-        ensure
-          # Restore from the temporary directory if it still exists
-          # This indicates something went wrong and works with Interrupt
-          if Dir.exists?(base_tmp_dir)
-            FileUtils.rm_rf base_dir
-            FileUtils.mkdir_p base_dir
-
-            Dir.each_child(base_tmp_dir) do |tmp|
-              FileUtils.mv File.expand_path(tmp, base_tmp_dir), base_dir
-            end
-
-            FileUtils.rmdir base_tmp_dir
-          end
-
-          # Ensure the restorer object clears it self
-          FileUtils.rm_f restorer.path
-        end
-      end
-    end
-
-    def self.path(base)
-      File.join(base, 'dhcp-update.conf')
-    end
-
-    private_class_method
-
-    def base
-      __inputs__[0]
     end
   end
 
@@ -273,7 +219,7 @@ module MetalServer
     def self.update!(base)
       raise DhcpOfflineError unless is_running?
 
-      DhcpRestorer.backup_and_restore_on_error(base) do |restorer|
+      Restorer.backup_and_restore_on_error(base) do |restorer|
         # Yield control to the API to preform the updates
         yield if block_given?
 
