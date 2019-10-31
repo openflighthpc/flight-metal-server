@@ -568,8 +568,11 @@ class App < Sinatra::Base
       end
     end
 
-    destroy(roles: Named.admin_roles) do |attr|
+    destroy(roles: Named.admin_roles) do
       Named.delete(*resource.__inputs__) do |named|
+        FileUtils.rm_f named.forward_zone_path
+        FileUtils.rm_f named.reverse_zone_path
+        true
       end
     end
   end

@@ -254,5 +254,32 @@ RSpec.describe Named do
       include_examples 'reverse zone exists'
     end
   end
+
+  describe 'DELETE destroy' do
+    context 'with admin and existing forward and reverse' do
+      before(:all) do
+        FakeFS.clear!
+        create_subject_forward_and_reverse
+        admin_headers
+        delete subject_api_path
+      end
+
+      it 'returns no content' do
+        expect(last_response).to be_no_content
+      end
+
+      it 'deletes the meta file' do
+        expect(File.exists? subject.path).to be(false)
+      end
+
+      it 'deletes the forward zone' do
+        expect(File.exists? subject.forward_zone_path).to be(false)
+      end
+
+      it 'deletes the reverse zone' do
+        expect(File.exists? subject.reverse_zone_path).to be(false)
+      end
+    end
+  end
 end
 
