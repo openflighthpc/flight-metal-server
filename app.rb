@@ -115,6 +115,15 @@ class App < Sinatra::Base
       raise Sinja::BadRequestError, 'The payload attribute is required with this request'
     end
 
+    def assert_keys(attr, *keys)
+      keys.each do |key|
+        next if attr[key]
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The '#{key}' attribute is required with this request
+        ERROR
+      end
+    end
+
     private
 
     def token
@@ -505,6 +514,8 @@ class App < Sinatra::Base
     show(roles: Named.user_roles)
 
     create(roles: Named.admin_roles) do |attr, id|
+      assert_keys(attr, :forward_zone_name, :forward_zone_payload, :reverse_zone_payload)
+
       begin
         [id, Named.create(id)]
       rescue FlightConfig::CreateError
