@@ -522,13 +522,21 @@ class App < Sinatra::Base
         ERROR
       end
 
-      begin
-        [id, Named.create(id)]
+      new_named = begin
+        Named.create(id) do |named|
+          named.forward_zone_name = attr[:forward_zone_name]
+          named.forward_zone_path.tap do |path|
+            FileUtils.mkdir_p File.dirname(path)
+            File.write(path, attr[:forward_zone_payload])
+          end
+        end
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp
           Can not create the '#{Named.type.singularize}' as '#{id}' already exists
         ERROR
       end
+
+      [id, new_named]
     end
 
     update(roles: Named.admin_roles) do |attr|

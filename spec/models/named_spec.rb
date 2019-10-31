@@ -138,6 +138,10 @@ RSpec.describe Named do
         expect(File.exists? subject.path).to be(true)
       end
 
+      it 'creates the forward zone' do
+        expect(File.exists? subject.forward_zone_path).to be(true)
+      end
+
       it 'does not create the reverse zone' do
         expect(File.exists? subject.reverse_zone_path).to be(false)
       end
