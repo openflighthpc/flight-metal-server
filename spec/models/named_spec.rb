@@ -89,7 +89,7 @@ RSpec.describe Named do
       end
     end
 
-    [:forward_zone_name, :forward_zone_payload, :reverse_zone_payload].each do |key|
+    [:forward_zone_name, :forward_zone_payload, :reverse_zone_name, :reverse_zone_payload].each do |key|
       context "with admin and standard attributes except the #{key}" do
         before(:all) do
           FakeFS.clear!
@@ -101,6 +101,19 @@ RSpec.describe Named do
         it 'returns bad request' do
           expect(last_response).to be_bad_request
         end
+      end
+    end
+
+    context 'with admin and standard attributes except the reverse zone keys' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        attr = standard_attributes.reject { |k, _| /reverse/.match?(k) }
+        post "/#{described_class.type}", subject_api_body(attr)
+      end
+
+      it 'returns created' do
+        expect(last_response).to be_created
       end
     end
   end
