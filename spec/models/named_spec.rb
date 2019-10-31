@@ -30,6 +30,12 @@
 require 'spec_helper'
 
 RSpec.describe Named do
+  subject { read_subject }
+
+  def read_subject
+    described_class.read(*subject_inputs)
+  end
+
   def subject_inputs
     ["test-subjet_#{described_class.type}"]
   end
@@ -101,6 +107,18 @@ RSpec.describe Named do
         it 'returns bad request' do
           expect(last_response).to be_bad_request
         end
+
+        it 'does not create the meta file' do
+          expect(File.exists? subject.path).to be(false)
+        end
+
+        it 'does not create the forward zone' do
+          expect(File.exists? subject.forward_zone_path).to be(false)
+        end
+
+        it 'does not create the reverse zone' do
+          expect(File.exists? subject.reverse_zone_path).to be(false)
+        end
       end
     end
 
@@ -114,6 +132,14 @@ RSpec.describe Named do
 
       it 'returns created' do
         expect(last_response).to be_created
+      end
+
+      it 'creates the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      it 'does not create the reverse zone' do
+        expect(File.exists? subject.reverse_zone_path).to be(false)
       end
     end
   end
