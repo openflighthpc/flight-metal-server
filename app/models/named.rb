@@ -44,7 +44,7 @@ class Named < Model
   end
 
   def zone_names
-    __data__[:zone_names] ||= {}
+    (__data__[:zone_names] ||= {}).symbolize_keys!
   end
 
   # Dummy reflective method for use in the proxy

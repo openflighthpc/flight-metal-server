@@ -529,6 +529,14 @@ class App < Sinatra::Base
             FileUtils.mkdir_p File.dirname(path)
             File.write(path, attr[:forward_zone_payload])
           end
+
+          if attr[:reverse_zone_name]
+            named.reverse_zone_name = attr[:reverse_zone_name]
+            named.reverse_zone_path.tap do |path|
+              FileUtils.mkdir_p File.dirname(path)
+              File.write(path, attr[:reverse_zone_payload])
+            end
+          end
         end
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp

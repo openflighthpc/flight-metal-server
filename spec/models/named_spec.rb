@@ -81,6 +81,26 @@ RSpec.describe Named do
     }
   end
 
+  shared_examples 'forward zone exists' do
+    it 'has the forward zone file' do
+      expect(File.exists? subject.forward_zone_path).to be(true)
+    end
+
+    it 'has the forward zone name' do
+      expect(subject.forward_zone_name).not_to be_empty
+    end
+  end
+
+  shared_examples 'reverse zone exists' do
+    it 'has the reverse zone file' do
+      expect(File.exists? subject.reverse_zone_path).to be(true)
+    end
+
+    it 'has the reverse zone name' do
+      expect(subject.reverse_zone_name).not_to be_empty
+    end
+  end
+
   describe 'POST create' do
     context 'with admin, exiting entry, and system files' do
       before(:all) do
@@ -93,6 +113,25 @@ RSpec.describe Named do
       it 'returns conflict' do
         expect(last_response.status).to be(409)
       end
+    end
+
+    context 'with admin and standard attributes' do
+      before(:all) do
+        FakeFS.clear!
+        admin_headers
+        post "/#{described_class.type}", subject_api_body(standard_attributes)
+      end
+
+      it 'returns created' do
+        expect(last_response).to be_created
+      end
+
+      it 'creates the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      include_examples 'forward zone exists'
+      include_examples 'reverse zone exists'
     end
 
     [:forward_zone_name, :forward_zone_payload, :reverse_zone_name, :reverse_zone_payload].each do |key|
@@ -138,9 +177,7 @@ RSpec.describe Named do
         expect(File.exists? subject.path).to be(true)
       end
 
-      it 'creates the forward zone' do
-        expect(File.exists? subject.forward_zone_path).to be(true)
-      end
+      include_examples 'forward zone exists'
 
       it 'does not create the reverse zone' do
         expect(File.exists? subject.reverse_zone_path).to be(false)
