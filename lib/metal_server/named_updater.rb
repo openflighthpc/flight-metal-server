@@ -91,6 +91,10 @@ module MetalServer
   end
 
   NamedUpdater = Struct.new(:nameds) do
+    def initialize(nameds, *a)
+      [Array.wrap(nameds), *a]
+    end
+
     def update
       Restorer.backup_and_restore_on_error(Named.zone_dir) do
         # Ensure named is running
