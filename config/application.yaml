@@ -67,7 +67,6 @@ test:
 
 development:
   app_base_url:           http://127.0.0.1
-  jwt_shared_secret:      SOME_DEVELOPMENT_TOKEN
   log_dir:                /var/metal-server/log
   content_dir:            /var/metal-server/content
   Dhcp_system_dir:        /var/metal-server/dhcpd.metal-server

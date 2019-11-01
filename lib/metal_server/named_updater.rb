@@ -96,7 +96,7 @@ module MetalServer
         # Ensure named is running
         NamedOfflineError.raise_if_offline
 
-        # Validate the configs are valid
+        # Validate the configs
         NamedValidationError.raise_unless_valid(nameds)
       end
     end

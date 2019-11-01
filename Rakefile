@@ -90,9 +90,7 @@ task 'daemon:stop' => :require do
   end
 end
 
-task :console do
-  ENV['RACK_ENV'] = 'development'
-  Rake::Task['require'].invoke
+task console: :require do
   binding.pry
 end
 
