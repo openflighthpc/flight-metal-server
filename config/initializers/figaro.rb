@@ -66,5 +66,6 @@ Figaro.require_keys 'app_root_dir',
                     'Named_sub_dir',
                     'validate_dhcpd_command',
                     'restart_dhcpd_command',
-                    'dhcpd_is_running_command'
+                    'dhcpd_is_running_command',
+                    'named_is_running_command'
 

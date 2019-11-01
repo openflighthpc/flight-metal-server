@@ -540,7 +540,7 @@ class App < Sinatra::Base
       if !attr[:reverse_zone_name] ^ !attr[:reverse_zone_payload]
         raise Sinja::BadRequestError, <<~ERROR.squish
           Failed to create the reverse zone as both the 'reverse_zone_name' and
-          'reverse_zone_payload' are required with the request.
+          'reverse_zone_payload' are required.
         ERROR
       end
 
