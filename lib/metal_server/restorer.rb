@@ -75,7 +75,7 @@ module MetalServer
     end
 
     def self.path(base)
-      File.join(base, 'restorer.yaml')
+      "#{base.chomp('/')}.restorer.yaml"
     end
 
     private_class_method
