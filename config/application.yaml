@@ -24,17 +24,19 @@
 # log_dir:      <install-dir>/log
 
 # STATIC DEFAULTS:
-Dhcp_system_dir:          /etc/dhcp/dhcpd.metal-server
-Initrd_system_dir:        /var/lib/tftpboot/boot
-Kernel_system_dir:        /var/lib/tftpboot/boot
-Kickstart_system_dir:     /var/www/kickstarts
-Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
-Named_sub_dir:            metal-server
-Named_working_dir:        /var/named
-named_is_running_command: systemctl status named.service
-dhcpd_is_running_command: systemctl status dhcpd.service
-restart_dhcpd_command:    systemctl restart dhcpd.service
-validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
+Dhcp_system_dir:            /etc/dhcp/dhcpd.metal-server
+Initrd_system_dir:          /var/lib/tftpboot/boot
+Kernel_system_dir:          /var/lib/tftpboot/boot
+Kickstart_system_dir:       /var/www/kickstarts
+Legacy_system_dir:          /var/lib/tftpboot/pxelinux.cfg
+Named_sub_dir:              metal-server
+Named_working_dir:          /var/named
+named_is_running_command:   systemctl status named.service
+namedconf_is_valid_command: named-checkconf
+namedzone_is_valid_command: named-checkzone
+dhcpd_is_running_command:   systemctl status dhcpd.service
+restart_dhcpd_command:      systemctl restart dhcpd.service
+validate_dhcpd_command:     dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
 # Configure the system directories for Grub files. Any number of grub types can be
 # added following the syntax: Grub_<sub-type>_system_dir
@@ -74,5 +76,5 @@ development:
   Kernel_system_dir:      /var/metal-server/tftpboot/boot
   Kickstart_system_dir:   /var/metal-server/www/kickstarts
   Legacy_system_dir:      /var/metal-server/tftpboot/pxelinux.cfg
-  Named_working_dir:      /tmp/metal-server/named
+  Named_working_dir:      /var/metal-server/named
 
