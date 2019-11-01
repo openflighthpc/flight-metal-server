@@ -34,6 +34,7 @@ Named_working_dir:          /var/named
 named_is_running_command:   systemctl status named.service
 namedconf_is_valid_command: named-checkconf
 namedzone_is_valid_command: named-checkzone
+named_restart_command:      systemctl restart named.service
 dhcpd_is_running_command:   systemctl status dhcpd.service
 restart_dhcpd_command:      systemctl restart dhcpd.service
 validate_dhcpd_command:     dhcpd -t -cf /etc/dhcp/dhcpd.conf

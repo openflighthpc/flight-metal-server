@@ -90,18 +90,39 @@ module MetalServer
     end
   end
 
+  class UnhandledNamedRestartError < Sinja::HttpError
+    MESSAGE = <<~ERROR.squish
+      An error has occurred whilst restarting the BIND server. DNS has likely
+      been affected as a result of this error. Please contact your system
+      administrator for further assistance.
+    ERROR
+
+    def self.raise_unless_restarts
+      _, status = Open3.capture2e(Figaro.env.named_restart_command)
+      return if status == 0
+      raise self
+    end
+
+    def initialize(msg = MESSAGE)
+      super(500, msg)
+    end
+  end
+
   NamedUpdater = Struct.new(:nameds) do
     def initialize(nameds, *a)
       [Array.wrap(nameds), *a]
     end
 
     def update
-      Restorer.backup_and_restore_on_error(Named.zone_dir) do
-        # Ensure named is running
-        NamedOfflineError.raise_if_offline
+      # Ensure named is running
+      NamedOfflineError.raise_if_offline
 
+      Restorer.backup_and_restore_on_error(Named.zone_dir) do
         # Validate the configs
         NamedValidationError.raise_unless_valid(nameds)
+
+        # Restart the named server
+        UnhandledNamedRestartError.raise_unless_restarts
       end
     end
   end
