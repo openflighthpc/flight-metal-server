@@ -517,13 +517,7 @@ class App < Sinatra::Base
     show(roles: Named.user_roles)
 
     create(roles: Named.admin_roles) do |attr, id|
-      # assert_keys(attr, :forward_zone_name, :forward_zone_payload)
-      # if !attr[:reverse_zone_name] ^ !attr[:reverse_zone_payload]
-      #   raise Sinja::BadRequestError, <<~ERROR.squish
-      #     Failed to create the reverse zone as both the 'reverse_zone_name' and
-      #     'reverse_zone_payload' are required.
-      #   ERROR
-      # end
+      assert_keys(attr, :zone_payload, :config_payload)
 
       inputs = MatchNamedRegex.match(id).captures
       new_named = begin

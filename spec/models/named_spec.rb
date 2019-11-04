@@ -123,8 +123,8 @@ RSpec.describe Named do
       include_examples 'zone files exist'
     end
 
-    [:forward_zone_name, :forward_zone_payload, :reverse_zone_name, :reverse_zone_payload].each do |key|
-      context "with admin and standard attributes except the #{key}" do
+    [:zone_payload, :config_payload].each do |key|
+      context "with admin but without the #{key} attribute" do
         before(:all) do
           FakeFS.clear!
           admin_headers
@@ -132,44 +132,21 @@ RSpec.describe Named do
           post "/#{described_class.type}", subject_api_body(attr)
         end
 
-        xit 'returns bad request' do
+        it 'returns bad request' do
           expect(last_response).to be_bad_request
         end
 
-        xit 'does not create the meta file' do
+        it 'does not create the meta file' do
           expect(File.exists? subject.path).to be(false)
         end
 
-        xit 'does not create the forward zone' do
-          expect(File.exists? subject.forward_zone_path).to be(false)
+        it 'does not create the zone file' do
+          expect(File.exists? subject.zone_path).to be(false)
         end
 
-        xit 'does not create the reverse zone' do
-          expect(File.exists? subject.reverse_zone_path).to be(false)
+        it 'does not create the zone config' do
+          expect(File.exists? subject.config_path).to be(false)
         end
-      end
-    end
-
-    context 'with admin and standard attributes except the reverse zone keys' do
-      before(:all) do
-        FakeFS.clear!
-        admin_headers
-        attr = standard_attributes.reject { |k, _| /reverse/.match?(k) }
-        post "/#{described_class.type}", subject_api_body(attr)
-      end
-
-      xit 'returns created' do
-        expect(last_response).to be_created
-      end
-
-      xit 'creates the meta file' do
-        expect(File.exists? subject.path).to be(true)
-      end
-
-      include_examples 'zone files exist'
-
-      xit 'does not create the reverse zone' do
-        expect(File.exists? subject.reverse_zone_path).to be(false)
       end
     end
   end
