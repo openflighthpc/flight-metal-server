@@ -33,6 +33,17 @@ module MetalServer
   class Restorer
     include FlightConfig::Updater
 
+    def self.backup_multiple(*inputs_dirs, &b)
+      dirs = inputs_dirs.dup
+      if dirs.empty?
+        b.call if b
+      else
+        backup_and_restore_on_error(dirs.pop) do
+          backup_multiple(*dirs, &b)
+        end
+      end
+    end
+
     def self.backup_and_restore_on_error(base)
       # Tries to create a new restorer as this prevents multiple running at the same time
       create(base).tap do |restorer|
@@ -50,7 +61,7 @@ module MetalServer
           end
 
           # Yield control to the updater to preform the system commands
-          yield(restorer) if block_given?
+          yield if block_given?
 
           # Remove the temporary directory on success
           FileUtils.rm_rf base_tmp_dir
@@ -77,8 +88,6 @@ module MetalServer
     def self.path(base)
       "#{base.chomp('/')}.restorer.yaml"
     end
-
-    private_class_method
 
     def base
       __inputs__[0]
