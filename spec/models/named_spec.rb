@@ -159,49 +159,31 @@ RSpec.describe Named do
         patch subject_api_path, subject_api_body
       end
 
-      xit 'returns not found' do
+      it 'returns not found' do
         expect(last_response).to be_not_found
       end
     end
 
-    context 'with admin and reverse payload, but without reverse name' do
+    context 'with admin and new content' do
       before(:all) do
         FakeFS.clear!
         admin_headers
-        patch subject_api_path, subject_api_body(reverse_zone_payload: 'I am missing a name')
+        create_subject_and_system_files
+        patch subject_api_path, subject_api_body(zone_payload: 'UPDATED', config_payload: 'UPDATED')
       end
 
-      xit 'returns bad request' do
-        expect(last_response).to be_bad_request
-      end
-
-      xit 'does not create the zone file' do
-        expect(File.exists? subject.reverse_zone_path).to be(false)
-      end
-    end
-
-    context 'with admin, without existing reverse, with reverse payload and name attributes' do
-      before(:all) do
-        FakeFS.clear!
-        admin_headers
-        patch subject_api_path, subject_api_body(reverse_zone_name: 'this should set the name',
-                                                 reverse_zone_payload: 'I am the file content')
-      end
-
-      xit 'returns ok' do
+      it 'returns ok' do
         expect(last_response).to be_ok
       end
-    end
 
-    context 'with admin, existing reverse, reverse payload attributes, without reverse name attribute' do
-      before(:all) do
-        FakeFS.clear!
-        admin_headers
-        patch subject_api_path, subject_api_body(reverse_zone_payload: 'the name has already been set')
+      include_examples 'zone files exist'
+
+      it 'updates the zone file' do
+        expect(File.read subject.zone_path).to eq('UPDATED')
       end
 
-      xit 'returns ok' do
-        expect(last_response).to be_ok
+      it 'updates the config file' do
+        expect(File.read subject.config_path).to eq('UPDATED')
       end
     end
   end
@@ -211,23 +193,24 @@ RSpec.describe Named do
       before(:all) do
         FakeFS.clear!
         admin_headers
+        create_subject_and_system_files
         delete subject_api_path
       end
 
-      xit 'returns no content' do
+      it 'returns no content' do
         expect(last_response).to be_no_content
       end
 
-      xit 'deletes the meta file' do
+      it 'deletes the meta file' do
         expect(File.exists? subject.path).to be(false)
       end
 
-      xit 'deletes the forward zone' do
-        expect(File.exists? subject.forward_zone_path).to be(false)
+      it 'deletes the zone file' do
+        expect(File.exists? subject.zone_path).to be(false)
       end
 
-      xit 'deletes the reverse zone' do
-        expect(File.exists? subject.reverse_zone_path).to be(false)
+      it 'deletes the config file' do
+        expect(File.exists? subject.config_path).to be(false)
       end
     end
   end

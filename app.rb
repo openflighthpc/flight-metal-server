@@ -503,12 +503,13 @@ class App < Sinatra::Base
   end
 
   NamedZoneClasses = ['forward', 'reverse'].join('|')
-  RouteNamedRegex = /#{ID_REGEX}\.(?:#{NamedZoneClasses})(?=\/)/
-  MatchNamedRegex = /(#{ID_REGEX})\.(#{NamedZoneClasses})/
+  RouteNamedRegex = /#{ID_REGEX}\.(?:#{NamedZoneClasses})/
+  MatchNamedRegex = /\A(#{ID_REGEX})\.(#{NamedZoneClasses})\Z/
   resource Named.type, pkre: RouteNamedRegex do
     helpers do
       def find(id)
-        Named.exists?(id) ? Named.read(id) : nil
+        inputs = MatchNamedRegex.match(id).captures
+        Named.exists?(*inputs) ? Named.read(*inputs) : nil
       end
     end
 
@@ -535,19 +536,14 @@ class App < Sinatra::Base
 
     update(roles: Named.admin_roles) do |attr|
       Named.update(*resource.__inputs__) do |named|
-        if attr[:reverse_zone_payload] && !(named.reverse_zone_name || attr[:reverse_zone_name])
-          raise Sinja::BadRequestError, <<~ERROR.squish
-            Can not update the 'reverse_zone_payload' as the 'reverse_zone_name' has not been set
-          ERROR
-        end
-        update_named_attributes(named, attr)
+        named.update_payloads(**attr)
       end
     end
 
     destroy(roles: Named.admin_roles) do
       Named.delete(*resource.__inputs__) do |named|
-        FileUtils.rm_f named.forward_zone_path
-        FileUtils.rm_f named.reverse_zone_path
+        FileUtils.rm_f named.zone_path
+        FileUtils.rm_f named.config_path
         true
       end
     end
