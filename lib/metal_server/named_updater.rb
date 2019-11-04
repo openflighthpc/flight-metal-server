@@ -125,6 +125,9 @@ module MetalServer
       NamedOfflineError.raise_if_offline
 
       Restorer.backup_and_restore_on_error(Named.zone_dir) do
+        # Yield control to the caller to update the configs
+        yield if block_given?
+
         # Validate the configs
         NamedValidationError.raise_unless_valid(nameds)
 
