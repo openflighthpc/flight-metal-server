@@ -28,8 +28,6 @@
 #===============================================================================
 
 class Named < Model
-  include HasSingleInput
-
   def self.type
     'nameds'
   end
@@ -40,6 +38,26 @@ class Named < Model
 
   def self.config_dir
     File.join(Figaro.env.Named_config_dir, Figaro.env.Named_sub_dir)
+  end
+
+  def self.path(*a)
+    File.join(content_base_path, 'meta', id(*a) + '.yaml')
+  end
+
+  def self.id(tag, zone_class)
+    "#{tag}.#{zone_class}"
+  end
+
+  def tag
+    __inputs__[0]
+  end
+
+  def zone_class
+    __inputs__[1]
+  end
+
+  def id
+    self.class.id(*__inputs__)
   end
 
   def zone_path
