@@ -37,7 +37,7 @@ RSpec.describe Named do
   end
 
   def subject_inputs
-    ["test-subjet_#{described_class.type}"]
+    ['test_subject-tag', 'reverse']
   end
 
 
@@ -70,60 +70,61 @@ RSpec.describe Named do
     }
   end
 
-  shared_examples 'forward zone exists' do
-    xit 'has the forward zone file' do
-      expect(File.exists? subject.forward_zone_path).to be(true)
-    end
-
-    xit 'has the forward zone name' do
-      expect(subject.forward_zone_name).not_to be_empty
+  def create_subject_and_system_files
+    described_class.create(*subject_inputs) do |named|
+      FileUtils.mkdir_p File.dirname(named.zone_path)
+      FileUtils.mkdir_p File.dirname(named.config_path)
+      FileUtils.touch named.zone_path
+      FileUtils.touch named.config_path
     end
   end
 
-  shared_examples 'reverse zone exists' do
-    xit 'has the reverse zone file' do
-      expect(File.exists? subject.reverse_zone_path).to be(true)
+  shared_examples 'zone files exist' do
+    it 'has the zone file' do
+      expect(File.exists? subject.zone_path).to be(true)
     end
 
-    xit 'has the reverse zone name' do
-      expect(subject.reverse_zone_name).not_to be_empty
+    it 'has the config file' do
+      expect(File.exists? subject.config_path).to be(true)
     end
   end
 
   describe 'POST create' do
-    context 'wxith admin, exxiting entry, and system files' do
+    context 'with admin, existing entry, and system files' do
       before(:all) do
         FakeFS.clear!
         admin_headers
+        create_subject_and_system_files
         post "/#{described_class.type}", subject_api_body(standard_attributes)
       end
 
-      xit 'returns conflict' do
+      it 'returns conflict' do
         expect(last_response.status).to be(409)
       end
     end
 
-    context 'wxith admin and standard attributes' do
+    context 'with admin and payloads' do
       before(:all) do
         FakeFS.clear!
         admin_headers
-        post "/#{described_class.type}", subject_api_body(standard_attributes)
+        body = subject_api_body config_payload: 'some config payload',
+                                zone_payload:   'some zone payload'
+        post "/#{described_class.type}", body
       end
 
-      xit 'returns created' do
+      it 'returns created' do
         expect(last_response).to be_created
       end
 
-      xit 'creates the meta file' do
+      it 'creates the meta file' do
         expect(File.exists? subject.path).to be(true)
       end
 
-      include_examples 'forward zone exists'
-      include_examples 'reverse zone exists'
+      include_examples 'zone files exist'
     end
 
     [:forward_zone_name, :forward_zone_payload, :reverse_zone_name, :reverse_zone_payload].each do |key|
-      context "wxith admin and standard attributes except the #{key}" do
+      context "with admin and standard attributes except the #{key}" do
         before(:all) do
           FakeFS.clear!
           admin_headers
@@ -149,7 +150,7 @@ RSpec.describe Named do
       end
     end
 
-    context 'wxith admin and standard attributes except the reverse zone keys' do
+    context 'with admin and standard attributes except the reverse zone keys' do
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -165,7 +166,7 @@ RSpec.describe Named do
         expect(File.exists? subject.path).to be(true)
       end
 
-      include_examples 'forward zone exists'
+      include_examples 'zone files exist'
 
       xit 'does not create the reverse zone' do
         expect(File.exists? subject.reverse_zone_path).to be(false)
@@ -174,7 +175,7 @@ RSpec.describe Named do
   end
 
   describe 'PATCH update' do
-    context 'wxithout an existing entry' do
+    context 'without an existing entry' do
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -186,7 +187,7 @@ RSpec.describe Named do
       end
     end
 
-    context 'wxith admin and reverse payload, but wxithout reverse name' do
+    context 'with admin and reverse payload, but without reverse name' do
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -202,7 +203,7 @@ RSpec.describe Named do
       end
     end
 
-    context 'wxith admin, wxithout existing reverse, wxith reverse payload and name attributes' do
+    context 'with admin, without existing reverse, with reverse payload and name attributes' do
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -213,11 +214,9 @@ RSpec.describe Named do
       xit 'returns ok' do
         expect(last_response).to be_ok
       end
-
-      include_examples 'reverse zone exists'
     end
 
-    context 'wxith admin, existing reverse, reverse payload attributes, wxithout reverse name attribute' do
+    context 'with admin, existing reverse, reverse payload attributes, without reverse name attribute' do
       before(:all) do
         FakeFS.clear!
         admin_headers
@@ -227,13 +226,11 @@ RSpec.describe Named do
       xit 'returns ok' do
         expect(last_response).to be_ok
       end
-
-      include_examples 'reverse zone exists'
     end
   end
 
   describe 'DELETE destroy' do
-    context 'wxith admin and existing forward and reverse' do
+    context 'with admin and existing forward and reverse' do
       before(:all) do
         FakeFS.clear!
         admin_headers

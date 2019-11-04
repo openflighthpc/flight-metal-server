@@ -48,6 +48,17 @@ class Named < Model
     "#{tag}.#{zone_class}"
   end
 
+  def update_payloads(zone_payload: nil, config_payload: nil, **_)
+    if zone_payload
+      FileUtils.mkdir_p File.dirname(zone_path)
+      File.write zone_path, zone_payload
+    end
+    if config_payload
+      FileUtils.mkdir_p File.dirname(config_path)
+      File.write config_path, config_payload
+    end
+  end
+
   def tag
     __inputs__[0]
   end

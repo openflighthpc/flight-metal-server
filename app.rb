@@ -502,32 +502,13 @@ class App < Sinatra::Base
     end
   end
 
-  resource Named.type, pkre: ID_REGEX do
+  NamedZoneClasses = ['forward', 'reverse'].join('|')
+  RouteNamedRegex = /#{ID_REGEX}\.(?:#{NamedZoneClasses})(?=\/)/
+  MatchNamedRegex = /(#{ID_REGEX})\.(#{NamedZoneClasses})/
+  resource Named.type, pkre: RouteNamedRegex do
     helpers do
       def find(id)
         Named.exists?(id) ? Named.read(id) : nil
-      end
-
-      def update_named_attributes(named, attr)
-        if name = attr[:forward_zone_name]
-          named.forward_zone_name = name
-        end
-        if payload = attr[:forward_zone_payload]
-          named.forward_zone_path.tap do |path|
-            FileUtils.mkdir_p File.dirname(path)
-            File.write(path, payload)
-          end
-        end
-
-        if name = attr[:reverse_zone_name]
-          named.reverse_zone_name = name
-        end
-        if payload = attr[:reverse_zone_payload]
-          named.reverse_zone_path.tap do |path|
-            FileUtils.mkdir_p File.dirname(path)
-            File.write(path, payload)
-          end
-        end
       end
     end
 
@@ -536,17 +517,18 @@ class App < Sinatra::Base
     show(roles: Named.user_roles)
 
     create(roles: Named.admin_roles) do |attr, id|
-      assert_keys(attr, :forward_zone_name, :forward_zone_payload)
-      if !attr[:reverse_zone_name] ^ !attr[:reverse_zone_payload]
-        raise Sinja::BadRequestError, <<~ERROR.squish
-          Failed to create the reverse zone as both the 'reverse_zone_name' and
-          'reverse_zone_payload' are required.
-        ERROR
-      end
+      # assert_keys(attr, :forward_zone_name, :forward_zone_payload)
+      # if !attr[:reverse_zone_name] ^ !attr[:reverse_zone_payload]
+      #   raise Sinja::BadRequestError, <<~ERROR.squish
+      #     Failed to create the reverse zone as both the 'reverse_zone_name' and
+      #     'reverse_zone_payload' are required.
+      #   ERROR
+      # end
 
+      inputs = MatchNamedRegex.match(id).captures
       new_named = begin
-        Named.create(id) do |named|
-          update_named_attributes(named, attr)
+        Named.create(*inputs) do |named|
+          named.update_payloads(**attr)
         end
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp

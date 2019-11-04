@@ -104,16 +104,10 @@ class LegacySerializer < FileModelSerializer
 end
 
 class NamedSerializer < Serializer
-  attributes :forward_zone_path,
-             :reverse_zone_path,
-             :forward_zone_uploaded,
-             :reverse_zone_uploaded,
-             :forward_zone_size,
-             :reverse_zone_size,
-             :forward_zone_name,
-             :reverse_zone_name,
-             :forward_zone_payload,
-             :reverse_zone_payload
+  attributes :zone_path,
+             :zone_uploaded,
+             :zone_size,
+             :zone_payload
 end
 
 class ServiceSerializer < Serializer
