@@ -30,11 +30,6 @@
 class Named < Model
   include HasSingleInput
 
-  ZONE_PROXY_REGEX = [
-    :zone, :zone_path, 'zone_uploaded\?', :zone_uploaded, :zone_size,
-    :zone_name, 'zone_name\=', :zone_payload
-  ].map { |z| /\A(?<zone>.*)_(?<method>#{z})\Z/ }
-
   def self.type
     'nameds'
   end
@@ -43,62 +38,52 @@ class Named < Model
     File.join(Figaro.env.Named_working_dir, Figaro.env.Named_sub_dir)
   end
 
-  def zone_names
-    (__data__[:zone_names] ||= {}).symbolize_keys!
+  def self.config_dir
+    File.join(Figaro.env.Named_config_dir, Figaro.env.Named_sub_dir)
   end
 
-  # Dummy reflective method for use in the proxy
-  def zone(zone)
-    zone
+  def zone_path
+    File.join(self.class.zone_dir, id)
   end
 
-  def zone_path(zone)
-    File.join(self.class.zone_dir, "#{id}.#{zone}")
+  def zone_uploaded?
+    File.exists? zone_path
   end
 
-  def zone_uploaded?(zone)
-    File.exists? zone_path(zone)
+  def zone_uploaded
+    zone_uploaded?
   end
 
-  def zone_uploaded(*a)
-    zone_uploaded?(*a)
+  def zone_size
+    return 0 unless zone_uploaded?
+    File.size zone_path
   end
 
-  def zone_size(zone)
-    return 0 unless zone_uploaded?(zone)
-    File.size zone_path(zone)
+  def zone_payload
+    return '' unless zone_uploaded?
+    File.read(zone_path)
   end
 
-  def zone_payload(zone)
-    return '' unless zone_uploaded?(zone)
-    File.read(zone_path(zone))
+  def config_path
+    File.join(self.class.config_dir, id + '.conf')
   end
 
-  def zone_name(zone)
-    zone_names[zone.to_sym]
+  def config_uploaded?
+    File.exists? config_path
   end
 
-  def zone_name=(zone, name)
-    zone_names[zone.to_sym] = name
+  def config_uploaded
+    config_uploaded?
   end
 
-  def method_missing(s, *a, &_b)
-    if regex = zone_proxy_regex(s)
-      matches = regex.match(s).named_captures
-      inputs = ['method', 'zone'].map { |s| matches[s] }
-      public_send(*inputs, *a)
-    else
-      super
-    end
+  def config_size
+    return 0 unless config_uploaded?
+    File.size config_path
   end
 
-  def respond_to_missing?(*a)
-    zone_proxy_regex(a.first) ? true : super
-  end
-
-  def zone_proxy_regex(s)
-    str = s.to_s
-    ZONE_PROXY_REGEX.find { |r| r.match?(str) }
+  def config_payload
+    return '' unless config_uploaded?
+    File.read(config_path)
   end
 end
 
