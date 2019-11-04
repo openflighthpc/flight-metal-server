@@ -81,18 +81,26 @@ Legacy_system_dir:    # Legacy bios PXE files will be stored here
 
 # =============================================================================
 # Named System Directories
-# For named relative paths to work correctly, two configuration files are
+# For named relative paths to work correctly, three configuration files are
 # required.
 #
-# First the named working directory as specified in /etc/named.conf or other
-# appropriate config.
+# 1. Named Working Directory
+# The `Named_working_dir` specifies where BIND will look for its zone files.
+# It must be the same the `directory` option in the main named config.
+# Usually the main config is `/etc/named.conf`
 #
-# Secondly a exclusive sub directory is required within the working dir. Only
-# the upload zone file should be stored within this directory. The integrity
-# of other files within this directory can not be guaranteed and maybe lost at
-# any moment.
+# 2. Named Config Directory
+# The location where the subnet config files will be stored. This will
+# typically be in the same directory the main `named.conf` file.
+#
+# 3. Named Sub Directory Name
+# The `named_sub_dir` gives the relative path from the working and config
+# directories. They are used to store `metal-server` specific content and
+# are integral to the backup process. No other content should be stored within
+# these directories.
 # =============================================================================
 Named_working_dir:
+Named_config_dir:
 Named_sub_dir:
 
 # =============================================================================

@@ -29,6 +29,7 @@ Initrd_system_dir:          /var/lib/tftpboot/boot
 Kernel_system_dir:          /var/lib/tftpboot/boot
 Kickstart_system_dir:       /var/www/kickstarts
 Legacy_system_dir:          /var/lib/tftpboot/pxelinux.cfg
+Named_config_dir:           /etc/named
 Named_sub_dir:              metal-server
 Named_working_dir:          /var/named
 named_is_running_command:   systemctl status named.service
@@ -61,7 +62,8 @@ test:
   Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
   Kickstart_system_dir:     /tmp/metal-server-spec/www/kickstarts
   Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
-  Named_working_dir:        /tmp/metal-server-sepc/named
+  Named_config_dir:         /tmp/metal-server-spec/etc/named
+  Named_working_dir:        /tmp/metal-server-sepc/var/named
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   validate_dhcpd_command:   echo Initial Test DHCP Validation Command
@@ -76,5 +78,6 @@ development:
   Kernel_system_dir:      /var/metal-server/tftpboot/boot
   Kickstart_system_dir:   /var/metal-server/www/kickstarts
   Legacy_system_dir:      /var/metal-server/tftpboot/pxelinux.cfg
-  Named_working_dir:      /var/metal-server/named
+  Named_config_dir:       /var/metal-server/etc/named
+  Named_working_dir:      /var/metal-server/var/named
 
