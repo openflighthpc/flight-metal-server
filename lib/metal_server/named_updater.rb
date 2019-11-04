@@ -108,11 +108,18 @@ module MetalServer
     end
   end
 
-  NamedUpdater = Struct.new(:nameds) do
-    def initialize(nameds, *a)
-      [Array.wrap(nameds), *a]
-    end
+  class HandledNamedRestartError < Sinja::BadRequestError
+    MESSAGE = <<~ERROR.squish
+      The BIND server failed to restart after modifying the config/zones.
+      The system has been successfully rolledback to the last working state.
+    ERROR
 
+    def initialize(msg = MESSAGE)
+      super
+    end
+  end
+
+  NamedUpdater = Struct.new(:nameds) do
     def update
       # Ensure named is running
       NamedOfflineError.raise_if_offline
@@ -124,6 +131,10 @@ module MetalServer
         # Restart the named server
         UnhandledNamedRestartError.raise_unless_restarts
       end
+    rescue UnhandledNamedRestartError
+      # Attempts a second restart on fallback
+      UnhandledNamedRestartError.raise_unless_restarts
+      raise HandledNamedRestartError
     end
   end
 end

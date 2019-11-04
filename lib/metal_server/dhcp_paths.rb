@@ -202,7 +202,7 @@ module MetalServer
         are not currently supported
       ERROR
     rescue UnhandledDhcpRestartError
-      # Attempt a second restart if the server is offline
+      # Attempt a second restart if the server on fallback
       restart_or_error
       raise HandledDhcpRestartError
     end
