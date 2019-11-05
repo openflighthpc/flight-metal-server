@@ -126,11 +126,13 @@ module MetalServer
     end
 
     def self.write_subnets_file
+      subnets_path = Named.subnets_path
       includes = Dir.glob(Named.config_join('*'))
+                    .reject { |c| c == subnets_path }
                     .map { |c| "include \"#{c}\";" }
                     .join("\n")
-      FileUtils.mkdir_p File.dirname(Named.subnets_path)
-      File.write Named.subnets_path, <<~CONF
+      FileUtils.mkdir_p File.dirname(subnets_path)
+      File.write subnets_path, <<~CONF
         #{MANAGED_FILE_COPYRIGHT}
 
         #{includes}
