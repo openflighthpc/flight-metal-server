@@ -32,6 +32,7 @@ require "sinatra/cookies"
 require 'sinatra/jsonapi'
 
 require 'metal_server/dhcp_paths'
+require 'metal_server/named_updater'
 
 module Sinja
   class UnauthorizedError < HttpError
@@ -523,7 +524,9 @@ class App < Sinatra::Base
       inputs = MatchNamedRegex.match(id).captures
       new_named = begin
         Named.create(*inputs) do |named|
-          named.update_payloads(**attr)
+          MetalServer::NamedUpdater.update do
+            named.update_payloads(**attr)
+          end
         end
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp
@@ -536,15 +539,19 @@ class App < Sinatra::Base
 
     update(roles: Named.admin_roles) do |attr|
       Named.update(*resource.__inputs__) do |named|
-        named.update_payloads(**attr)
+        MetalServer::NamedUpdater.update do
+          named.update_payloads(**attr)
+        end
       end
     end
 
     destroy(roles: Named.admin_roles) do
       Named.delete(*resource.__inputs__) do |named|
-        FileUtils.rm_f named.zone_path
-        FileUtils.rm_f named.config_path
-        true
+        MetalServer::NamedUpdater.update do
+          FileUtils.rm_f named.zone_path
+          FileUtils.rm_f named.config_path
+          true
+        end
       end
     end
   end

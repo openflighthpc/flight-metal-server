@@ -34,7 +34,6 @@ Named_sub_dir:              metal-server
 Named_working_dir:          /var/named
 named_is_running_command:   systemctl status named.service
 namedconf_is_valid_command: named-checkconf
-namedzone_is_valid_command: named-checkzone
 named_restart_command:      systemctl restart named.service
 dhcpd_is_running_command:   systemctl status dhcpd.service
 restart_dhcpd_command:      systemctl restart dhcpd.service
@@ -67,6 +66,9 @@ test:
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   validate_dhcpd_command:   echo Initial Test DHCP Validation Command
+  named_is_running_command:   echo Initial Test Named Is Running Command
+  namedconf_is_valid_command: echo Initial Test Named Is Valid Command
+  named_restart_command:      echo Initial Test Named Restart Command
 
 development:
   app_base_url:           http://127.0.0.1

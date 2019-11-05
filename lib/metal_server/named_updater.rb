@@ -52,28 +52,10 @@ module MetalServer
   end
 
   class NamedValidationError < Sinja::BadRequestError
-    def self.raise_unless_valid(nameds)
+    def self.raise_unless_valid
       cmd = Figaro.env.namedconf_is_valid_command
       output, status = Open3.capture2e(cmd)
       raise_error(cmd, output) unless status == 0
-
-      nameds.each do |named|
-        forward_cmd = <<~CMD.squish
-          #{Figaro.env.namedzone_is_valid_command}
-          #{named.forward_zone_name}
-          #{named.forward_zone_path}
-        CMD
-        output, status = Open3.capture2e(forward_cmd)
-        raise_error(forward_cmd, output) unless status == 0
-
-        reverse_cmd = <<~CMD.squish
-          #{Figaro.env.namedzone_is_valid_command}
-          #{named.reverse_zone_name}
-          #{named.reverse_zone_path}
-        CMD
-        output, status = Open3.capture2e(reverse_cmd)
-        raise_error(reverse_cmd, output) unless status == 0
-      end
     end
 
     private_class_method
@@ -119,17 +101,17 @@ module MetalServer
     end
   end
 
-  NamedUpdater = Struct.new(:nameds) do
-    def update
+  module NamedUpdater
+    def self.update
       # Ensure named is running
       NamedOfflineError.raise_if_offline
 
-      Restorer.backup_and_restore_on_error(Named.zone_dir) do
+      Restorer.backup_multiple(Named.zone_dir, Named.config_dir) do
         # Yield control to the caller to update the configs
         yield if block_given?
 
         # Validate the configs
-        NamedValidationError.raise_unless_valid(nameds)
+        NamedValidationError.raise_unless_valid
 
         # Restart the named server
         UnhandledNamedRestartError.raise_unless_restarts

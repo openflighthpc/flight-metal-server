@@ -89,7 +89,37 @@ RSpec.describe Named do
     end
   end
 
+  shared_examples 'errors if validation fails' do |request_block|
+    before(:all) do
+      FakeFS.clear!
+      admin_headers
+      ClimateControl.modify namedconf_is_valid_command: 'exit 1' do
+        instance_exec(&request_block) if request_block
+      end
+    end
+
+    it 'returns bad request' do
+      expect(last_response).to be_bad_request
+    end
+  end
+
   describe 'POST create' do
+    request = ->() do
+      body = subject_api_body config_payload: 'some config payload',
+                              zone_payload:   'some zone payload'
+      post "/#{described_class.type}", body
+    end
+
+    it_behaves_like 'errors if validation fails', request do
+      it 'does not create the zone file' do
+        expect(File.exists? subject.zone_path).to be(false)
+      end
+
+      it 'does not create the config file' do
+        expect(File.exists? subject.config_path).to be(false)
+      end
+    end
+
     context 'with admin, existing entry, and system files' do
       before(:all) do
         FakeFS.clear!
@@ -152,6 +182,15 @@ RSpec.describe Named do
   end
 
   describe 'PATCH update' do
+    request = ->() do
+      create_subject_and_system_files
+      body = subject_api_body config_payload: 'some config payload',
+                              zone_payload:   'some zone payload'
+      patch subject_api_path, body
+    end
+
+    it_behaves_like 'errors if validation fails', request
+
     context 'without an existing entry' do
       before(:all) do
         FakeFS.clear!
@@ -189,6 +228,25 @@ RSpec.describe Named do
   end
 
   describe 'DELETE destroy' do
+    request = ->() do
+      create_subject_and_system_files
+      delete subject_api_path
+    end
+
+    it_behaves_like 'errors if validation fails', request do
+      it 'does not delete the meta file' do
+        expect(File.exists? subject.path).to be(true)
+      end
+
+      it 'deos not delete the zone file' do
+        expect(File.exists? subject.zone_path).to be(true)
+      end
+
+      it 'does not delete the config file' do
+        expect(File.exists? subject.config_path).to be(true)
+      end
+    end
+
     context 'with admin and existing forward and reverse' do
       before(:all) do
         FakeFS.clear!

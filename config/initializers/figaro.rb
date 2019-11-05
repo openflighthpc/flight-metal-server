@@ -70,6 +70,5 @@ Figaro.require_keys 'app_root_dir',
                     'dhcpd_is_running_command',
                     'named_is_running_command',
                     'namedconf_is_valid_command',
-                    'namedzone_is_valid_command',
                     'named_restart_command'
 

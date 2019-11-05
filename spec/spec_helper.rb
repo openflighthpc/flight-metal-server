@@ -38,6 +38,7 @@ load File.expand_path('../Rakefile', __dir__)
 Rake::Task[:require].invoke
 
 require 'fakefs/spec_helpers'
+require 'climate_control'
 
 require 'json'
 require 'hashie'
