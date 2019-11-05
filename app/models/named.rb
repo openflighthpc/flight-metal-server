@@ -37,7 +37,17 @@ class Named < Model
   end
 
   def self.config_dir
-    File.join(Figaro.env.Named_config_dir, Figaro.env.Named_sub_dir)
+    config_join
+  end
+
+  def self.config_join(*a)
+    File.join(Figaro.env.Named_config_dir, Figaro.env.Named_sub_dir, *a)
+  end
+
+  # NOTE: The subnets file should have a different extension to all the zone
+  # configs. This is to prevent them being mixed up in a glob
+  def self.subnets_path
+    config_join('subnets.config')
   end
 
   def self.path(*a)

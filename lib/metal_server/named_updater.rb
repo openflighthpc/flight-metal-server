@@ -110,6 +110,9 @@ module MetalServer
         # Yield control to the caller to update the configs
         yield if block_given?
 
+        # Rewrites the subnets linking file
+        write_subnets_file
+
         # Validate the configs
         NamedValidationError.raise_unless_valid
 
@@ -120,6 +123,18 @@ module MetalServer
       # Attempts a second restart on fallback
       UnhandledNamedRestartError.raise_unless_restarts
       raise HandledNamedRestartError
+    end
+
+    def self.write_subnets_file
+      includes = Dir.glob(Named.config_join('*'))
+                    .map { |c| "include \"#{c}\";" }
+                    .join("\n")
+      FileUtils.mkdir_p File.dirname(Named.subnets_path)
+      File.write Named.subnets_path, <<~CONF
+        #{MANAGED_FILE_COPYRIGHT}
+
+        #{includes}
+      CONF
     end
   end
 end

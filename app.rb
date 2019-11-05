@@ -514,14 +514,21 @@ class App < Sinatra::Base
       end
     end
 
-    index(roles: Named.user_roles) { Named.glob_read('*') }
+    index(roles: Named.user_roles) { Named.glob_read('*', '*') }
 
     show(roles: Named.user_roles)
 
     create(roles: Named.admin_roles) do |attr, id|
       assert_keys(attr, :zone_payload, :config_payload)
+      inputs =  if MatchNamedRegex.match?(id)
+                  MatchNamedRegex.match(id).captures
+                else
+                  raise Sinja::BadRequestError, <<~ERROR.squish
+                    Failed to create entry as '#{id}' does not conform to the
+                    correct syntax.
+                  ERROR
+                end
 
-      inputs = MatchNamedRegex.match(id).captures
       new_named = begin
         Named.create(*inputs) do |named|
           MetalServer::NamedUpdater.update do
