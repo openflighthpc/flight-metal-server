@@ -44,7 +44,7 @@ RSpec.describe MetalServer::Restorer do
       described_class.create(base)
       expect do
         described_class.backup_and_restore_on_error(base)
-      end.to raise_error(FlightConfig::CreateError)
+      end.to raise_error(MetalServer::RestorerBusyError)
     end
 
     it 'deletes the config at the end of the update' do
