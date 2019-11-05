@@ -105,6 +105,7 @@ end
 
 class NamedSerializer < Serializer
   attributes :zone_path,
+             :zone_relative_path,
              :zone_uploaded,
              :zone_size,
              :zone_payload,

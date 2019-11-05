@@ -85,6 +85,10 @@ class Named < Model
     File.join(self.class.zone_dir, id)
   end
 
+  def zone_relative_path
+    File.join(Figaro.env.Named_sub_dir, id)
+  end
+
   def zone_uploaded?
     File.exists? zone_path
   end
