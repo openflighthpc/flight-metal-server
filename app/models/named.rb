@@ -51,7 +51,7 @@ class Named < Model
   end
 
   def self.path(*a)
-    File.join(content_base_path, 'meta', id(*a) + '.yaml')
+    File.join(content_base_path, 'meta', type, id(*a) + '.yaml')
   end
 
   def self.id(tag, zone_class)
