@@ -107,7 +107,11 @@ class NamedSerializer < Serializer
   attributes :zone_path,
              :zone_uploaded,
              :zone_size,
-             :zone_payload
+             :zone_payload,
+             :config_path,
+             :config_uploaded,
+             :config_size,
+             :config_payload
 end
 
 class ServiceSerializer < Serializer
