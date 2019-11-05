@@ -90,9 +90,7 @@ task 'daemon:stop' => :require do
   end
 end
 
-task :console do
-  ENV['RACK_ENV'] = 'development'
-  Rake::Task['require'].invoke
+task console: :require do
   binding.pry
 end
 
@@ -103,6 +101,16 @@ task initialize: :require do
   puts <<~MESSAGE.squish
     In order to update the DHCP records, the following file must be included in
     /etc/dhcp/dhcpd.conf (or other appropriate location):
+  MESSAGE
+  puts path
+
+  puts
+  path = Named.subnets_path
+  FileUtils.mkdir_p File.dirname(path)
+  FileUtils.touch path
+  puts <<~MESSAGE.squish
+    In order to update the BIND records, the following file must be included in
+    /etc/named.conf (or other appropriate location):
   MESSAGE
   puts path
 end

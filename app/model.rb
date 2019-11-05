@@ -110,10 +110,10 @@ class FileModel < Model
   end
 end
 
-class SingleIDFileModel < FileModel
-  abstract_class
+module HasSingleInput
+  extend ActiveSupport::Concern
 
-  class << self
+  class_methods do
     def path(id)
       File.join(content_base_path, 'meta', type, id + '.yaml')
     end
@@ -122,5 +122,10 @@ class SingleIDFileModel < FileModel
   def id
     __inputs__[0]
   end
+end
+
+class SingleIDFileModel < FileModel
+  abstract_class
+  include HasSingleInput
 end
 

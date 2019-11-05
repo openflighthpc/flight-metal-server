@@ -62,8 +62,13 @@ Figaro.require_keys 'app_root_dir',
                     'Kernel_system_dir',
                     'Kickstart_system_dir',
                     'Legacy_system_dir',
-                    'Grub_x86_system_dir',
+                    'Named_config_dir',
+                    'Named_working_dir',
+                    'Named_sub_dir',
                     'validate_dhcpd_command',
                     'restart_dhcpd_command',
-                    'dhcpd_is_running_command'
+                    'dhcpd_is_running_command',
+                    'named_is_running_command',
+                    'namedconf_is_valid_command',
+                    'named_restart_command'
 

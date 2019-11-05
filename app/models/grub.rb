@@ -38,7 +38,7 @@ class Grub < FileModel
     end
 
     def sub_types
-      ENV.select { |k, _| /\AGrub_[[:alpha:]][[:alnum:]]*_system_dir\Z/.match?(k) }
+      ENV.select { |k, _| /\AGrub_[\w-]+_system_dir\Z/.match?(k) }
         .map do |key, _|
         /\AGrub_(?<type>.*)_system_dir\Z/.match(key).named_captures['type']
       end

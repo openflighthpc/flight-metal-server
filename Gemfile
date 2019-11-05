@@ -31,6 +31,7 @@ source "https://rubygems.org"
 
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
+gem 'climate_control'
 gem 'figaro'
 gem 'flight_config'
 gem 'hashie'

@@ -136,6 +136,10 @@ export RACK_ENV=production
 rake daemon:stop
 ```
 
+## Known Issues
+
+Currently the `zone_name` isn't being sanitized before be used in the file paths, this will need to be fixed as it could cause also sorts of issues with the file system
+
 This command will attempt to gracefully shutdown the server but may fail for the following to reasons:
 1. The unicorn server is not a `daemon` because it wasn't started with `-D`. In this case a gracefully shutdown isn't possible and you are on your own. Always start the production server with `-D`.
 2. A worker process is handling a particularly long request and didn't finish in time. In this case wait a few seconds and run the command again. In the unlikely event the worker still doesn't stop, a gracefully shutdown is not possible (see point 1).

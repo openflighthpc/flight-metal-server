@@ -29,6 +29,26 @@
 
 require 'flight_config'
 
+module Patches
+  module FlightConfigMatcherRegex
+    def keys
+      @keys ||= Array.new(arity) { |i| "__FLIGHT_CONFIG_MATCH_ARG#{i}__" }
+    end
+
+    def regex
+      @regex ||= begin
+        escaped_path = Regexp.escape klass.new(*keys).path
+        regex_path = keys.reduce(escaped_path) do |path, key|
+          path.gsub(key, "(?<#{key}>.*)")
+        end
+        /#{regex_path}/
+      end
+    end
+  end
+end
+
+FlightConfig::Globber::Matcher.prepend Patches::FlightConfigMatcherRegex
+
 require 'metal_server/dhcp_paths'
 
 require 'app/model'
@@ -37,6 +57,7 @@ require 'app/models/dhcp_host'
 require 'app/models/dhcp_subnet'
 require 'app/models/kickstart'
 require 'app/models/grub'
+require 'app/models/named'
 require 'app/models/legacy'
 require 'app/models/service'
 require 'app/models/user'

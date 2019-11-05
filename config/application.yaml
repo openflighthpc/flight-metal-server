@@ -1,25 +1,48 @@
-# REQUIRED Either set them directly here or export them into the environment
-# app_base_url:       # [REQUIRED]
-# jwt_shared_secret:  # [REQUIRED]
+# IMPORTANT:
+# This file contains the default configuration values of the server.
+# Modifications to this file should be handled with care. They maybe
+# lost the next time the application is updated and create a security
+# risk by exposing the shared secret.
 
+# RECOMMENDATION:
+# All configuration values/overrides should be done via the environment as
+# opposed to modifying the configs. This particularly applies to the required
+# keys which must be set before the application has started
+
+# EXAMPLE:
+# To set the shared secret in the environment:
+# export jwt_shared_secret=...Your shared secret ...
+# export ... All the other REQUIRED configs ...
+
+# REQUIRED:
+# jwt_shared_secret:  # [REQUIRED]
+# app_base_url:       # [REQUIRED]
+
+# DYNAMIC DEFAULTS:
 # The following have defaults relative to where the application has been installed
 # content_dir:  <install-dir>/var
 # log_dir:      <install-dir>/log
 
-# These defaults can be overridden by the environment or hard coded here directly
-Dhcp_system_dir:          /etc/dhcp/dhcpd.metal-server
-Initrd_system_dir:        /var/lib/tftpboot/boot
-Kernel_system_dir:        /var/lib/tftpboot/boot
-Kickstart_system_dir:     /var/www/kickstarts
-Legacy_system_dir:        /var/lib/tftpboot/pxelinux.cfg
-dhcpd_is_running_command: systemctl status dhcpd.service
-restart_dhcpd_command:    systemctl restart dhcpd.service
-validate_dhcpd_command:   dhcpd -t -cf /etc/dhcp/dhcpd.conf
+# STATIC DEFAULTS:
+Dhcp_system_dir:            /etc/dhcp/dhcpd.metal-server
+Initrd_system_dir:          /var/lib/tftpboot/boot
+Kernel_system_dir:          /var/lib/tftpboot/boot
+Kickstart_system_dir:       /var/www/kickstarts
+Legacy_system_dir:          /var/lib/tftpboot/pxelinux.cfg
+Named_config_dir:           /etc/named
+Named_sub_dir:              metal-server
+Named_working_dir:          /var/named
+named_is_running_command:   systemctl status named.service
+namedconf_is_valid_command: named-checkconf
+named_restart_command:      systemctl restart named.service
+dhcpd_is_running_command:   systemctl status dhcpd.service
+restart_dhcpd_command:      systemctl restart dhcpd.service
+validate_dhcpd_command:     dhcpd -t -cf /etc/dhcp/dhcpd.conf
 
 # Configure the system directories for Grub files. Any number of grub types can be
-# added following the syntax: Grub_<sub-type>_system_dir. The 'x86' type is required.
-Grub_x86_system_dir:      /var/lib/tftpboot/efi
-# Grub_power_system_dir:    /var/lib/tftpboot/ppc
+# added following the syntax: Grub_<sub-type>_system_dir
+Grub_x86_64_system_dir: /var/lib/tftpboot/efi
+# Grub_ppc_system_dir:    /var/lib/tftpboot/ppc
 
 # The following are used to enable different features within the application
 # Setting the value to anything but 'true' will result in the feature being disabled
@@ -27,32 +50,36 @@ enable_dhcp:      'true'
 enable_kickstart: 'true'
 enable_netboot:   'true'
 
-# Settings used by RSpec
+# DEVELOPERS ONLY:
 test:
   app_base_url:             http://127.0.0.1
   jwt_shared_secret:        SOME_TEST_TOKEN
   content_dir:              /tmp/metal-server-spec/content
   Dhcp_system_dir:          /tmp/metal-server-spec/dhcpd.metal-server
-  Grub_x86_system_dir:      /tmp/metal-server-spec/tftpboot/efi
+  Grub_x86_64_system_dir:   /tmp/metal-server-spec/tftpboot/efi
   Initrd_system_dir:        /tmp/metal-server-spec/tftpboot/boot
   Kernel_system_dir:        /tmp/metal-server-spec/tftpboot/boot
   Kickstart_system_dir:     /tmp/metal-server-spec/www/kickstarts
   Legacy_system_dir:        /tmp/metal-server-spec/tftpboot/pxelinux.cfg
+  Named_config_dir:         /tmp/metal-server-spec/etc/named
+  Named_working_dir:        /tmp/metal-server-sepc/var/named
   dhcpd_is_running_command: echo Initial Test DHCP Is Running Command
   restart_dhcpd_command:    echo Initial Test DHCP Restart Command
   validate_dhcpd_command:   echo Initial Test DHCP Validation Command
+  named_is_running_command:   echo Initial Test Named Is Running Command
+  namedconf_is_valid_command: echo Initial Test Named Is Valid Command
+  named_restart_command:      echo Initial Test Named Restart Command
 
-# Alternative path settings. This is to prevent polluting the root file system
-# during development
 development:
-  app_base_url:         http://127.0.0.1
-  jwt_shared_secret:    SOME_DEVELOPMENT_TOKEN
-  log_dir:              /var/metal-server/log
-  content_dir:          /var/metal-server/content
-  Dhcp_system_dir:      /var/metal-server/dhcpd.metal-server
-  Grub_x86_system_dir:  /var/metal-server/tftpboot/efi
-  Initrd_system_dir:    /var/metal-server/tftpboot/boot
-  Kernel_system_dir:    /var/metal-server/tftpboot/boot
-  Kickstart_system_dir: /var/metal-server/www/kickstarts
-  Legacy_system_dir:    /var/metal-server/tftpboot/pxelinux.cfg
+  app_base_url:           http://127.0.0.1
+  log_dir:                /var/metal-server/log
+  content_dir:            /var/metal-server/content
+  Dhcp_system_dir:        /var/metal-server/dhcpd.metal-server
+  Grub_x86_64_system_dir: /var/metal-server/tftpboot/efi
+  Initrd_system_dir:      /var/metal-server/tftpboot/boot
+  Kernel_system_dir:      /var/metal-server/tftpboot/boot
+  Kickstart_system_dir:   /var/metal-server/www/kickstarts
+  Legacy_system_dir:      /var/metal-server/tftpboot/pxelinux.cfg
+  Named_config_dir:       /var/metal-server/etc/named
+  Named_working_dir:      /var/metal-server/var/named
 

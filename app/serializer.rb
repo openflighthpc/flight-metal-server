@@ -73,22 +73,6 @@ class FileModelSerializer < Serializer
   attribute(:uploaded) { |s| s.object.uploaded? }
 end
 
-class KickstartSerializer < FileModelSerializer
-  include SerializePayload
-
-  has_one :blob
-end
-
-class LegacySerializer < FileModelSerializer
-  include SerializePayload
-end
-
-class GrubSerializer < FileModelSerializer
-  include SerializePayload
-
-  attributes :sub_type, :name
-end
-
 class DhcpSubnetSerializer < FileModelSerializer
   include SerializePayload
 
@@ -101,6 +85,34 @@ class DhcpHostSerializer < FileModelSerializer
   include SerializePayload
 
   has_one :dhcp_subnet
+end
+
+class GrubSerializer < FileModelSerializer
+  include SerializePayload
+
+  attributes :sub_type, :name
+end
+
+class KickstartSerializer < FileModelSerializer
+  include SerializePayload
+
+  has_one :blob
+end
+
+class LegacySerializer < FileModelSerializer
+  include SerializePayload
+end
+
+class NamedSerializer < Serializer
+  attributes :zone_path,
+             :zone_relative_path,
+             :zone_uploaded,
+             :zone_size,
+             :zone_payload,
+             :config_path,
+             :config_uploaded,
+             :config_size,
+             :config_payload
 end
 
 class ServiceSerializer < Serializer

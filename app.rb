@@ -32,6 +32,7 @@ require "sinatra/cookies"
 require 'sinatra/jsonapi'
 
 require 'metal_server/dhcp_paths'
+require 'metal_server/named_updater'
 
 module Sinja
   class UnauthorizedError < HttpError
@@ -113,6 +114,15 @@ class App < Sinatra::Base
 
     def raise_require_payload
       raise Sinja::BadRequestError, 'The payload attribute is required with this request'
+    end
+
+    def assert_keys(attr, *keys)
+      keys.each do |key|
+        next if attr[key]
+        raise Sinja::BadRequestError, <<~ERROR.squish
+          The '#{key}' attribute is required with this request
+        ERROR
+      end
     end
 
     private
@@ -493,6 +503,66 @@ class App < Sinatra::Base
     end
   end
 
+  NamedZoneClasses = ['forward', 'reverse'].join('|')
+  RouteNamedRegex = /#{ID_REGEX}\.(?:#{NamedZoneClasses})/
+  MatchNamedRegex = /\A(#{ID_REGEX})\.(#{NamedZoneClasses})\Z/
+  resource Named.type, pkre: RouteNamedRegex do
+    helpers do
+      def find(id)
+        inputs = MatchNamedRegex.match(id).captures
+        Named.exists?(*inputs) ? Named.read(*inputs) : nil
+      end
+    end
+
+    index(roles: Named.user_roles) { Named.glob_read('*', '*') }
+
+    show(roles: Named.user_roles)
+
+    create(roles: Named.admin_roles) do |attr, id|
+      assert_keys(attr, :zone_payload, :config_payload)
+      inputs =  if MatchNamedRegex.match?(id)
+                  MatchNamedRegex.match(id).captures
+                else
+                  raise Sinja::BadRequestError, <<~ERROR.squish
+                    Failed to create entry as '#{id}' does not conform to the
+                    correct syntax.
+                  ERROR
+                end
+
+      new_named = begin
+        Named.create(*inputs) do |named|
+          MetalServer::NamedUpdater.update do
+            named.update_payloads(**attr)
+          end
+        end
+      rescue FlightConfig::CreateError
+        raise Sinja::ConflictError, <<~ERROR.chomp
+          Can not create the '#{Named.type.singularize}' as '#{id}' already exists
+        ERROR
+      end
+
+      [id, new_named]
+    end
+
+    update(roles: Named.admin_roles) do |attr|
+      Named.update(*resource.__inputs__) do |named|
+        MetalServer::NamedUpdater.update do
+          named.update_payloads(**attr)
+        end
+      end
+    end
+
+    destroy(roles: Named.admin_roles) do
+      Named.delete(*resource.__inputs__) do |named|
+        MetalServer::NamedUpdater.update do
+          FileUtils.rm_f named.zone_path
+          FileUtils.rm_f named.config_path
+          true
+        end
+      end
+    end
+  end
+
   resource Service.type, pkre: Service.pkre do
     helpers do
       def find(id)
@@ -500,9 +570,9 @@ class App < Sinatra::Base
       end
     end
 
-    show(roles: [:user, :admin])
-
     index(roles: [:user, :admin]) { Service.all }
+
+    show(roles: [:user, :admin])
   end
 end
 

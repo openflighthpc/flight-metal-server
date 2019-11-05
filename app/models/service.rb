@@ -31,12 +31,13 @@ require 'app/models/grub'
 
 class Service
   TYPE_MAP = {
+    :'boot-methods' => (Figaro.env.enable_netboot == 'true'),
     :'dhcp-subnets' => (Figaro.env.enable_dhcp == 'true'),
     :'dhcp-hosts'   => (Figaro.env.enable_dhcp == 'true'),
-    :'kickstarts'   => (Figaro.env.enable_kickstart == 'true'),
-    :'boot-methods' => (Figaro.env.enable_netboot == 'true'),
+    :grubs          => (Figaro.env.enable_netboot == 'true'),
+    :kickstarts     => (Figaro.env.enable_kickstart == 'true'),
     :legacies       => (Figaro.env.enable_netboot == 'true'),
-    :grubs          => (Figaro.env.enable_netboot == 'true')
+    :nameds         => true
   }.freeze
 
   def self.pkre
