@@ -30,6 +30,29 @@
 require 'tmpdir'
 
 module MetalServer
+  class RestorerBusyError < Sinja::HttpError
+    def self.raise_busy_dir(base)
+      msg = <<~MESSAGE.squish
+        Can not continue as a directory is currently locked by an update. This is
+        likely due to a concurrent request and will be available soon. Please
+        try again later.
+      MESSAGE
+      msg += ("\n\n" + <<~MESSAGE.squish)
+        If this error persists, please contact your system administrator for further
+        assistance.
+      MESSAGE
+      msg += ("\n\n" + <<~MESSAGE.squish)
+        The following directory is currently busy:
+        #{base}
+      MESSAGE
+      raise self, msg
+    end
+
+    def initialize(*a)
+      super(503, *a)
+    end
+  end
+
   class Restorer
     include FlightConfig::Updater
 
@@ -46,7 +69,11 @@ module MetalServer
 
     def self.backup_and_restore_on_error(base)
       # Tries to create a new restorer as this prevents multiple running at the same time
-      create(base).tap do |restorer|
+      begin
+        create(base)
+      rescue FlightConfig::CreateError
+        RestorerBusyError.raise_busy_dir(base)
+      end.tap do |restorer|
         begin
           # Set the base paths
           base_dir = restorer.base
