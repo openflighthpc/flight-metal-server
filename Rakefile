@@ -103,6 +103,16 @@ task initialize: :require do
     /etc/dhcp/dhcpd.conf (or other appropriate location):
   MESSAGE
   puts path
+
+  puts
+  path = Named.subnets_path
+  FileUtils.mkdir_p File.dirname(path)
+  FileUtils.touch path
+  puts <<~MESSAGE.squish
+    In order to update the BIND records, the following file must be included in
+    /etc/named.conf (or other appropriate location):
+  MESSAGE
+  puts path
 end
 
 task 'token:admin' => :require do
