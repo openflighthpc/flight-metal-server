@@ -42,30 +42,28 @@ log_dir:
 jwt_shared_secret:
 
 # =============================================================================
-# DHCP Is Running Command?
+# DHCP System Commands
+# The following system commands are used to validate, restart and check if
+# DHCP is running.
+#
+# 1. DHCP Is Running Command?
 # This command is used to check if DHCP is currently running. It MUST ONLY
 # exit 0 if DHCP is currently running. All other exit codes are considered
 # offline responses.
-# =============================================================================
-dhcpd_is_running_command:
-
-# =============================================================================
-# Restart DHCP Command
+#
+# 2. Restart DHCP Command
 # This command is used to restart the DHCP server. It MUST ONLY exit 0
 # if the server restarted correctly. All other exit codes are considered
 # failures.
-# =============================================================================
-restart_dhcpd_command:
-
-# =============================================================================
-# Validate DHCP Command
+#
+# 3. Validate DHCP Command
 # This is used to validate if the DHCP configuration is valid before the server
 # is restarted. It SHOULD reject as many syntax errors as possible. It does
-# not have to guarantee DHCP will restart.
-#
-# It MUST ONLY exit 0 if the configurations pass validation. All other exit
-# codes are considered failures.
+# not have to guarantee DHCP will restart. It MUST ONLY exit 0 if the
+# configurations pass validation. All other exit codes are considered failures.
 # =============================================================================
+dhcpd_is_running_command:
+restart_dhcpd_command:
 validate_dhcpd_command:
 
 # =============================================================================
@@ -123,9 +121,9 @@ Named_sub_dir:
 # checking if named is running.
 #
 # 1. Named is Running Command
-# The `named_is_running_` command must return a non-zero exit code if the named
+# The `named_is_running` command must return a non-zero exit code if the named
 # server isn't currently running. This will cause all updates to be aborted
-# until such time it returns 0.
+# until such time it returns zero.
 #
 # 2. Named Config is Valid
 # The `namedconf_is_valid_command` must return a non-zero exit code if the
