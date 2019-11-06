@@ -37,7 +37,7 @@ class Service
     :grubs          => (Figaro.env.enable_netboot == 'true'),
     :kickstarts     => (Figaro.env.enable_kickstart == 'true'),
     :legacies       => (Figaro.env.enable_netboot == 'true'),
-    :nameds         => true
+    :nameds         => (Figaro.env.enable_dns == 'true')
   }.freeze
 
   def self.pkre

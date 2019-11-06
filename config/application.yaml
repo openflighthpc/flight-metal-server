@@ -49,6 +49,7 @@ Grub_x86_64_system_dir: /var/lib/tftpboot/efi
 enable_dhcp:      'true'
 enable_kickstart: 'true'
 enable_netboot:   'true'
+enable_dns:       'true'
 
 # DEVELOPERS ONLY:
 test:
