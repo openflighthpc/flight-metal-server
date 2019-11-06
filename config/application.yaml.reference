@@ -80,6 +80,20 @@ Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
 
 # =============================================================================
+# Grub <type> System Directories
+# Configure the grub types that are supported by the application. By default
+# the 'x86_64' sub type has been configured. This type can be removed and
+# replaced by any number of other subtypes. The value should specify the
+# directory the PXE file will be stored in.
+#
+# All keys must be in the format Grub_<sub-type>_system_dir. The <sub-type>
+# is encoded into the ID of each entry in the format: <sub-type>.<name>
+# The `sub-type` itself must be alphanumeric and may contain `-` and `_`.
+# =============================================================================
+Grub_x86_64_system_dir:
+Grub_ppc_system_dir:
+
+# =============================================================================
 # Named System Directories
 # For named relative paths to work correctly, three configuration files are
 # required.
@@ -104,18 +118,29 @@ Named_config_dir:
 Named_sub_dir:
 
 # =============================================================================
-# Grub <type> System Directories
-# Configure the grub types that are supported by the application. By default
-# the 'x86_64' sub type has been configured. This type can be removed and
-# replaced by any number of other subtypes. The value should specify the
-# directory the PXE file will be stored in.
+# Named System Commands
+# The following system commands are required for validating, restarting, and
+# checking if named is running.
 #
-# All keys must be in the format Grub_<sub-type>_system_dir. The <sub-type>
-# is encoded into the ID of each entry in the format: <sub-type>.<name>
-# The `sub-type` itself must be alphanumeric and may contain `-` and `_`.
+# 1. Named is Running Command
+# The `named_is_running_` command must return a non-zero exit code if the named
+# server isn't currently running. This will cause all updates to be aborted
+# until such time it returns 0.
+#
+# 2. Named Config is Valid
+# The `namedconf_is_valid_command` must return a non-zero exit code if the
+# main configuration file is invalid. It may also validate that all the zone
+# configuration data is valid (it does not by default). Non-zero exit codes
+# will cause the update to be aborted before named is restarted.
+#
+# 3. Restart Named Command
+# The `named_restart_command` should attempt to restart the BIND server. It
+# must return a non-zero exit status if the server fails to restart. This
+# will trigger the rollback procedure.
 # =============================================================================
-Grub_x86_64_system_dir:
-Grub_ppc_system_dir:
+named_is_running_command:
+namedconf_is_valid_command:
+named_restart_command:
 
 # =============================================================================
 # Enable <TYPE>
