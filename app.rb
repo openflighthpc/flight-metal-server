@@ -282,7 +282,7 @@ class App < Sinatra::Base
         [id, new_model]
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp
-          Can not create the '#{Legacy.type.singularize}' as '#{id}' already exists
+          Can not create the '#{Grub.type.singularize}' as '#{id}' already exists
         ERROR
       end
     end
@@ -464,7 +464,7 @@ class App < Sinatra::Base
         [id, BootMethod.create(id)]
       rescue FlightConfig::CreateError
         raise Sinja::ConflictError, <<~ERROR.chomp
-          Can not create the '#{DhcpHost.type.singularize}' as '#{id}' already exists
+          Can not create the '#{BootMethod.type.singularize}' as '#{id}' already exists
         ERROR
       end
     end
