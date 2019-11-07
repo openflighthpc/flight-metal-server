@@ -58,7 +58,7 @@ vim config/application.yaml
 This application needs to validate and restart the `DHCP` and `BIND` servers. The relative command documentation can be found [here](config/application.yaml.reference). The default commands assume that the `dhcpd` and `bind` have been
 installed into there standard redhat locations. They will need to be modified if this is not the case.
 
-The `initialize` rake task is used to configure the system locations. It will create the initial blank subnet lists and include them into the main configs. The initialization process uses configuration values as discussed above. As this is a once off command, they can be easily set into the environment.
+The `initialize` rake task is used to setup the system configs. It will create the initial blank subnet lists and include them into the main configs. The initialization process uses configuration values as discussed above. As this is a once off command, they can be easily set into the environment.
 
 ```
 # Set the enviroment the application is running under
@@ -68,7 +68,7 @@ export RACK_ENV=production
 export initialize_dhcp_main_config=/path/to/dhcpd.conf
 export initialize_named_main_config=/path/to/named.conf
 
-# Initialize the internal application and configs
+# Initialize the subnet paths and include them in the main configs
 rake initialize
 ```
 
