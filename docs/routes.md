@@ -1,10 +1,9 @@
 # API and Routes Documentation
 
-The API conforms to the [JSON:API](https://jsonapi.org/) specifications with a few additions that have been flagged. The three major deviations from the specifications are:
+The API conforms to the [JSON:API](https://jsonapi.org/) specifications with a few additions that have been flagged. The major deviations from the specifications are:
 
 1. There are non-jsonapi blob `POST upload`/`GET download` routes,
 2. The model's `id` are alphanumeric, and
-3. The model's use `PATCH/UPDATE` to create/update the models. This is possible because the create/update is idempotent.
 
 These exceptions have been flagged below.
 

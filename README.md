@@ -64,7 +64,7 @@ The `initialize` rake task is used to configure the system locations. It will cr
 # Set the enviroment the application is running under
 export RACK_ENV=production
 
-# Set the initial directories (skip this step  to use the defaults)
+# Set the initial directories (skip this step to use the defaults)
 export initialize_dhcp_main_config=/path/to/dhcpd.conf
 export initialize_named_main_config=/path/to/named.conf
 
@@ -134,8 +134,6 @@ rake daemon:stop
 ```
 
 ## Known Issues
-
-Currently the `zone_name` isn't being sanitized before be used in the file paths, this will need to be fixed as it could cause also sorts of issues with the file system
 
 This command will attempt to gracefully shutdown the server but may fail for the following to reasons:
 1. The unicorn server is not a `daemon` because it wasn't started with `-D`. In this case a gracefully shutdown isn't possible and you are on your own. Always start the production server with `-D`.
