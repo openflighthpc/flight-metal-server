@@ -42,30 +42,28 @@ log_dir:
 jwt_shared_secret:
 
 # =============================================================================
-# DHCP Is Running Command?
+# DHCP System Commands
+# The following system commands are used to validate, restart and check if
+# DHCP is running.
+#
+# 1. DHCP Is Running Command?
 # This command is used to check if DHCP is currently running. It MUST ONLY
 # exit 0 if DHCP is currently running. All other exit codes are considered
 # offline responses.
-# =============================================================================
-dhcpd_is_running_command:
-
-# =============================================================================
-# Restart DHCP Command
+#
+# 2. Restart DHCP Command
 # This command is used to restart the DHCP server. It MUST ONLY exit 0
 # if the server restarted correctly. All other exit codes are considered
 # failures.
-# =============================================================================
-restart_dhcpd_command:
-
-# =============================================================================
-# Validate DHCP Command
+#
+# 3. Validate DHCP Command
 # This is used to validate if the DHCP configuration is valid before the server
 # is restarted. It SHOULD reject as many syntax errors as possible. It does
-# not have to guarantee DHCP will restart.
-#
-# It MUST ONLY exit 0 if the configurations pass validation. All other exit
-# codes are considered failures.
+# not have to guarantee DHCP will restart. It MUST ONLY exit 0 if the
+# configurations pass validation. All other exit codes are considered failures.
 # =============================================================================
+dhcpd_is_running_command:
+restart_dhcpd_command:
 validate_dhcpd_command:
 
 # =============================================================================
@@ -78,6 +76,20 @@ Initrd_system_dir:    # Initial ram disks will be stored here
 Kernel_system_dir:    # Kernels will be stored here
 Kickstart_system_dir: # Kickstarts will be stored here
 Legacy_system_dir:    # Legacy bios PXE files will be stored here
+
+# =============================================================================
+# Grub <type> System Directories
+# Configure the grub types that are supported by the application. By default
+# the 'x86_64' sub type has been configured. This type can be removed and
+# replaced by any number of other subtypes. The value should specify the
+# directory the PXE file will be stored in.
+#
+# All keys must be in the format Grub_<sub-type>_system_dir. The <sub-type>
+# is encoded into the ID of each entry in the format: <sub-type>.<name>
+# The `sub-type` itself must be alphanumeric and may contain `-` and `_`.
+# =============================================================================
+Grub_x86_64_system_dir:
+Grub_ppc_system_dir:
 
 # =============================================================================
 # Named System Directories
@@ -104,18 +116,29 @@ Named_config_dir:
 Named_sub_dir:
 
 # =============================================================================
-# Grub <type> System Directories
-# Configure the grub types that are supported by the application. By default
-# the 'x86_64' sub type has been configured. This type can be removed and
-# replaced by any number of other subtypes. The value should specify the
-# directory the PXE file will be stored in.
+# Named System Commands
+# The following system commands are required for validating, restarting, and
+# checking if named is running.
 #
-# All keys must be in the format Grub_<sub-type>_system_dir. The <sub-type>
-# is encoded into the ID of each entry in the format: <sub-type>.<name>
-# The `sub-type` itself must be alphanumeric and may contain `-` and `_`.
+# 1. Named is Running Command
+# The `named_is_running` command must return a non-zero exit code if the named
+# server isn't currently running. This will cause all updates to be aborted
+# until such time it returns zero.
+#
+# 2. Named Config is Valid
+# The `namedconf_is_valid_command` must return a non-zero exit code if the
+# main configuration file is invalid. It may also validate that all the zone
+# configuration data is valid (it does not by default). Non-zero exit codes
+# will cause the update to be aborted before named is restarted.
+#
+# 3. Restart Named Command
+# The `named_restart_command` should attempt to restart the BIND server. It
+# must return a non-zero exit status if the server fails to restart. This
+# will trigger the rollback procedure.
 # =============================================================================
-Grub_x86_64_system_dir:
-Grub_ppc_system_dir:
+named_is_running_command:
+namedconf_is_valid_command:
+named_restart_command:
 
 # =============================================================================
 # Enable <TYPE>

@@ -53,26 +53,23 @@ export jwt_shared_secret=<keep-this-secret-safe>
 vim config/application.yaml
 ```
 
-### Setting up DHCP
+### Setting up DHCP and BIND
 
-This application needs to validate and restart the `DHCP` server each time a new `subnet` or `host` is added. It has been designed with the base yum `dhcpd` rpm in mind. If a different `dhcpd` setup is used, then the following configuration variables need to be modified:
-* `validate_dhcpd_command`
-* `restart_dhcpd_command`
-* `dhcpd_is_running_command`
+This application needs to validate and restart the `DHCP` and `BIND` servers. The relative command documentation can be found [here](config/application.yaml.reference). The default commands assume that the `dhcpd` and `bind` have been
+installed into there standard redhat locations. They will need to be modified if this is not the case.
 
-In order for the default `dhcpd` commands to work, the configuration files need to be included by the core `dhcpd.conf` file. This can be done by adding a single include subnets line to `/etc/dhcp/dhcpd.conf`. To initialize the application
-to manage DHCP run the following `rake` command. The returned path needs to be included in `dhcpd.conf`.
+The `initialize` rake task is used to configure the system locations. It will create the initial blank subnet lists and include them into the main configs. The initialization process uses configuration values as discussed above. As this is a once off command, they can be easily set into the environment.
 
 ```
 # Set the enviroment the application is running under
 export RACK_ENV=production
 
-# Initialize the internal application DHCP directory
-rake initialize
-> /some/path/to/app/dhcp/subnets.conf
+# Set the initial directories (skip this step  to use the defaults)
+export initialize_dhcp_main_config=/path/to/dhcpd.conf
+export initialize_named_main_config=/path/to/named.conf
 
-# Include the path in dhcpd.conf
-vi /etc/dhcp/dhcpd.conf
+# Initialize the internal application and configs
+rake initialize
 ```
 
 ### Setting Up Systemd

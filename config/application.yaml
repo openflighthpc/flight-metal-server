@@ -44,11 +44,17 @@ validate_dhcpd_command:     dhcpd -t -cf /etc/dhcp/dhcpd.conf
 Grub_x86_64_system_dir: /var/lib/tftpboot/efi
 # Grub_ppc_system_dir:    /var/lib/tftpboot/ppc
 
+# The following are used by the `rake initialize` command only! They are not
+# automatically passed into the above system commands.
+initialize_dhcp_main_config:  /etc/dhcp/dhcpd.conf
+initialize_named_main_config: /etc/named.conf
+
 # The following are used to enable different features within the application
 # Setting the value to anything but 'true' will result in the feature being disabled
 enable_dhcp:      'true'
 enable_kickstart: 'true'
 enable_netboot:   'true'
+enable_dns:       'true'
 
 # DEVELOPERS ONLY:
 test:

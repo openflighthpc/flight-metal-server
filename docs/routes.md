@@ -17,6 +17,8 @@ The id is otherwise used in the same manner according to the `JSON:API` specific
 
 The `dhcp-hosts` and `grubs` files use a compound `id` to denote their relationship. The `dhcp-hosts` id is always in the format `<subnet>.<name>` and the `grubs` id is `<sub-type>.<name>`. The `subnet`, `sub-type`, and `name` is subject to the same character restrains described above.
 
+The `nameds` entries have id's in the format: `<identifier>.[forward|reverse]`. The `identifier` is subject to the same restraints described above. The entry must then be placed either in the `forward` or `reverse` zone.
+
 ## Kickstart Routes
 ### Index
 
@@ -512,10 +514,103 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 ```
 
+## Named Method Routes
+### Index
+
+List all the named entries.
+
+*SYNTAX:*
+```
+GET /nameds
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+```
+
+### Show
+
+Retrieve a particular named entry. The `config-payload` is the component that is included into the main BIND config. It should contain the `zone` statement.
+
+The `zone-payload` contains the zone configuration data. It should be referenced within the `config-payload` `file` statement. The `zone-payload` is stored within the BIND working directory so it can be easily referenced. The relative path from the working directory is given by `zone-relative-path`.
+
+*SYNTAX:*
+```
+GET /nameds/:identifier.[forward|reverse]
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+```
+
+### Create
+
+Upload a new Named entry to the server. The `zone` statement should be included as the `config-payload` attribute and will be included into the main BIND config. The zone configuration data must be included as the `zone-payload` attribute and should referenced be referenced within the `config-payload`.
+
+Handy Tip: The relative path to where the `zone-payload` is stored will be returned with the response as the `zone-relative-path` attribute. To get around the chicken and egg scenario this creates, try uploading `config-payload` as an empty string. This will successfully create the entry and return the relative path. Then the `config-payload` can be updated with using the end point below.
+
+This action will trigger the BIND server to validate the configs and restart. The entry unless the server restarts correctly.
+
+*SYNTAX:*
+```
+POST /nameds
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "nameds",
+    "id": "<identifier>.[forward|reverse]",
+    "attributes": {
+      "config-payload": "<zone statement>",
+      "zone-payload": "<zone configuration data>"
+    }
+  }
+}
+```
+
+### Update
+
+Update the named entry's "zone statement" or "zone configuration data". This is done by setting the `config-payload` or `zone-payload` attributes respectively. Each file may be updated independently by excluding the other's attribute. Missing attributes are not updated.
+
+This action will trigger the BIND server to validate the configs and restart. The entry unless the server restarts correctly.
+
+*SYNTAX:*
+```
+PATCH /nameds/:identifier.[forward|reverse]
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+{
+  "data": {
+    "type": "nameds",
+    "id": "<identifier>.[forward|reverse]",
+    "attributes": {
+      "config-payload": "<new zone statement>",
+      "zone-payload": "<new zone configuration data>"
+    }
+  }
+}
+```
+
+### Destroy
+
+Deletes the named entry and associated zone statement and configuration data.
+
+This action will trigger the BIND server to validate the configs and restart. The entry unless the server restarts correctly.
+
+*SYNTAX*:
+```
+DELETE /nameds/:identifier.[forward|reverse]
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+```
+
 ## Boot Method Routes
 ### Index
 
-List all the boot method entires.
+List all the boot method entries.
 
 *SYNTAX:*
 ```
