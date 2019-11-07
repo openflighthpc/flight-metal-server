@@ -94,25 +94,38 @@ task console: :require do
   binding.pry
 end
 
-task initialize: :require do
-  path = MetalServer::DhcpPaths.current(DhcpBase.path).include_subnets
-  FileUtils.mkdir_p File.dirname(path)
-  FileUtils.touch path
-  puts <<~MESSAGE.squish
-    In order to update the DHCP records, the following file must be included in
-    /etc/dhcp/dhcpd.conf (or other appropriate location):
-  MESSAGE
-  puts path
+task initialize: :require do |t|
+  # Sets up the DHCP server
+  metal_dhcp = MetalServer::DhcpPaths.current(DhcpBase.path).include_subnets
+  main_dhcp = Figaro.env.initialize_dhcp_main_config
+  dhcp_regex = /^\s*include\s+"#{Regexp.escape(metal_dhcp)}"\s*;.*$/
+  FileUtils.mkdir_p File.dirname(metal_dhcp)
+  FileUtils.touch metal_dhcp
+  unless File.read(main_dhcp).match?(dhcp_regex)
+    include_dhcp = "\ninclude \"#{metal_dhcp}\";"
+    File.write(main_dhcp, include_dhcp, mode: 'a')
+    puts <<~INFO
+      Added the following to: #{main_dhcp}
+      #{include_dhcp.squish}
 
-  puts
-  path = Named.subnets_path
-  FileUtils.mkdir_p File.dirname(path)
-  FileUtils.touch path
-  puts <<~MESSAGE.squish
-    In order to update the BIND records, the following file must be included in
-    /etc/named.conf (or other appropriate location):
-  MESSAGE
-  puts path
+    INFO
+  end
+
+  # Sets up the BIND server
+  metal_named = Named.subnets_path
+  main_named = Figaro.env.initialize_named_main_config
+  named_regex = /^\s*include\s+"#{Regexp.escape(metal_named)}"\s*;.*$/
+  FileUtils.mkdir_p File.dirname(metal_named)
+  FileUtils.touch metal_named
+  unless File.read(main_named).match?(named_regex)
+    include_named = "\ninclude \"#{metal_named}\";"
+    File.write(main_named, include_named, mode: 'a')
+    puts <<~INFO
+      Added the following to: #{main_named}
+      #{include_named.squish}
+
+    INFO
+  end
 end
 
 task 'token:admin' => :require do
