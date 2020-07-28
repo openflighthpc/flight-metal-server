@@ -20,7 +20,7 @@ GEM
     hashie (3.6.0)
     i18n (1.7.0)
       concurrent-ruby (~> 1.0)
-    json (2.2.0)
+    json (2.3.1)
     jsonapi-serializers (1.0.1)
       activesupport
     jwt (2.2.1)
